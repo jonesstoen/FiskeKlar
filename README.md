@@ -4,3 +4,4 @@ Gruppen består av:
 Bendik Mendes Dahl (bendikmd@uio.no)
 Johannes Støen (johastoe@uio.no)
 Mohammad Ali Shakil (mohas@uio.no)
+Kaja Mamelund Bradal (kajambra@uio.no)
