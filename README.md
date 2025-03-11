@@ -1,0 +1,4 @@
+Velkommen til gruppe 46 i IN2000 våren 2025
+
+Gruppen består av:
+Bendik Mendes Dahl (bendikmd@uio.no)
