@@ -11,7 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import no.uio.ifi.in2000.team46.ui.theme.TEAM46Theme
+import no.uio.ifi.in2000.team46.presentation.ui.theme.TEAM46Theme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
