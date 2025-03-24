@@ -11,37 +11,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import no.uio.ifi.in2000.team46.presentation.ui.screens.MapScreen
 import no.uio.ifi.in2000.team46.presentation.ui.theme.TEAM46Theme
+import org.maplibre.android.MapLibre
+import org.maplibre.android.WellKnownTileServer
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MapLibre.getInstance(this,"kPH7fJZHXa4Pj6d1oIuw" , WellKnownTileServer.MapTiler)
         enableEdgeToEdge()
         setContent {
             TEAM46Theme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                Scaffold {contentPadding ->
+                    MapScreen(modifier = Modifier.padding(contentPadding))
                 }
             }
         }
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    TEAM46Theme {
-        Greeting("Android")
-    }
-}
