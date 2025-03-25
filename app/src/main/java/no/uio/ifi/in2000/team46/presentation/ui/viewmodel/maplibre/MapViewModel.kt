@@ -1,7 +1,7 @@
 package no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre
 
 
-import android.annotation.SuppressLint
+
 import android.content.Context
 import android.location.Location
 import android.util.Log
@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.MapConstants
 import no.uio.ifi.in2000.team46.map.MapController
+import no.uio.ifi.in2000.team46.map.utils.addUserLocationIndicator
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
@@ -64,6 +65,8 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
                 controller.setInitialView(lat, lon, zoom)
                 // Oppdaterer LiveData med den nye kamera-posisjonen slik at UI kan reagere på endringen.
                 _cameraPosition.value = LatLng(lat, lon)
+                // legger til location indikator
+                addUserLocationIndicator(map, style, lat, lon)
             } catch (e: Exception) {
                 Log.e("MapViewModel", "Error initializing map: ${e.message}")
             }
