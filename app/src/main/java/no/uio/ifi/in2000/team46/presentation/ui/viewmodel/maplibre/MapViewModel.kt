@@ -53,5 +53,17 @@ class MapViewModel : ViewModel() {
         }
     }
 
+    fun zoomToLocation(map: MapLibreMap, lat: Double, lon: Double, zoom: Double = 10.0){
+        try {
+            val controller = MapController(map)
+            controller.zoomToLocation(lat, lon, zoom)
+            _cameraPosition.value = LatLng(lat, lon)
+        } catch (e: Exception) {
+            Log.e("MapViewModel", "Error zooming to location: ${e.message}")
+        }
+
+    }
+
+
 
 }

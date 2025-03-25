@@ -31,6 +31,16 @@ class MapController(private val map: MapLibreMap) {
         }
     }
 
+    fun zoomToLocation(lat: Double, lon: Double, zoom: Double) {
+        try {
+            val latLng = LatLng(lat, lon)
+            val cameraUpdate = CameraUpdateFactory.newLatLngZoom(latLng, zoom)
+            map.animateCamera(cameraUpdate)
+        } catch (e: Exception) {
+            Log.e("MapController", "Error zooming to location: ${e.message}")
+        }
+    }
+
 
 
 }
