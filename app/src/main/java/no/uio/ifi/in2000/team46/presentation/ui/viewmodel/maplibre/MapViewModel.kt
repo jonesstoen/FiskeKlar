@@ -57,10 +57,13 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
             try {
                 // Oppretter en MapController for å håndtere lavnivå-operasjoner på kartet.
                 val controller = MapController(map)
+                val lat = userLocation.value?.latitude ?: initialLat
+                val lon = userLocation.value?.longitude ?: initialLon
+                val zoom = userLocation.value?.let { 10.0 } ?: initialZoom
                 // Setter den initiale visningen basert på startverdiene.
-                controller.setInitialView(initialLat, initialLon, initialZoom)
+                controller.setInitialView(lat, lon, zoom)
                 // Oppdaterer LiveData med den nye kamera-posisjonen slik at UI kan reagere på endringen.
-                _cameraPosition.value = LatLng(initialLat, initialLon)
+                _cameraPosition.value = LatLng(lat, lon)
             } catch (e: Exception) {
                 Log.e("MapViewModel", "Error initializing map: ${e.message}")
             }
