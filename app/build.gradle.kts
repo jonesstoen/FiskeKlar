@@ -52,6 +52,12 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     //maplibre
     implementation("org.maplibre.gl:android-sdk:11.8.0")
+    //location tracking and permissions
+    implementation(libs.play.services.location)
+    //corutine
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.1")
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

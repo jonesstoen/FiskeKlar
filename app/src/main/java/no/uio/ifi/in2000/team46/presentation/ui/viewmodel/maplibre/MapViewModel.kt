@@ -1,10 +1,19 @@
 package no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre
 
 
+import android.annotation.SuppressLint
+import android.content.Context
+import android.location.Location
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.Task
+import kotlinx.coroutines.launch
+import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.MapConstants
 import no.uio.ifi.in2000.team46.map.MapController
 import org.maplibre.android.camera.CameraUpdateFactory
@@ -18,11 +27,16 @@ import org.maplibre.android.maps.MapLibreMap
  * kameraets posisjon ved hjelp av LiveData.
  */
 
-class MapViewModel : ViewModel() {
+class MapViewModel(private val locationRepository: LocationRepository) : ViewModel() {
     // Startverdier for kartet
     private val initialLat: Double = MapConstants.INITIAL_LAT
     private val initialLon: Double = MapConstants.INITIAL_LON
     private val initialZoom: Double = MapConstants.INITIAL_ZOOM
+
+    //for fetching the user location
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private val _userLocation = MutableLiveData<Location?>()
+    val userLocation: LiveData<Location?> = _userLocation
 
 
     private val apiKey = "kPH7fJZHXa4Pj6d1oIuw"
@@ -63,6 +77,23 @@ class MapViewModel : ViewModel() {
         }
 
     }
+    fun zoomToUserLocation(map: MapLibreMap, context: Context) {
+        viewModelScope.launch {
+            val location = locationRepository.getCurrentLocation()
+            location?.let {
+                zoomToLocation(map, it.latitude, it.longitude,20.0)
+            }
+        }
+    }
+
+    fun fetchUserLocation(context: Context) {
+        viewModelScope.launch {
+            val location = locationRepository.getCurrentLocation()
+            _userLocation.value = location
+        }
+    }
+
+
 
 
 

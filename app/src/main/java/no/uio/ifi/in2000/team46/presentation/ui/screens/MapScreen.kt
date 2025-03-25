@@ -1,6 +1,7 @@
 package no.uio.ifi.in2000.team46.presentation.ui.screens
 
 
+import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -16,10 +17,18 @@ import androidx.compose.material3.Icon
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.presentation.ui.components.zoomToLocationButton
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
+import no.uio.ifi.in2000.team46.utils.permissions.LocationPermissionManager
 import org.maplibre.android.maps.MapLibreMap
 
 
@@ -30,37 +39,35 @@ import org.maplibre.android.maps.MapLibreMap
  * Dette knytter sammen UI og logikk slik at eventuelle endringer i kartets tilstand kan observeres og reflekteres i brukergrensesnittet.
  */
 @Composable
-fun MapScreen(modifier: Modifier = Modifier) {
+fun MapScreen(modifier: Modifier = Modifier,granted: Boolean,locationRepository: LocationRepository, mapViewModel: MapViewModel) {
     val mapView = rememberMapViewWithLifecycle()
-    // Henter et MapViewModel for å håndtere kartlogikken
-    val mapViewModel: MapViewModel = viewModel()
     var mapLibreMap: MapLibreMap? = null
+    val context = LocalContext.current
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             factory = { mapView },
             modifier = Modifier.fillMaxSize()
         ) { view: MapView ->
-            // getMapAsync laster kartet asynkront. Når kartet er klart, kalles lambdaen
             view.getMapAsync { map ->
-                // Initialiserer kartet med ønsket stil og posisjon ved hjelp av ViewModel
                 mapViewModel.initializeMap(map)
                 mapLibreMap = map
-
-
             }
         }
-        zoomToLocationButton (
+        zoomToLocationButton(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(16.dp)
                 .padding(bottom = 16.dp)
         ) {
-
             mapLibreMap?.let { map ->
-                mapViewModel.zoomToLocation(map, 59.9139, 10.7522, 10.0)
+                if (granted) {
+                    mapViewModel.zoomToUserLocation(map, context)
+                } else {
+                    mapViewModel.zoomToLocation(map, 63.4449834, 10.9124688, 15.0)
+                }
             }
         }
-
     }
 }
