@@ -19,6 +19,7 @@ import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.MapConstants
 import no.uio.ifi.in2000.team46.map.MapController
 import no.uio.ifi.in2000.team46.map.utils.addUserLocationIndicator
+import no.uio.ifi.in2000.team46.utils.ais.VesselIconHelper
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
@@ -55,20 +56,21 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
      * bruker mapController til å sette initial view
      * oppdaterer kamera posisjonen
      */
-    fun initializeMap(map: MapLibreMap) {
+    fun initializeMap(map: MapLibreMap, context: Context) {
         map.setStyle(styleUrl) { style ->
             try {
-                // Oppretter en MapController for å håndtere lavnivå-operasjoner på kartet.
+                // Add vessel icons using the helper
+
+
+                // Continue with your other initialization tasks
                 val controller = MapController(map)
                 val lat = userLocation.value?.latitude ?: initialLat
                 val lon = userLocation.value?.longitude ?: initialLon
                 val zoom = userLocation.value?.let { 10.0 } ?: initialZoom
-                // Setter den initiale visningen basert på startverdiene.
                 controller.setInitialView(lat, lon, zoom)
-                // Oppdaterer LiveData med den nye kamera-posisjonen slik at UI kan reagere på endringen.
                 _cameraPosition.value = LatLng(lat, lon)
-                // legger til location indikator
                 addUserLocationIndicator(map, style, lat, lon)
+                VesselIconHelper.addVesselIconsToStyle(context, style)
             } catch (e: Exception) {
                 Log.e("MapViewModel", "Error initializing map: ${e.message}")
             }

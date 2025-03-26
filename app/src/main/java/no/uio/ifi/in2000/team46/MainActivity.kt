@@ -11,11 +11,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import no.uio.ifi.in2000.team46.data.remote.RetrofitInstance
+import no.uio.ifi.in2000.team46.data.remote.metalerts.RetrofitInstance
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 import no.uio.ifi.in2000.team46.presentation.ui.screens.MapScreen
 import no.uio.ifi.in2000.team46.presentation.ui.theme.TEAM46Theme
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
@@ -34,6 +35,7 @@ class MainActivity : ComponentActivity() {
     private val metAlertsViewModel: MetAlertsViewModel by viewModels {
         MetAlertsViewModelFactory(MetAlertsRepository(RetrofitInstance.metAlertsApi))
     }
+    private val aisViewModel: AisViewModel by viewModels() // Add AisViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +58,8 @@ class MainActivity : ComponentActivity() {
                         locationGranted,
                         locationRepository = locationRepository,
                         mapViewModel = mapViewModel,
-                        metAlertsViewModel = metAlertsViewModel
+                        metAlertsViewModel = metAlertsViewModel,
+                        aisViewModel = aisViewModel
 
                     )
                 }

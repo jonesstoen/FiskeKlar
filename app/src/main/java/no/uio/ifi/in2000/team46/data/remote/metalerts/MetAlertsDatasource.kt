@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team46.data.remote
+package no.uio.ifi.in2000.team46.data.remote.metalerts
 
 import okhttp3.ResponseBody
 import retrofit2.Response

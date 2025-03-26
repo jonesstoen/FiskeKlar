@@ -17,7 +17,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -25,9 +27,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
+import no.uio.ifi.in2000.team46.map.layers.AisLayer
 import no.uio.ifi.in2000.team46.map.layers.MetAlertsLayerComponent
 import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.presentation.ui.components.zoomToLocationButton
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.utils.permissions.LocationPermissionManager
@@ -46,8 +50,9 @@ fun MapScreen(
     granted: Boolean,
     locationRepository: LocationRepository,
     mapViewModel: MapViewModel,
-    metAlertsViewModel: MetAlertsViewModel
-    ) {
+    metAlertsViewModel: MetAlertsViewModel,
+    aisViewModel: AisViewModel = viewModel()
+) {
     val mapView = rememberMapViewWithLifecycle()
     var mapLibreMap: MapLibreMap? = null
     val context = LocalContext.current
@@ -59,7 +64,7 @@ fun MapScreen(
             modifier = Modifier.fillMaxSize()
         ) { view: MapView ->
             view.getMapAsync { map ->
-                mapViewModel.initializeMap(map)
+                mapViewModel.initializeMap(map,context)
                 mapLibreMap = map
             }
         }
@@ -80,6 +85,10 @@ fun MapScreen(
         MetAlertsLayerComponent(
             metAlertsViewModel = metAlertsViewModel,
             mapView = mapView
+        )
+        AisLayer(
+            mapView = mapView,
+            aisViewModel = aisViewModel
         )
 
     }
