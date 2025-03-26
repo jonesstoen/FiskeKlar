@@ -30,6 +30,7 @@ import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.layers.AisLayer
 import no.uio.ifi.in2000.team46.map.layers.MetAlertsLayerComponent
 import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
+import no.uio.ifi.in2000.team46.presentation.ui.components.LayerFilterButton
 import no.uio.ifi.in2000.team46.presentation.ui.components.zoomToLocationButton
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
@@ -89,6 +90,13 @@ fun MapScreen(
         AisLayer(
             mapView = mapView,
             aisViewModel = aisViewModel
+        )
+        LayerFilterButton(
+            aisViewModel = aisViewModel,
+            metAlertsViewModel = metAlertsViewModel,
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(16.dp)
         )
 
     }
