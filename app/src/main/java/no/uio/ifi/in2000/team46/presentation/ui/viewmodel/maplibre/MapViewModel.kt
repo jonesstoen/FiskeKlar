@@ -12,6 +12,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.Task
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.MapConstants
@@ -36,8 +38,8 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
 
     //for fetching the user location
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private val _userLocation = MutableLiveData<Location?>()
-    val userLocation: LiveData<Location?> = _userLocation
+    private val _userLocation = MutableStateFlow<Location?>(null)
+    val userLocation: StateFlow<Location?> = _userLocation
 
 
     private val apiKey = "kPH7fJZHXa4Pj6d1oIuw"

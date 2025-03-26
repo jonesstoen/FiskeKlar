@@ -4,17 +4,19 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 
 
 class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewModel() {
 
-    private val _metAlertsJson = MutableLiveData<String?>()
-    val metAlertsJson: LiveData<String?> = _metAlertsJson
+    private val _metAlertsJson = MutableStateFlow<String?>(null)
+    val metAlertsJson: MutableStateFlow<String?> = _metAlertsJson
 
-    private val _isLayerVisible = MutableLiveData(false)
-    val isLayerVisible: LiveData<Boolean> = _isLayerVisible
+    private val _isLayerVisible = MutableStateFlow(true)
+    val isLayerVisible: StateFlow<Boolean> = _isLayerVisible
 
     init {
         fetchMetAlerts()
@@ -44,7 +46,6 @@ class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewMode
     }
 
     fun toggleLayerVisibility() {
-        val currentVisibility = _isLayerVisible.value ?: false
-        _isLayerVisible.value = !currentVisibility
+        _isLayerVisible.value = !_isLayerVisible.value
     }
 }

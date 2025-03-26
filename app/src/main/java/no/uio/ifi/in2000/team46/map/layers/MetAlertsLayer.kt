@@ -2,6 +2,7 @@ package no.uio.ifi.in2000.team46.map.layers
 
 
 import android.graphics.Color
+import android.util.Log
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.platform.LocalContext
@@ -21,23 +22,25 @@ fun MetAlertsLayerComponent(
     metAlertsViewModel: MetAlertsViewModel,
     mapView: MapView
 ) {
-    // Observe metAlertsJson from the ViewModel
-    val metAlertsJson by metAlertsViewModel.metAlertsJson.observeAsState()
+    val json by metAlertsViewModel.metAlertsJson.collectAsState()
+    val isVisible by metAlertsViewModel.isLayerVisible.collectAsState()
 
-    // When metAlertsJson changes, try to update the map style
-    LaunchedEffect(metAlertsJson) {
-        metAlertsJson?.let { json ->
-            mapView.getMapAsync { maplibreMap ->
-                maplibreMap.getStyle { style ->
-                    // Check if the source already exists
+    LaunchedEffect(isVisible, json) {
+        mapView.getMapAsync { maplibreMap ->
+            maplibreMap.getStyle { style ->
+                if (isVisible && json != null) {
                     val source = style.getSourceAs<GeoJsonSource>("metalerts-source")
                     if (source != null) {
-                        // Update existing source with new JSON
-                        source.setGeoJson(json)
+                        source.setGeoJson(json!!)
+                        Log.d("MetAlertsLayerComponent", "Updated MetAlerts source")
                     } else {
-                        // Use helper function to add the source and layer
-                        addMetAlertsLayer(style, json)
+                        addMetAlertsLayer(style, json!!)
+                        Log.d("MetAlertsLayerComponent", "Added MetAlerts layer")
                     }
+                } else {
+                    style.removeLayer("metalerts-layer")
+                    style.removeSource("metalerts-source")
+                    Log.d("MetAlertsLayerComponent", "Removed MetAlerts layer")
                 }
             }
         }
