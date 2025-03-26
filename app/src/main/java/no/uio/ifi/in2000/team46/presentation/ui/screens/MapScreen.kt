@@ -25,9 +25,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
+import no.uio.ifi.in2000.team46.map.layers.MetAlertsLayerComponent
 import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.presentation.ui.components.zoomToLocationButton
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.utils.permissions.LocationPermissionManager
 import org.maplibre.android.maps.MapLibreMap
 
@@ -39,7 +41,13 @@ import org.maplibre.android.maps.MapLibreMap
  * Dette knytter sammen UI og logikk slik at eventuelle endringer i kartets tilstand kan observeres og reflekteres i brukergrensesnittet.
  */
 @Composable
-fun MapScreen(modifier: Modifier = Modifier,granted: Boolean,locationRepository: LocationRepository, mapViewModel: MapViewModel) {
+fun MapScreen(
+    modifier: Modifier = Modifier,
+    granted: Boolean,
+    locationRepository: LocationRepository,
+    mapViewModel: MapViewModel,
+    metAlertsViewModel: MetAlertsViewModel
+    ) {
     val mapView = rememberMapViewWithLifecycle()
     var mapLibreMap: MapLibreMap? = null
     val context = LocalContext.current
@@ -69,5 +77,10 @@ fun MapScreen(modifier: Modifier = Modifier,granted: Boolean,locationRepository:
                 }
             }
         }
+        MetAlertsLayerComponent(
+            metAlertsViewModel = metAlertsViewModel,
+            mapView = mapView
+        )
+
     }
 }
