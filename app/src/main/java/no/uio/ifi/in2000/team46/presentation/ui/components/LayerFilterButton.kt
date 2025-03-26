@@ -16,7 +16,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.DirectionsBoatFilled
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Houseboat
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -31,6 +34,7 @@ import androidx.compose.ui.zIndex
 import no.uio.ifi.in2000.team46.domain.model.ais.VesselTypes
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
+import androidx.compose.ui.text.font.FontWeight
 
 
 @Composable
@@ -58,9 +62,10 @@ fun LayerFilterButton(
             onClick = {
                 expanded = !expanded
             },
-            modifier = Modifier.align(Alignment.BottomStart)
+            modifier =
+            Modifier.align(Alignment.BottomStart)
         ) {
-            Icon(imageVector = Icons.Default.FilterList, contentDescription = "Filter Layers")
+            Icon(imageVector = Icons.Default.Layers , contentDescription = "Filter Layers")
         }
 
         // Ekspandert filter-panel
@@ -80,7 +85,15 @@ fun LayerFilterButton(
                     .padding(16.dp)
                     .width(300.dp)
             ) {
-                Text("Kartlag", modifier = Modifier.padding(bottom = 8.dp))
+                Row () {
+                    Icon(
+                        imageVector = Icons.Default.Layers ,
+                        contentDescription = "Filter Layers",
+                        modifier = Modifier.padding(end=8.dp)
+                    )
+                    Text("Kartlag", modifier = Modifier.padding(bottom = 8.dp),fontWeight = FontWeight.Bold)
+                }
+
 
                 // AIS-lag hovedrad med pil for ekspandering
                 Row(
@@ -131,16 +144,39 @@ fun LayerFilterButton(
 
                 // Vis fartøytype-filtre basert på ekspanderingsstatus, uavhengig av om AIS-laget er aktivert
                 AnimatedVisibility(visible = vesselTypesExpanded) {
+                    HorizontalDivider(modifier = Modifier.padding(bottom=8.dp))
+
                     LazyColumn(
                         modifier = Modifier
                             .padding(start = 32.dp)
                             .fillMaxWidth()
+                            .heightIn(max = 200.dp) //begrenser høyden på fartøytyper-listen slik at ikke skjermen blir stappa
                     ) {
+                        item {
+
+                            Row(
+                                modifier = Modifier.padding(bottom=8.dp)
+
+                            ){
+                                Icon(
+                                    imageVector = Icons.Filled.DirectionsBoatFilled,
+                                    contentDescription = "Filter vessel types",
+                                    modifier = Modifier.padding(end=8.dp)
+
+                                )
+                                Text(
+                                    text = "FartøyTyper",
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
                         items(VesselTypes.ALL_TYPES.toList()) { (name, type) ->
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
+                                Text(name)
+                                Spacer(modifier = Modifier.weight(1f))
                                 Switch(
                                     checked = isAisLayerVisible && aisViewModel.isVesselTypeSelected(type),
                                     onCheckedChange = { isChecked ->
@@ -160,8 +196,8 @@ fun LayerFilterButton(
                                         }
                                     }
                                 )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(name)
+
+
                             }
                         }
                     }

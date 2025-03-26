@@ -97,6 +97,7 @@ fun MapScreen(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(16.dp)
+                .padding(bottom = 16.dp)
         )
 
     }

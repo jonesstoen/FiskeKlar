@@ -15,7 +15,7 @@ class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewMode
     private val _metAlertsJson = MutableStateFlow<String?>(null)
     val metAlertsJson: MutableStateFlow<String?> = _metAlertsJson
 
-    private val _isLayerVisible = MutableStateFlow(true)
+    private val _isLayerVisible = MutableStateFlow(false)
     val isLayerVisible: StateFlow<Boolean> = _isLayerVisible
 
     init {

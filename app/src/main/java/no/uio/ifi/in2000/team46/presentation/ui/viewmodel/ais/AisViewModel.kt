@@ -31,7 +31,7 @@ class AisViewModel : ViewModel() {
     private val _error = MutableStateFlow<String?>(null)
     val error: MutableStateFlow<String?> = _error
 
-    private val _isLayerVisible = MutableStateFlow(true)
+    private val _isLayerVisible = MutableStateFlow(false)
     val isLayerVisible: MutableStateFlow<Boolean> = _isLayerVisible
 
     private val _selectedVesselTypes = MutableStateFlow<Set<Int>>(emptySet())
