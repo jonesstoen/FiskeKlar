@@ -51,7 +51,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     //maplibre
-    implementation("org.maplibre.gl:android-sdk:11.8.0")
+    implementation(libs.android.sdk)
+    implementation(libs.androidx.runtime.livedata)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -59,4 +60,32 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // ViewModel og Lifecycle
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+
+    // DataStore for å lagre filterinnstillinger
+    implementation(libs.androidx.datastore.preferences)
+
+
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.junit)
+    androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+
+    //Ktor
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.cio)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.client.logging)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.serialization.gson)
+    implementation(libs.logging.interceptor)
+
+
+
 }
