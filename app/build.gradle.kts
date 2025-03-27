@@ -51,22 +51,22 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     //maplibre
-    implementation("org.maplibre.gl:android-sdk:11.8.0")
+    implementation(libs.android.sdk)
     //location tracking and permissions
     implementation(libs.play.services.location)
     //corutine
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.10.1")
+    implementation(libs.kotlinx.coroutines.play.services)
     //retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
     implementation(libs.androidx.runtime.livedata)
 
     //icons
-    implementation("androidx.compose.material:material-icons-extended:1.0.0")
+    implementation(libs.androidx.material.icons.extended)
 
     // OkHttp and logging interceptor
-    implementation("com.squareup.okhttp3:okhttp:4.9.3")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
 
 
     testImplementation(libs.junit)
