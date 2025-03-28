@@ -35,7 +35,20 @@ fun MetAlertsLayerComponent(
                         Log.d("MetAlertsLayerComponent", "Updated MetAlerts source")
                     } else {
                         addMetAlertsLayer(style, json!!)
-                        Log.d("MetAlertsLayerComponent", "Added MetAlerts layer")
+
+                        // Add click listener
+                        maplibreMap.addOnMapClickListener { point ->
+                            val screenPoint = maplibreMap.projection.toScreenLocation(point)
+                            val features = maplibreMap.queryRenderedFeatures(screenPoint, "metalerts-layer")
+
+                            if (features.isNotEmpty()) {
+                                val featureId = features[0].getStringProperty("id")
+                                metAlertsViewModel.selectFeature(featureId)
+                                true
+                            } else {
+                                false
+                            }
+                        }
                     }
                 } else {
                     style.removeLayer("metalerts-layer")

@@ -2,6 +2,7 @@ package no.uio.ifi.in2000.team46.presentation.ui.screens
 
 
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -13,11 +14,13 @@ import androidx.compose.material3.Button
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -31,6 +34,7 @@ import no.uio.ifi.in2000.team46.map.layers.AisLayer
 import no.uio.ifi.in2000.team46.map.layers.MetAlertsLayerComponent
 import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.presentation.ui.components.LayerFilterButton
+import no.uio.ifi.in2000.team46.presentation.ui.components.MetAlerts.MetAlertsDetails
 import no.uio.ifi.in2000.team46.presentation.ui.components.zoomToLocationButton
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
@@ -57,6 +61,10 @@ fun MapScreen(
     val mapView = rememberMapViewWithLifecycle()
     var mapLibreMap: MapLibreMap? = null
     val context = LocalContext.current
+
+    var showMetAlertsDetails by remember { mutableStateOf(true) }
+
+    val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()
 
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -99,6 +107,31 @@ fun MapScreen(
                 .padding(16.dp)
                 .padding(bottom = 16.dp)
         )
+        if (selectedFeature != null) {
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .size(250.dp, 400.dp)
+                    .background(
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    .padding(16.dp)
+            ) {
+                Column {
+                    // Add close button
+                    IconButton(
+                        onClick = { metAlertsViewModel.selectFeature(null) },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Icon(Icons.Default.Close, contentDescription = "Close")
+                    }
+
+                    MetAlertsDetails(metAlertsViewModel = metAlertsViewModel)
+                }
+            }
+        }
 
     }
 }

@@ -3,24 +3,21 @@ package no.uio.ifi.in2000.team46.data.repository
 
 
 import no.uio.ifi.in2000.team46.data.remote.metalerts.MetAlertsDatasource
+import no.uio.ifi.in2000.team46.data.remote.metalerts.RetrofitInstance
+import no.uio.ifi.in2000.team46.domain.model.metalerts.MetAlertsResponse
 import retrofit2.HttpException
 
-class MetAlertsRepository(private val api: MetAlertsDatasource) {
-    suspend fun fetchMetAlertsJson(): String? {
+
+class MetAlertsRepository(
+    private val datasource: MetAlertsDatasource = RetrofitInstance.metAlertsApi
+) {
+    suspend fun getAlerts(): Result<MetAlertsResponse> {
         return try {
-            val response = api.getAlerts()
-            if (response.isSuccessful) {
-                response.body()?.string()
-            } else {
-                // Log the error response
-                null
-            }
-        } catch (e: HttpException) {
-            // Log the HTTP exception
-            null
+            val alerts: MetAlertsResponse = datasource.getAlerts()
+            Result.Success(alerts)
         } catch (e: Exception) {
-            // Log the general exception
-            null
+            // Logg feilen om ønskelig
+            Result.Error(e)
         }
     }
 }
