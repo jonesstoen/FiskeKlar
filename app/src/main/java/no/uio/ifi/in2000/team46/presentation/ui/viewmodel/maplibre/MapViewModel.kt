@@ -92,6 +92,7 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
             val location = locationRepository.getCurrentLocation()
             location?.let {
                 zoomToLocation(map, it.latitude, it.longitude,20.0)
+                addUserLocationIndicator(map, map.style!!, it.latitude, it.longitude)
             }
         }
     }

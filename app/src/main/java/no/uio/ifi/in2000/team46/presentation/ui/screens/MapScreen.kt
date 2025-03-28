@@ -1,7 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.ui.screens
 
 
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,18 +9,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import org.maplibre.android.maps.MapView
-import androidx.compose.material3.Button
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.ZeroCornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.ui.Alignment
-import androidx.compose.material3.Text
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,13 +27,14 @@ import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.layers.AisLayer
 import no.uio.ifi.in2000.team46.map.layers.MetAlertsLayerComponent
 import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
+import no.uio.ifi.in2000.team46.map.utils.addUserLocationIndicator
 import no.uio.ifi.in2000.team46.presentation.ui.components.LayerFilterButton
-import no.uio.ifi.in2000.team46.presentation.ui.components.MetAlerts.MetAlertsDetails
+import no.uio.ifi.in2000.team46.presentation.ui.components.metAlerts.MetAlertsDetailsPanel
 import no.uio.ifi.in2000.team46.presentation.ui.components.zoomToLocationButton
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
-import no.uio.ifi.in2000.team46.utils.permissions.LocationPermissionManager
+
 import org.maplibre.android.maps.MapLibreMap
 
 
@@ -58,23 +53,32 @@ fun MapScreen(
     metAlertsViewModel: MetAlertsViewModel,
     aisViewModel: AisViewModel = viewModel()
 ) {
+    //we need to remember the state of the map, so that it doesn't get reinitialized on recomposition
+    var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
+    //we need to initialize the map only once, so that it doesn't get reinitialized on recomposition
+    var isMapInitialized by remember { mutableStateOf(false) }
+    //remember the mapView with lifecycle to handle the lifecycle of the mapView
     val mapView = rememberMapViewWithLifecycle()
-    var mapLibreMap: MapLibreMap? = null
+    //get the context of the current activity
     val context = LocalContext.current
 
-    var showMetAlertsDetails by remember { mutableStateOf(true) }
-
-    val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()
+    //get the selected metalert  from the MetAlertsViewModel
+    val selectedMetAlert by metAlertsViewModel.selectedFeature.collectAsState()
 
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
             factory = { mapView },
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+
         ) { view: MapView ->
-            view.getMapAsync { map ->
-                mapViewModel.initializeMap(map,context)
-                mapLibreMap = map
+
+            if (!isMapInitialized) {
+                view.getMapAsync { map ->
+                    mapViewModel.initializeMap(map, context)
+                    mapLibreMap = map
+                    isMapInitialized = true
+                }
             }
         }
         zoomToLocationButton(
@@ -86,6 +90,7 @@ fun MapScreen(
             mapLibreMap?.let { map ->
                 if (granted) {
                     mapViewModel.zoomToUserLocation(map, context)
+
                 } else {
                     mapViewModel.zoomToLocation(map, 63.4449834, 10.9124688, 15.0)
                 }
@@ -107,31 +112,12 @@ fun MapScreen(
                 .padding(16.dp)
                 .padding(bottom = 16.dp)
         )
-        if (selectedFeature != null) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp)
-                    .size(250.dp, 400.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                        shape = MaterialTheme.shapes.medium
-                    )
-                    .padding(16.dp)
-            ) {
-                Column {
-                    // Add close button
-                    IconButton(
-                        onClick = { metAlertsViewModel.selectFeature(null) },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Icon(Icons.Default.Close, contentDescription = "Close")
-                    }
+        MetAlertsDetailsPanel(
+            selectedMetAlert = selectedMetAlert,
+            metAlertsViewModel = metAlertsViewModel,
+            modifier = Modifier.align(Alignment.TopEnd)
+        )
 
-                    MetAlertsDetails(metAlertsViewModel = metAlertsViewModel)
-                }
-            }
-        }
 
     }
 }

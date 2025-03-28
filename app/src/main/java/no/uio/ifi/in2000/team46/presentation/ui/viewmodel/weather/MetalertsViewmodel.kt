@@ -27,11 +27,11 @@ class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewMode
     val isLayerVisible: StateFlow<Boolean> = _isLayerVisible
 
     // Selected feature for display in detail view
-    private val _selectedFeature = MutableStateFlow<Feature?>(null)
-    val selectedFeature: StateFlow<Feature?> = _selectedFeature
+    private val _selectedMetalert = MutableStateFlow<Feature?>(null)
+    val selectedFeature: StateFlow<Feature?> = _selectedMetalert
     // Select a feature by ID
     fun selectFeature(featureId: String?) {
-        _selectedFeature.value = featureId?.let { id ->
+        _selectedMetalert.value = featureId?.let { id ->
             _metAlertsResponse.value?.features?.find { it.properties.id == id }
         }
     }
@@ -62,13 +62,13 @@ class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewMode
     }
 
     fun activateLayer() {
-        if (_isLayerVisible.value != true) {
+        if (!_isLayerVisible.value) {
             _isLayerVisible.value = true
         }
     }
 
     fun deactivateLayer() {
-        if (_isLayerVisible.value == true) {
+        if (_isLayerVisible.value) {
             _isLayerVisible.value = false
         }
     }

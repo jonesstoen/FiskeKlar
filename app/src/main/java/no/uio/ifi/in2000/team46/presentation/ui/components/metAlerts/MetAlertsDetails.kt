@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team46.presentation.ui.components.MetAlerts
+package no.uio.ifi.in2000.team46.presentation.ui.components.metAlerts
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
@@ -31,6 +31,7 @@ fun MetAlertsDetails(metAlertsViewModel: MetAlertsViewModel) {
             Text("Risk Color: ${props.riskMatrixColor}")
             Text("Awareness Level: ${props.awarenessLevel}")
             Text("Instructions: ${props.instruction}")
+
         }
     } ?: Text("Select an alert on the map to see details")
 }
