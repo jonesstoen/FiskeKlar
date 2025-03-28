@@ -127,7 +127,10 @@ crashlytics-build.properties
 fabric.properties
 
 ### AndroidStudio Patch ###
-
+# Android Studio
+.gradle
+/local.properties
+/.idea/caches
 !/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/androidstudio
