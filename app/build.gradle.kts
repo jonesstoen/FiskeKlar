@@ -51,7 +51,24 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     //maplibre
-    implementation("org.maplibre.gl:android-sdk:11.8.0")
+    implementation(libs.android.sdk)
+    //location tracking and permissions
+    implementation(libs.play.services.location)
+    //corutine
+    implementation(libs.kotlinx.coroutines.play.services)
+    //retrofit
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.androidx.runtime.livedata)
+
+    //icons
+    implementation(libs.androidx.material.icons.extended)
+
+    // OkHttp and logging interceptor
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
