@@ -20,6 +20,7 @@ import no.uio.ifi.in2000.team46.map.MapConstants
 import no.uio.ifi.in2000.team46.map.MapController
 import no.uio.ifi.in2000.team46.map.utils.addUserLocationIndicator
 import no.uio.ifi.in2000.team46.utils.ais.VesselIconHelper
+import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
@@ -42,7 +43,10 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
     private val _userLocation = MutableStateFlow<Location?>(null)
     val userLocation: StateFlow<Location?> = _userLocation
 
+    private val _temperature = MutableStateFlow<Double?>(null)
+    val temperature: StateFlow<Double?> = _temperature
 
+    private val weatherService = WeatherService()
     private val apiKey = "kPH7fJZHXa4Pj6d1oIuw"
     //url for å hente kartstilen kan endres til ønsket stil
     val styleUrl: String = "https://api.maptiler.com/maps/basic/style.json?key=$apiKey"
@@ -71,8 +75,20 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
                 _cameraPosition.value = LatLng(lat, lon)
                 addUserLocationIndicator(map, style, lat, lon)
                 VesselIconHelper.addVesselIconsToStyle(context, style)
+                updateTemperature(lat, lon)
             } catch (e: Exception) {
                 Log.e("MapViewModel", "Error initializing map: ${e.message}")
+            }
+        }
+    }
+
+    private fun updateTemperature(lat: Double, lon: Double) {
+        viewModelScope.launch {
+            try {
+                val temp = weatherService.getTemperature(lat, lon)
+                _temperature.value = temp
+            } catch (e: Exception) {
+                Log.e("MapViewModel", "Error fetching temperature: ${e.message}")
             }
         }
     }
@@ -82,6 +98,7 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
             val controller = MapController(map)
             controller.zoomToLocation(lat, lon, zoom)
             _cameraPosition.value = LatLng(lat, lon)
+            updateTemperature(lat, lon)
         } catch (e: Exception) {
             Log.e("MapViewModel", "Error zooming to location: ${e.message}")
         }
@@ -93,6 +110,7 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
             location?.let {
                 zoomToLocation(map, it.latitude, it.longitude,20.0)
                 addUserLocationIndicator(map, map.style!!, it.latitude, it.longitude)
+                updateTemperature(it.latitude, it.longitude)
             }
         }
     }
@@ -101,11 +119,14 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
         viewModelScope.launch {
             val location = locationRepository.getCurrentLocation()
             _userLocation.value = location
+            location?.let {
+                updateTemperature(it.latitude, it.longitude)
+            }
         }
     }
-
-
-
-
-
 }
+
+
+
+
+

@@ -3,6 +3,7 @@ package no.uio.ifi.in2000.team46.presentation.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -36,6 +37,7 @@ import no.uio.ifi.in2000.team46.map.layers.MetAlertsLayerComponent
 import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.map.utils.addUserLocationIndicator
 import no.uio.ifi.in2000.team46.presentation.ui.components.LayerFilterButton
+import no.uio.ifi.in2000.team46.presentation.ui.components.WeatherDisplay
 import no.uio.ifi.in2000.team46.presentation.ui.components.metAlerts.MetAlertsBottomSheetContent
 import no.uio.ifi.in2000.team46.presentation.ui.components.metAlerts.MetAlertsDetailsPanel
 import no.uio.ifi.in2000.team46.presentation.ui.components.zoomToLocationButton
@@ -66,6 +68,8 @@ fun MapScreen(
     var isMapInitialized by remember { mutableStateOf(false) }
     val mapView = rememberMapViewWithLifecycle()
     val context = LocalContext.current
+    val temperature by mapViewModel.temperature.collectAsState()
+
 
     val selectedMetAlert by metAlertsViewModel.selectedFeature.collectAsState()
     val scaffoldState = rememberBottomSheetScaffoldState(
@@ -113,17 +117,25 @@ fun MapScreen(
                 }
             }
 
-            zoomToLocationButton(
+            Column(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(16.dp)
             ) {
-                // zoom to user location if permission is granted, otherwise zoom to default location
-                mapLibreMap?.let { map ->
-                    if (granted) {
-                        mapViewModel.zoomToUserLocation(map, context)
-                    } else {
-                        mapViewModel.zoomToLocation(map, 63.4449834, 10.9124688, 15.0)
+                WeatherDisplay(
+                    temperature = temperature,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                zoomToLocationButton(
+                    modifier = Modifier
+                ) {
+                    mapLibreMap?.let { map ->
+                        if (granted) {
+                            mapViewModel.zoomToUserLocation(map, context)
+                        } else {
+                            mapViewModel.zoomToLocation(map, 63.4449834, 10.9124688, 15.0)
+                        }
                     }
                 }
             }
