@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team46.data.api.weather
+package no.uio.ifi.in2000.team46.data.remote.weather
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
