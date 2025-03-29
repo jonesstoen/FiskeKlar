@@ -1,11 +1,11 @@
-package no.uio.ifi.in2000.team46.data.remote.weather
+package no.uio.ifi.in2000.team46.data.api.weather
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
 import java.net.HttpURLConnection
-import no.uio.ifi.in2000.team46.data.model.WeatherData
+import no.uio.ifi.in2000.team46.domain.model.weather.WeatherData
 
 class WeatherService {
     companion object {

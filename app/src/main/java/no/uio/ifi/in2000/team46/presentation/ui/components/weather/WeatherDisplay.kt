@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team46.presentation.ui.components
+package no.uio.ifi.in2000.team46.presentation.ui.components.weather
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
