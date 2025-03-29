@@ -5,13 +5,14 @@ import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.URL
 import java.net.HttpURLConnection
+import no.uio.ifi.in2000.team46.data.model.WeatherData
 
 class WeatherService {
     companion object {
         private const val BASE_URL = "https://api.met.no/weatherapi/locationforecast/2.0"
     }
 
-    suspend fun getTemperature(lat: Double, lon: Double): Double? = withContext(Dispatchers.IO) {
+    suspend fun getWeatherData(lat: Double, lon: Double): WeatherData = withContext(Dispatchers.IO) {
         try {
             val url = URL("$BASE_URL/compact?lat=$lat&lon=$lon")
             val connection = url.openConnection() as HttpURLConnection
@@ -25,15 +26,21 @@ class WeatherService {
                 val timeseries = properties.getJSONArray("timeseries")
                 val firstTimeStep = timeseries.getJSONObject(0)
                 val data = firstTimeStep.getJSONObject("data")
+
                 val instant = data.getJSONObject("instant")
                 val details = instant.getJSONObject("details")
-                details.getDouble("air_temperature")
+                val temperature = details.getDouble("air_temperature")
+
+                val next1Hours = data.optJSONObject("next_1_hours")
+                val symbolCode = next1Hours?.getJSONObject("summary")?.getString("symbol_code")
+
+                WeatherData(temperature, symbolCode)
             } else {
-                null
+                WeatherData(null, null)
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            null
+            WeatherData(null, null)
         }
     }
 }

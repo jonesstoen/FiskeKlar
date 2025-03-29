@@ -46,6 +46,9 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
     private val _temperature = MutableStateFlow<Double?>(null)
     val temperature: StateFlow<Double?> = _temperature
 
+    private val _weatherSymbol = MutableStateFlow<String?>(null)
+    val weatherSymbol: StateFlow<String?> = _weatherSymbol
+
     private val weatherService = WeatherService()
     private val apiKey = "kPH7fJZHXa4Pj6d1oIuw"
     //url for å hente kartstilen kan endres til ønsket stil
@@ -85,10 +88,11 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
     private fun updateTemperature(lat: Double, lon: Double) {
         viewModelScope.launch {
             try {
-                val temp = weatherService.getTemperature(lat, lon)
-                _temperature.value = temp
+                val weatherData = weatherService.getWeatherData(lat, lon)
+                _temperature.value = weatherData.temperature
+                _weatherSymbol.value = weatherData.symbolCode
             } catch (e: Exception) {
-                Log.e("MapViewModel", "Error fetching temperature: ${e.message}")
+                Log.e("MapViewModel", "Error fetching weather data: ${e.message}")
             }
         }
     }

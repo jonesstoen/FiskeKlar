@@ -69,7 +69,7 @@ fun MapScreen(
     val mapView = rememberMapViewWithLifecycle()
     val context = LocalContext.current
     val temperature by mapViewModel.temperature.collectAsState()
-
+    val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
 
     val selectedMetAlert by metAlertsViewModel.selectedFeature.collectAsState()
     val scaffoldState = rememberBottomSheetScaffoldState(
@@ -124,6 +124,7 @@ fun MapScreen(
             ) {
                 WeatherDisplay(
                     temperature = temperature,
+                    symbolCode = weatherSymbol,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
 
