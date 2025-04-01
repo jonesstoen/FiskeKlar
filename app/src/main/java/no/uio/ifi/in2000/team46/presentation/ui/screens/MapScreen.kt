@@ -1,6 +1,9 @@
 package no.uio.ifi.in2000.team46.presentation.ui.screens
 
-
+//for inpolygon implementation
+import android.util.Log
+import android.widget.Toast
+// until here
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -47,6 +50,10 @@ import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
+//for inpolygon implementation
+import no.uio.ifi.in2000.team46.utils.isPointInPolygon
+import org.maplibre.android.geometry.LatLng
+//until here
 
 import org.maplibre.android.maps.MapLibreMap
 import java.time.LocalDate
@@ -252,4 +259,43 @@ fun MapScreen(
             modifier = Modifier.fillMaxSize()
         )
     }
+    // Kotlin
+//    LaunchedEffect(mapViewModel.userLocation, metAlertsViewModel.metAlertsResponse) {
+//        kotlinx.coroutines.delay(5000) // Delay to ensure location is fetched
+//        val currentlocation = mapViewModel.userLocation.value
+//        val alertsResponse = metAlertsViewModel.metAlertsResponse.value
+//        Log.d("MapScreen", "Fetched location: $currentlocation")
+//        Log.d("MapScreen", "Fetched alertsResponse: $alertsResponse")
+//
+//        if (currentlocation == null || alertsResponse == null) {
+//            Log.d("MapScreen", "Waiting for location or alertsResponse")
+//            return@LaunchedEffect
+//        }
+//
+//        if (currentlocation != null && alertsResponse != null) {
+//            alertsResponse.features.forEach { feature ->
+//                if (feature.geometry.type.equals("Polygon", ignoreCase = true)) {
+//                    val polygon: List<Pair<Double, Double>> = run {
+//                        val coordinatesRaw = feature.geometry.coordinates as? List<*>
+//                        val firstRing = coordinatesRaw?.firstOrNull() as? List<*>
+//                        firstRing?.mapNotNull { item ->
+//                            val coord = item as? List<*>
+//                            val lon = coord?.getOrNull(0) as? Double
+//                            val lat = coord?.getOrNull(1) as? Double
+//                            if (lon != null && lat != null) Pair(lon, lat) else null
+//                        } ?: emptyList()
+//                    }
+//                    val inside = isPointInPolygon(currentlocation.latitude, currentlocation.longitude, polygon)
+//                    Log.d("MapScreen", "User location is inside polygon: $inside")
+//                    Toast.makeText(
+//                        context,
+//                        "User location is inside polygon: $inside",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+//                }
+//            }
+//        } else {
+//            Log.d("MapScreen", "Location or AlertsResponse is null")
+//        }
+//    }
 }

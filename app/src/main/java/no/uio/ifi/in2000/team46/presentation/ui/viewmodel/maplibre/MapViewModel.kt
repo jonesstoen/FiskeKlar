@@ -24,6 +24,8 @@ import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.Priority
 
 /**MapViewModel styrer forretningslogikken og tilstanden for kartet.
  *
@@ -39,6 +41,7 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
     private val initialZoom: Double = MapConstants.INITIAL_ZOOM
 
     //for fetching the user location
+    private lateinit var mapLibreMap: MapLibreMap
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private val _userLocation = MutableStateFlow<Location?>(null)
     val userLocation: StateFlow<Location?> = _userLocation
@@ -64,6 +67,7 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
      * oppdaterer kamera posisjonen
      */
     fun initializeMap(map: MapLibreMap, context: Context) {
+        mapLibreMap = map
         map.setStyle(styleUrl) { style ->
             try {
                 // Add vessel icons using the helper
@@ -79,6 +83,9 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
                 addUserLocationIndicator(map, style, lat, lon)
                 VesselIconHelper.addVesselIconsToStyle(context, style)
                 updateTemperature(lat, lon)
+                // Set up location updates
+                startContinuousLocationUpdates()
+
             } catch (e: Exception) {
                 Log.e("MapViewModel", "Error initializing map: ${e.message}")
             }
@@ -127,6 +134,30 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
                 updateTemperature(it.latitude, it.longitude)
             }
         }
+    }
+    //this method is used to update the map location continously
+    private fun startContinuousLocationUpdates() {
+        val locationRequest = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000L)
+            .setMinUpdateDistanceMeters(10f)
+            .build()
+
+        locationRepository.startLocationUpdates(locationRequest) { location ->
+            _userLocation.value = location
+            updateMapLocation(location)
+        }
+    }
+
+    private fun updateMapLocation(location: Location) {
+        _cameraPosition.value = LatLng(location.latitude, location.longitude)
+        // Update the user marker on the map.
+        mapLibreMap.getStyle { style ->
+            addUserLocationIndicator(mapLibreMap, style, location.latitude, location.longitude)
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        locationRepository.stopLocationUpdates()
     }
 }
 
