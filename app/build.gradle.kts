@@ -59,6 +59,7 @@ dependencies {
     //retrofit
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
+    implementation(libs.retrofit.scalars)
     implementation(libs.androidx.runtime.livedata)
 
     //icons
@@ -67,6 +68,18 @@ dependencies {
     // OkHttp and logging interceptor
     implementation(libs.okhttp)
     implementation(libs.logging.interceptor)
+
+//    // JavaGrib
+//    implementation(libs.javagrib)
+//
+//    // NetCDF
+//    implementation(libs.netcdf.java)
+
+    //JGribX
+
+    implementation("com.github.spidru:JGribX:0.5.0")
+
+
 
 
     testImplementation(libs.junit)
