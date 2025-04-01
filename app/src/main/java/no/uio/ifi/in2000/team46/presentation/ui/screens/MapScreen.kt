@@ -58,6 +58,7 @@ import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 import java.time.LocalDate
 import java.time.LocalTime
+import android.media.MediaPlayer
 
 
 /** MapScreen er UI-skjermen der kartet vises, og den kobler sammen ViewModel og den visuelle presentasjonen.
@@ -259,43 +260,55 @@ fun MapScreen(
             modifier = Modifier.fillMaxSize()
         )
     }
-    // Kotlin
-//    LaunchedEffect(mapViewModel.userLocation, metAlertsViewModel.metAlertsResponse) {
-//        kotlinx.coroutines.delay(5000) // Delay to ensure location is fetched
-//        val currentlocation = mapViewModel.userLocation.value
-//        val alertsResponse = metAlertsViewModel.metAlertsResponse.value
-//        Log.d("MapScreen", "Fetched location: $currentlocation")
-//        Log.d("MapScreen", "Fetched alertsResponse: $alertsResponse")
-//
-//        if (currentlocation == null || alertsResponse == null) {
-//            Log.d("MapScreen", "Waiting for location or alertsResponse")
-//            return@LaunchedEffect
-//        }
-//
-//        if (currentlocation != null && alertsResponse != null) {
-//            alertsResponse.features.forEach { feature ->
-//                if (feature.geometry.type.equals("Polygon", ignoreCase = true)) {
-//                    val polygon: List<Pair<Double, Double>> = run {
-//                        val coordinatesRaw = feature.geometry.coordinates as? List<*>
-//                        val firstRing = coordinatesRaw?.firstOrNull() as? List<*>
-//                        firstRing?.mapNotNull { item ->
-//                            val coord = item as? List<*>
-//                            val lon = coord?.getOrNull(0) as? Double
-//                            val lat = coord?.getOrNull(1) as? Double
-//                            if (lon != null && lat != null) Pair(lon, lat) else null
-//                        } ?: emptyList()
-//                    }
-//                    val inside = isPointInPolygon(currentlocation.latitude, currentlocation.longitude, polygon)
-//                    Log.d("MapScreen", "User location is inside polygon: $inside")
-//                    Toast.makeText(
-//                        context,
-//                        "User location is inside polygon: $inside",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//                }
-//            }
-//        } else {
-//            Log.d("MapScreen", "Location or AlertsResponse is null")
-//        }
-//    }
+     //Kotlin
+    LaunchedEffect(mapViewModel.userLocation, metAlertsViewModel.metAlertsResponse) {
+        kotlinx.coroutines.delay(5000) // Delay to ensure location is fetched
+        val currentlocation = mapViewModel.userLocation.value
+        val alertsResponse = metAlertsViewModel.metAlertsResponse.value
+        Log.d("MapScreen", "Fetched location: $currentlocation")
+        Log.d("MapScreen", "Fetched alertsResponse: $alertsResponse")
+
+        if (currentlocation == null || alertsResponse == null) {
+            Log.d("MapScreen", "Waiting for location or alertsResponse")
+            return@LaunchedEffect
+        }
+
+        if (currentlocation != null && alertsResponse != null) {
+            alertsResponse.features.forEach { feature ->
+                if (feature.geometry.type.equals("Polygon", ignoreCase = true)) {
+                    val polygon: List<Pair<Double, Double>> = run {
+                        val coordinatesRaw = feature.geometry.coordinates as? List<*>
+                        val firstRing = coordinatesRaw?.firstOrNull() as? List<*>
+                        firstRing?.mapNotNull { item ->
+                            val coord = item as? List<*>
+                            val lon = coord?.getOrNull(0) as? Double
+                            val lat = coord?.getOrNull(1) as? Double
+                            if (lon != null && lat != null) Pair(lon, lat) else null
+                        } ?: emptyList()
+                    }
+                    val inside = isPointInPolygon(currentlocation.latitude, currentlocation.longitude, polygon)
+                    Log.d("MapScreen", "User location is inside polygon: $inside")
+                    if (inside) {
+                        val alertType = feature.properties.eventAwarenessName
+                        val updatedAlertType = alertType.replace("fare", "").trim()
+                        Toast.makeText(
+                            context,
+                            "ADVARSEL: Du er i et område med utsedt $updatedAlertType farevarsel",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        val mediaPlayer = MediaPlayer.create(
+                            context,
+                            no.uio.ifi.in2000.team46.R.raw.notifcation_sound
+                        )
+                        mediaPlayer.start()
+                        mediaPlayer.setOnCompletionListener {
+                            it.release()
+                        }
+                    }
+                }
+            }
+        } else {
+            Log.d("MapScreen", "Location or AlertsResponse is null")
+        }
+    }
 }
