@@ -1,7 +1,6 @@
 package no.uio.ifi.in2000.team46.data.repository
 
 import android.content.Context
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.TypeAdapter
 import com.google.gson.reflect.TypeToken
