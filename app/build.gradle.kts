@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId = "no.uio.ifi.in2000.team46"
-        minSdk = 26
+        minSdk = 25
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -36,6 +36,12 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+
+    packaging {
+        resources {
+            excludes += "META-INF/DEPENDENCIES"
+        }
     }
 }
 
@@ -70,9 +76,8 @@ dependencies {
 
 
     // For grib
-
-    implementation(libs.ucar.grib)
-    implementation(libs.cdm.core)
+    implementation(libs.cdmcore)
+    implementation(libs.grib)
 
 
     testImplementation(libs.junit)

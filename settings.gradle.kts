@@ -9,6 +9,9 @@ pluginManagement {
         }
         mavenCentral()
         gradlePluginPortal()
+        maven {
+            url = uri("https://artifacts.unidata.ucar.edu/repository/unidata-all")
+        }
     }
 }
 dependencyResolutionManagement {

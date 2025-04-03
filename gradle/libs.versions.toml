@@ -1,6 +1,7 @@
 [versions]
 agp = "8.8.2"
 androidSdk = "11.8.0"
+cdmcore = "5.5.0"
 converterGson = "2.9.0"
 kotlin = "2.0.0"
 coreKtx = "1.15.0"
@@ -17,15 +18,16 @@ okhttp = "4.12.0"
 playServicesLocation = "21.3.0"
 retrofit = "2.9.0"
 runtimeLivedata = "1.7.8"
-grib = "4.5.5"
-cdmCore = "2.2.1"
+
 
 [libraries]
 android-sdk = { module = "org.maplibre.gl:android-sdk", version.ref = "androidSdk" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+cdmcore = { module = "edu.ucar:cdm-core", version.ref = "cdmcore" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
+grib = { module = "edu.ucar:grib", version.ref = "cdmcore" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -45,8 +47,7 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
-ucar-grib = { group = "edu.ucar", name = "grib", version.ref = "grib" }
-cdm-core = { group = "online.sanen", name = "cdm-core", version.ref = "cdmCore" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
