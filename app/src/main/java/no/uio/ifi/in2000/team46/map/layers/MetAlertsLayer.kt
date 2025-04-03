@@ -109,7 +109,7 @@ fun addMetAlertsLayer(context: android.content.Context, style: Style, json: Stri
     val symbolLayer = SymbolLayer("metalerts-icons", "metalerts-source")
     symbolLayer.setProperties(
         iconImage(iconImageExpression),
-        iconSize(0.5f),
+        iconSize(0.3f),
         iconAllowOverlap(true)
     )
     style.addLayerAbove(symbolLayer, "metalerts-layer")
