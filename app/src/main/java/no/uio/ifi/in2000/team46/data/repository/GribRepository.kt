@@ -11,7 +11,7 @@ class GribRepository {
 
     suspend fun getGribFiles(area: String, content: String): ResponseBody? {
         return withContext(Dispatchers.IO) {
-            val response = api.getGribFiles(area, content)
+            val response = GribRetrofitInstance.GribApi.getGribFiles(area, content)
             if (response.isSuccessful) {
                 response.body()
             } else {

@@ -180,6 +180,10 @@ fun MapScreen(
             //adding the different layers to the map, along with the filter button
             MetAlertsLayerComponent(metAlertsViewModel, mapView)
             AisLayer(mapView, aisViewModel)
+            WindLayerComponent(
+                windDataViewModel = windDataViewModel,
+                mapView = mapView
+            )
             LayerFilterButton(
                 aisViewModel,
                 metAlertsViewModel,
