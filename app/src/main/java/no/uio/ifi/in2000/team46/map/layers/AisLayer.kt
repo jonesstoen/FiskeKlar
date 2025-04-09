@@ -3,7 +3,6 @@ package no.uio.ifi.in2000.team46.map.layers
 import android.graphics.Color
 import android.util.Log
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.domain.model.ais.AisVesselPosition
 import no.uio.ifi.in2000.team46.domain.model.ais.VesselIcons
@@ -26,9 +25,18 @@ fun AisLayer(
     val TAG = "AisLayerComponent"
     val vesselPositions by aisViewModel.vesselPositions.collectAsState()
     val isLayerVisible by aisViewModel.isLayerVisible.collectAsState()
-    val isLoading by aisViewModel.isLoading.collectAsState()
-    val error by aisViewModel.error.collectAsState()
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        VesselIcons.initializeIcons(mapView.context)
+        mapView.getMapAsync { maplibreMap ->
+            maplibreMap.getStyle { style ->
+                VesselIcons.getIcons().forEach { (iconName, bitmap) ->
+                    style.addImage(iconName, bitmap)
+                }
+            }
+        }
+    }
 
     LaunchedEffect(vesselPositions, isLayerVisible) {
         if (isLayerVisible) {
@@ -79,16 +87,15 @@ private fun updateAisLayer(mapView: MapView, vessels: List<AisVesselPosition>) {
     mapView.getMapAsync { maplibreMap ->
         maplibreMap.getStyle { style ->
             try {
-                style.getLayer("ais-vessels-layer")?.let { style.removeLayer(it) }
+                // Remove existing layers and source
                 style.getLayer("ais-vessels-text-layer")?.let { style.removeLayer(it) }
+                style.getLayer("ais-vessels-layer")?.let { style.removeLayer(it) }
                 style.getSource("ais-vessels-source")?.let { style.removeSource(it) }
 
                 val features = JSONArray()
-
                 vessels.forEach { vessel ->
                     try {
                         val vesselStyle = VesselIcons.getVesselStyle(vessel.shipType)
-
                         val feature = JSONObject().apply {
                             put("type", "Feature")
                             put("geometry", JSONObject().apply {
@@ -120,19 +127,23 @@ private fun updateAisLayer(mapView: MapView, vessels: List<AisVesselPosition>) {
                     put("features", features)
                 }
 
+                // Add source first
                 val sourceId = "ais-vessels-source"
                 val source = GeoJsonSource(sourceId, featureCollection.toString())
                 style.addSource(source)
 
+                // Add symbol layer first
                 val symbolLayer = SymbolLayer("ais-vessels-layer", sourceId).withProperties(
                     PropertyFactory.iconImage(Expression.get("iconType")),
                     PropertyFactory.iconSize(1.0f),
                     PropertyFactory.iconAllowOverlap(true),
                     PropertyFactory.iconRotate(Expression.get("courseOverGround")),
-                    PropertyFactory.iconColor(Expression.get("color"))
+                    PropertyFactory.iconColor(Expression.get("color")),
+                    PropertyFactory.iconOpacity(1f)  // Ensure full opacity
                 )
                 style.addLayer(symbolLayer)
 
+                // Add text layer on top
                 val textLayer = SymbolLayer("ais-vessels-text-layer", sourceId).withProperties(
                     PropertyFactory.textField(Expression.get("name")),
                     PropertyFactory.textSize(12f),
@@ -142,6 +153,7 @@ private fun updateAisLayer(mapView: MapView, vessels: List<AisVesselPosition>) {
                     PropertyFactory.textOffset(arrayOf(0f, 1.5f)),
                     PropertyFactory.textAllowOverlap(false)
                 )
+                textLayer.minZoom = 11.0f
                 style.addLayer(textLayer)
 
             } catch (e: Exception) {

@@ -105,8 +105,14 @@ fun LayerFilterButton(
                 ) {
                     Switch(
                         checked = isAisLayerVisible,
-                        onCheckedChange = {
-                            aisViewModel.toggleLayerVisibility()
+                        onCheckedChange = { checked ->
+                            if (checked) {
+                                aisViewModel.activateLayer()
+                                aisViewModel.selectAllVesselTypes()
+                            } else {
+                                aisViewModel.deactivateLayer()
+                                aisViewModel.clearSelectedVesselTypes()
+                            }
                         },
                         modifier = Modifier.scale(0.7f)
                     )
@@ -151,19 +157,14 @@ fun LayerFilterButton(
                         modifier = Modifier
                             .padding(start = 32.dp)
                             .fillMaxWidth()
-                            .heightIn(max = 200.dp) //begrenser høyden på fartøytyper-listen slik at ikke skjermen blir stappa
+                            .heightIn(max = 200.dp)
                     ) {
                         item {
-
-                            Row(
-                                modifier = Modifier.padding(bottom=8.dp)
-
-                            ){
+                            Row(modifier = Modifier.padding(bottom = 8.dp)) {
                                 Icon(
                                     imageVector = Icons.Filled.DirectionsBoatFilled,
                                     contentDescription = "Filter vessel types",
-                                    modifier = Modifier.padding(end=8.dp)
-
+                                    modifier = Modifier.padding(end = 8.dp)
                                 )
                                 Text(
                                     text = "FartøyTyper",
@@ -182,24 +183,13 @@ fun LayerFilterButton(
                                     modifier = Modifier.scale(0.7f),
                                     checked = isAisLayerVisible && aisViewModel.isVesselTypeSelected(type),
                                     onCheckedChange = { isChecked ->
-                                        if (isChecked) {
-                                            // Hvis vi aktiverer en fartøystype og AIS-laget er av,
-                                            // aktiver AIS-laget først med bare denne fartøystypen
-                                            if (!isAisLayerVisible) {
-                                                aisViewModel.selectOnlyVesselType(type)
-                                                aisViewModel.activateLayer()
-                                            } else {
-                                                // Hvis AIS-laget allerede er på, bare toggle denne typen
-                                                aisViewModel.toggleVesselType(type)
-                                            }
-                                        } else {
-                                            // Fjern denne fartøystypen
-                                            aisViewModel.deselectVesselType(type)
+                                        if (!isAisLayerVisible) {
+                                            aisViewModel.activateLayer()
+                                            aisViewModel.clearSelectedVesselTypes() // Clear all first
                                         }
+                                        aisViewModel.toggleVesselType(type)
                                     }
                                 )
-
-
                             }
                         }
                     }

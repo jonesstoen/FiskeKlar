@@ -79,27 +79,6 @@ class AisViewModel : ViewModel() {
         }
     }
 
-    fun toggleVesselType(vesselType: Int) {
-        val currentTypes = _selectedVesselTypes.value ?: emptySet()
-        val newTypes = if (currentTypes.contains(vesselType)) {
-            currentTypes - vesselType
-        } else {
-            currentTypes + vesselType
-        }
-        _selectedVesselTypes.value = newTypes
-
-        // Sjekk om vi har fjernet alle fartøystyper
-        if (newTypes.isEmpty() && _isLayerVisible.value == true) {
-            // Hvis ingen fartøystyper er valgt, deaktiver AIS-laget
-            deactivateLayer()
-        } else {
-            // Oppdater fartøysposisjoner hvis AIS-laget er synlig
-            if (_isLayerVisible.value == true) {
-                fetchVesselPositions()
-            }
-        }
-    }
-
     // Velg kun en spesifikk fartøystype, fjern alle andre
     fun selectOnlyVesselType(vesselType: Int) {
         _selectedVesselTypes.value = setOf(vesselType)
@@ -124,11 +103,31 @@ class AisViewModel : ViewModel() {
     }
 
     fun selectAllVesselTypes() {
-        val allTypes = VesselTypes.ALL_TYPES.values.toSet()
-        _selectedVesselTypes.value = allTypes
+        _selectedVesselTypes.value = VesselTypes.ALL_TYPES.values.toSet()
+        if (_isLayerVisible.value) {
+            fetchVesselPositions()
+        }
+    }
 
-        // Hent nye posisjoner hvis laget er synlig
-        if (_isLayerVisible.value == true) {
+    fun clearSelectedVesselTypes() {
+        _selectedVesselTypes.value = emptySet()
+        if (_isLayerVisible.value) {
+            _vesselPositions.value = emptyList()
+        }
+    }
+
+    fun toggleVesselType(vesselType: Int) {
+        val currentTypes = _selectedVesselTypes.value
+        val newTypes = if (currentTypes.contains(vesselType)) {
+            currentTypes - vesselType
+        } else {
+            currentTypes + vesselType
+        }
+        _selectedVesselTypes.value = newTypes
+
+        if (newTypes.isEmpty() && _isLayerVisible.value) {
+            deactivateLayer()
+        } else if (_isLayerVisible.value) {
             fetchVesselPositions()
         }
     }
