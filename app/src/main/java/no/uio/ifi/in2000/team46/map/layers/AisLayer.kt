@@ -2,14 +2,20 @@ package no.uio.ifi.in2000.team46.map.layers
 
 import android.graphics.Color
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.domain.model.ais.AisVesselPosition
 import no.uio.ifi.in2000.team46.domain.model.ais.VesselIcons
+import no.uio.ifi.in2000.team46.domain.model.ais.VesselTypes
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import org.json.JSONArray
 import org.json.JSONObject
@@ -110,13 +116,29 @@ private fun VesselInfoDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(vessel.name) },
+        title = { Text(vessel.name, fontSize = 25.sp) },
         text = {
-            Column {
-                Text("MMSI: ${vessel.mmsi}")
-                Text("Fart: ${vessel.speedOverGround} knop")
-                Text("Kurs: ${vessel.courseOverGround}°")
-                Text("Stevning: ${vessel.trueHeading}°")
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row {
+                    Text("MMSI: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text("${vessel.mmsi}", fontSize = 20.sp)
+                }
+                Row {
+                    Text("Type: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text(VesselTypes.ALL_TYPES.entries.find { it.value == vessel.shipType }?.key ?: "Ukjent", fontSize = 20.sp)
+                }
+                Row {
+                    Text("Fart: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text("${vessel.speedOverGround} knop", fontSize = 20.sp)
+                }
+                Row {
+                    Text("Kurs: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text("${vessel.courseOverGround}°", fontSize = 20.sp)
+                }
+                Row {
+                    Text("Stevning: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text("${vessel.trueHeading}°", fontSize = 20.sp)
+                }
             }
         },
         confirmButton = {
