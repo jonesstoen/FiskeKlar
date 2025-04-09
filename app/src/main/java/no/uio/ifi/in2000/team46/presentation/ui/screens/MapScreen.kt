@@ -9,18 +9,21 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.delay
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.layers.AisLayer
 import no.uio.ifi.in2000.team46.map.layers.MetAlertsLayerComponent
 import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.presentation.ui.components.BottomNavBar
 import no.uio.ifi.in2000.team46.presentation.ui.components.LayerFilterButton
+import no.uio.ifi.in2000.team46.presentation.ui.components.SearchBox
 import no.uio.ifi.in2000.team46.presentation.ui.components.ZoomButton
 import no.uio.ifi.in2000.team46.presentation.ui.components.metAlerts.MetAlertsBottomSheetContent
 import no.uio.ifi.in2000.team46.presentation.ui.components.weather.WeatherDisplay
 import no.uio.ifi.in2000.team46.presentation.ui.components.zoomToLocationButton
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.search.SearchViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
 import org.maplibre.android.maps.MapLibreMap
 
@@ -39,6 +42,7 @@ fun MapScreen(
     mapViewModel: MapViewModel,
     metAlertsViewModel: MetAlertsViewModel,
     aisViewModel: AisViewModel = viewModel(),
+    searchViewModel: SearchViewModel = viewModel(),
     onNavigate: (String) -> Unit
 ) {
     var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
@@ -47,6 +51,20 @@ fun MapScreen(
     val context = LocalContext.current
     val temperature by mapViewModel.temperature.collectAsState()
     val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
+    val searchResults by searchViewModel.searchResults.collectAsState()
+    val isSearching by searchViewModel.isSearching.collectAsState()
+    val isShowingHistory by searchViewModel.showingHistory.collectAsState()
+
+
+// Oppdater brukerens posisjon hvert 10. sekund
+    LaunchedEffect(Unit) {
+        while (true) {
+            if (granted) {
+                mapViewModel.fetchUserLocation(context)
+            }
+            delay(10000) // 10 sekunder
+        }
+    }
 
     // Cleanup when leaving the screen
     DisposableEffect(Unit) {
@@ -112,6 +130,45 @@ fun MapScreen(
                 // Layers
                 MetAlertsLayerComponent(metAlertsViewModel, mapView)
                 AisLayer(mapView, aisViewModel)
+
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopStart)
+                        .padding(start = 16.dp, end = 100.dp) // Gir rom til WeatherDisplay
+                ) {
+                    // Search Box - Top Left
+                    mapLibreMap?.let { map ->
+                        val userLocation by mapViewModel.userLocation.collectAsState()
+                        SearchBox(
+                            map = map,
+                            searchResults = searchResults,
+                            isSearching = isSearching,
+                            isShowingHistory = isShowingHistory,
+                            onSearch = { query ->
+                                val focusLat = userLocation?.latitude ?: map.cameraPosition.target?.latitude
+                                val focusLon = userLocation?.longitude ?: map.cameraPosition.target?.longitude
+                                searchViewModel.search(
+                                    query = query,
+                                    focusLat = focusLat,
+                                    focusLon = focusLon
+                                )
+                            },
+                            onResultSelected = { feature ->
+                                searchViewModel.addToHistory(feature)
+                                val coordinates = feature.geometry.coordinates
+                                if (coordinates.size >= 2) {
+                                    mapViewModel.zoomToLocation(
+                                        map,
+                                        coordinates[1], // latitude
+                                        coordinates[0], // longitude
+                                        15.0
+                                    )
+                                    searchViewModel.clearResults()
+                                }
+                            },
+                        )
+                    }
+                }
 
                 // Weather Display - Top Right
                 Box(

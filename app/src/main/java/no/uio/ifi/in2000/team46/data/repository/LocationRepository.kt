@@ -30,8 +30,8 @@ class LocationRepository(private val context: Context) {
         }
 
         return try {
-            val lastLocation = fusedLocationClient.lastLocation.await()
-            lastLocation ?: fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).await()
+            fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).await()
+                ?: fusedLocationClient.lastLocation.await()
         } catch (e: SecurityException) {
             null
         }
