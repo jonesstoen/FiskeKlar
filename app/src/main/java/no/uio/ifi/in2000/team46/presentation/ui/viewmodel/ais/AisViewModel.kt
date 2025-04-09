@@ -3,6 +3,8 @@ package no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais
 
 
 import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -42,6 +44,29 @@ class AisViewModel : ViewModel() {
     private var currentMinLat: Double? = null
     private var currentMaxLon: Double? = null
     private var currentMaxLat: Double? = null
+
+    private val _selectedVessel = mutableStateOf<AisVesselPosition?>(null)
+    val selectedVessel: State<AisVesselPosition?> = _selectedVessel
+
+    fun showVesselInfo(mmsi: String, name: String, speed: Double, course: Double, heading: Double, shipType: Int) {
+        _selectedVessel.value = AisVesselPosition(
+            msgtime = mmsi,  // MMSI is used as message time string
+            mmsi = mmsi.toLong(),  // Convert MMSI to Long
+            name = name,
+            speedOverGround = speed,
+            courseOverGround = course,
+            trueHeading = heading.toInt(),  // Convert heading to Int
+            navigationalStatus = 0,  // Default value
+            shipType = shipType,
+            longitude = 0.0,
+            latitude = 0.0,
+            rateOfTurn = 0.0  // Add missing required parameter
+        )
+    }
+
+    fun hideVesselInfo() {
+        _selectedVessel.value = null
+    }
 
     init {
         // Initialisere med alle fartøystyper valgt som standard

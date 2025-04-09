@@ -2,6 +2,10 @@ package no.uio.ifi.in2000.team46.map.layers
 
 import android.graphics.Color
 import android.util.Log
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.domain.model.ais.AisVesselPosition
@@ -61,6 +65,66 @@ fun AisLayer(
             }
         }
     }
+
+    LaunchedEffect(Unit) {
+        mapView.getMapAsync { maplibreMap ->
+            maplibreMap.addOnMapClickListener { point ->
+                val screenPoint = maplibreMap.projection.toScreenLocation(point)
+                val features = maplibreMap.queryRenderedFeatures(
+                    android.graphics.PointF(screenPoint.x, screenPoint.y),
+                    "ais-vessels-layer"
+                )
+
+                if (features.isNotEmpty()) {
+                    val vessel = features[0]
+                    val properties = vessel.properties()  // Use getProperties() instead of properties
+
+                    aisViewModel.showVesselInfo(
+                        mmsi = properties?.get("mmsi")?.asString ?: "",
+                        name = properties?.get("name")?.asString ?: "",
+                        speed = properties?.get("speedOverGround")?.asDouble ?: 0.0,
+                        course = properties?.get("courseOverGround")?.asDouble ?: 0.0,
+                        heading = properties?.get("trueHeading")?.asDouble ?: 0.0,
+                        shipType = properties?.get("shipType")?.asInt ?: 0
+                    )
+                    true
+                } else {
+                    false
+                }
+            }
+        }
+    }
+
+    if (aisViewModel.selectedVessel.value != null) {
+        VesselInfoDialog(
+            vessel = aisViewModel.selectedVessel.value!!,
+            onDismiss = { aisViewModel.hideVesselInfo() }
+        )
+    }
+}
+
+@Composable
+private fun VesselInfoDialog(
+    vessel: AisVesselPosition,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(vessel.name) },
+        text = {
+            Column {
+                Text("MMSI: ${vessel.mmsi}")
+                Text("Fart: ${vessel.speedOverGround} knop")
+                Text("Kurs: ${vessel.courseOverGround}°")
+                Text("Stevning: ${vessel.trueHeading}°")
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Lukk")
+            }
+        }
+    )
 }
 
 private fun updateViewportBounds(bounds: LatLngBounds, viewModel: AisViewModel) {
