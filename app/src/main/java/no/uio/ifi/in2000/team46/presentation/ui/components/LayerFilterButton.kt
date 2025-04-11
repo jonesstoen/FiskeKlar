@@ -17,13 +17,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.DirectionsBoatFilled
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.Houseboat
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,12 +33,14 @@ import no.uio.ifi.in2000.team46.domain.model.ais.VesselTypes
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
 import androidx.compose.ui.text.font.FontWeight
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.forbud.ForbudViewModel
 
 
 @Composable
 fun LayerFilterButton(
     aisViewModel: AisViewModel,
     metAlertsViewModel: MetAlertsViewModel,
+    forbudViewModel: ForbudViewModel,
     modifier: Modifier = Modifier
 ) {
     val TAG = "LayerFilterButton"
@@ -50,6 +49,7 @@ fun LayerFilterButton(
 
     val isAisLayerVisible by aisViewModel.isLayerVisible.collectAsState()
     val isMetAlertsLayerVisible by metAlertsViewModel.isLayerVisible.collectAsState()
+    val isForbudLayerVisible by forbudViewModel.isLayerVisible.collectAsState()
     val isLoading by aisViewModel.isLoading.collectAsState()
     val error by aisViewModel.error.collectAsState()
     val selectedVesselTypes by aisViewModel.selectedVesselTypes.collectAsState()
@@ -222,6 +222,26 @@ fun LayerFilterButton(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         "MetAlerts",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+// Forbudsområder-lag hovedrad
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                ) {
+                    Switch(
+                        modifier = Modifier.scale(0.7f),
+                        checked = isForbudLayerVisible,
+                        onCheckedChange = {
+                            forbudViewModel.toggleLayerVisibility()
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        "Fiskeforbudsoner",
                         modifier = Modifier.weight(1f)
                     )
                 }

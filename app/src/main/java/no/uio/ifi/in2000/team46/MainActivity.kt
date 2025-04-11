@@ -17,6 +17,7 @@ import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 import no.uio.ifi.in2000.team46.presentation.ui.screens.MapScreen
 import no.uio.ifi.in2000.team46.presentation.ui.theme.TEAM46Theme
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
@@ -36,6 +37,7 @@ class MainActivity : ComponentActivity() {
         MetAlertsViewModelFactory(MetAlertsRepository(RetrofitInstance.metAlertsApi))
     }
     private val aisViewModel: AisViewModel by viewModels() // Add AisViewModel
+    private val forbudViewModel: ForbudViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -59,8 +61,8 @@ class MainActivity : ComponentActivity() {
                         locationRepository = locationRepository,
                         mapViewModel = mapViewModel,
                         metAlertsViewModel = metAlertsViewModel,
-                        aisViewModel = aisViewModel
-
+                        aisViewModel = aisViewModel,
+                        forbudViewModel = forbudViewModel
                     )
                 }
             }

@@ -9,7 +9,7 @@ import retrofit2.http.Url
 interface ForbudDataSource {
 
     // Henter GeoJSON for områder med fiskeforbud (f.eks. torskeforbud)
-    @GET("/v1/geodata/forbiddenfishingzone")
+    @GET("v1/geodata/forbiddenfishingzone")
     suspend fun hentForbudGeoJson(
         @Header("Authorization") token: String
     ): Response<ResponseBody>

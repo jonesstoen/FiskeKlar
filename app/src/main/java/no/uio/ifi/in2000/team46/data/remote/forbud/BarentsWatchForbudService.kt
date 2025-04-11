@@ -36,9 +36,9 @@ class BarentsWatchForbudService {
             try {
                 val clientSecret = "Gruppe46in2000"
                 val formBody = FormBody.Builder()
-                    .add("client_id", "25693")
+                    .add("client_id", "marihrog@uio.no:in2000gruppe")
                     .add("client_secret", clientSecret)
-                    .add("scope", "geodata")
+                    .add("scope", "api")
                     .add("grant_type", "client_credentials")
                     .build()
 
@@ -49,6 +49,7 @@ class BarentsWatchForbudService {
 
                 val response = client.newCall(request).execute()
                 val responseBody = response.body?.string()
+                Log.d(TAG, "Response: $responseBody")
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
                     val json = JSONObject(responseBody)

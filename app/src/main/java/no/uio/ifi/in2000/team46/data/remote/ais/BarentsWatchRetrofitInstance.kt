@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 
 object BarentsWatchRetrofitInstance {
     private const val BASE_URL = "https://live.ais.barentswatch.no/"
-    private const val fiks_url = "https://www.barentswatch.no/bwapi"
+    private const val fiks_url = "https://www.barentswatch.no/bwapi/"
 
 
     private val client: OkHttpClient by lazy {
@@ -26,6 +26,7 @@ object BarentsWatchRetrofitInstance {
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
                     .addHeader("Content-Type", "application/json")
+                    .addHeader("Accept", "application/json") // Legg til Accept-header
                     .build()
                 chain.proceed(request)
             }

@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.layers.AisLayer
+import no.uio.ifi.in2000.team46.map.layers.ForbudLayer
 import no.uio.ifi.in2000.team46.map.layers.MetAlertsLayerComponent
 import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.presentation.ui.components.LayerFilterButton
@@ -45,6 +46,7 @@ import no.uio.ifi.in2000.team46.presentation.ui.components.metAlerts.MetAlertsBo
 import no.uio.ifi.in2000.team46.presentation.ui.components.zoomToLocationButton
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
 
@@ -67,7 +69,10 @@ fun MapScreen(
     locationRepository: LocationRepository,
     mapViewModel: MapViewModel,
     metAlertsViewModel: MetAlertsViewModel,
-    aisViewModel: AisViewModel = viewModel()
+    aisViewModel: AisViewModel = viewModel(),
+    forbudViewModel: ForbudViewModel
+
+
 ) {
     var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
     var isMapInitialized by remember { mutableStateOf(false) }
@@ -180,9 +185,11 @@ fun MapScreen(
             //adding the different layers to the map, along with the filter button
             MetAlertsLayerComponent(metAlertsViewModel, mapView)
             AisLayer(mapView, aisViewModel)
+            ForbudLayer(mapView, forbudViewModel)
             LayerFilterButton(
                 aisViewModel,
                 metAlertsViewModel,
+                forbudViewModel,
                 modifier = Modifier
                     .align(Alignment.BottomStart)
                     .padding(16.dp)
