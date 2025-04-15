@@ -63,6 +63,8 @@ import java.time.LocalTime
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.runtime.snapshotFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.utils.isPointInPolygon
 
@@ -138,6 +140,21 @@ fun MapScreen(
         } else {
             scaffoldState.bottomSheetState.hide()
         }
+    }
+    // observing the bottom sheet state with snapshotFlow
+    // if the sheet is closed manually (Hidden), the active alert in the ViewModel is reset.
+    LaunchedEffect(scaffoldState.bottomSheetState) {
+        snapshotFlow { scaffoldState.bottomSheetState.currentValue }
+            .distinctUntilChanged()
+            .collect { state ->
+                Log.d("MapScreen", "Bottom sheet state: $state")
+                // Hvis bottom sheet ikke er fullt ekspandert, antas det å være lukket.
+                // if the bottom sheet is not fully expanded, it is assumed to be closed.(if it is partially expanded, it is still considered closed)
+                if (state != SheetValue.Expanded) {
+                    metAlertsViewModel.selectFeature(null)
+                    Log.d("MapScreen", "Selected alert cleared because bottom sheet is not Expanded")
+                }
+            }
     }
 
     Scaffold(
