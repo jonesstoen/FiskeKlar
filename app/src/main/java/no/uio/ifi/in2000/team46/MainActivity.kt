@@ -5,9 +5,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import no.uio.ifi.in2000.team46.data.remote.metalerts.RetrofitInstance
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
@@ -17,6 +20,7 @@ import no.uio.ifi.in2000.team46.presentation.ui.screens.MapScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.FishingLogScreen
 import no.uio.ifi.in2000.team46.presentation.ui.theme.TEAM46Theme
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
@@ -33,6 +37,7 @@ class MainActivity : ComponentActivity() {
     private val mapViewModel: MapViewModel by viewModels {
         MapViewModelFactory(LocationRepository(this))
     }
+    private val forbudViewModel: ForbudViewModel by viewModels()
     private val metAlertsViewModel: MetAlertsViewModel by viewModels {
         MetAlertsViewModelFactory(MetAlertsRepository(RetrofitInstance.metAlertsApi))
     }
@@ -76,6 +81,7 @@ class MainActivity : ComponentActivity() {
                         mapViewModel = mapViewModel,
                         metAlertsViewModel = metAlertsViewModel,
                         aisViewModel = aisViewModel,
+                        forbudViewModel = forbudViewModel,
                         onNavigate = { route -> currentScreen = route }
                     )
                     "fishlog" -> FishingLogScreen(

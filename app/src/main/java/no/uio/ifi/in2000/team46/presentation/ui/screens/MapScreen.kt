@@ -1,31 +1,66 @@
 package no.uio.ifi.in2000.team46.presentation.ui.screens
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.delay
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.ui.Alignment
+import androidx.compose.material3.SheetValue
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberBottomSheetScaffoldState
+import androidx.compose.material3.rememberStandardBottomSheetState
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.layers.AisLayer
+import no.uio.ifi.in2000.team46.map.layers.ForbudLayer
 import no.uio.ifi.in2000.team46.map.layers.MetAlertsLayerComponent
 import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.presentation.ui.components.BottomNavBar
 import no.uio.ifi.in2000.team46.presentation.ui.components.LayerFilterButton
 import no.uio.ifi.in2000.team46.presentation.ui.components.SearchBox
 import no.uio.ifi.in2000.team46.presentation.ui.components.ZoomButton
+import no.uio.ifi.in2000.team46.presentation.ui.components.weather.WeatherDisplay
 import no.uio.ifi.in2000.team46.presentation.ui.components.metAlerts.MetAlertsBottomSheetContent
 import no.uio.ifi.in2000.team46.presentation.ui.components.weather.WeatherDisplay
 import no.uio.ifi.in2000.team46.presentation.ui.components.zoomToLocationButton
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.search.SearchViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
+import kotlinx.coroutines.delay
 import org.maplibre.android.maps.MapLibreMap
+import java.time.LocalDate
+import java.time.LocalTime
+
 
 /** MapScreen er UI-skjermen der kartet vises, og den kobler sammen ViewModel og den visuelle presentasjonen.
  * Dette er en Composable-skjerm som integrerer MapView (fra tradisjonell Android View) i et Jetpack Compose-miljø.
@@ -33,7 +68,7 @@ import org.maplibre.android.maps.MapLibreMap
  * Samarbeid med ViewModel: MapScreen henter et MapViewModel-objekt og kaller funksjonen initializeMap for å sette opp kartet når visningen lastes.
  * Dette knytter sammen UI og logikk slik at eventuelle endringer i kartets tilstand kan observeres og reflekteres i brukergrensesnittet.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(
     modifier: Modifier = Modifier,
@@ -41,6 +76,7 @@ fun MapScreen(
     locationRepository: LocationRepository,
     mapViewModel: MapViewModel,
     metAlertsViewModel: MetAlertsViewModel,
+    forbudViewModel: ForbudViewModel,
     aisViewModel: AisViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel(),
     onNavigate: (String) -> Unit
@@ -54,6 +90,10 @@ fun MapScreen(
     val searchResults by searchViewModel.searchResults.collectAsState()
     val isSearching by searchViewModel.isSearching.collectAsState()
     val isShowingHistory by searchViewModel.showingHistory.collectAsState()
+    var showFishingLog by remember { mutableStateOf(false) }
+    var showAddDialog by remember { mutableStateOf(false) }
+    val fishingLogViewModel: FishingLogViewModel = viewModel { FishingLogViewModel(FishLogRepository(context))}
+
 
 
 // Oppdater brukerens posisjon hvert 10. sekund
@@ -82,7 +122,10 @@ fun MapScreen(
             skipHiddenState = false
         )
     )
+    val scope = rememberCoroutineScope()
 
+
+    //opening the sheet when a warning is selected
     LaunchedEffect(selectedMetAlert) {
         if (selectedMetAlert != null) {
             scaffoldState.bottomSheetState.expand()
@@ -130,6 +173,7 @@ fun MapScreen(
                 // Layers
                 MetAlertsLayerComponent(metAlertsViewModel, mapView)
                 AisLayer(mapView, aisViewModel)
+                ForbudLayer(mapView, forbudViewModel)
 
                 Box(
                     modifier = Modifier
@@ -193,7 +237,8 @@ fun MapScreen(
                     // Layer Filter Button
                     LayerFilterButton(
                         aisViewModel,
-                        metAlertsViewModel
+                        metAlertsViewModel,
+                        forbudViewModel
                     )
 
                     // Zoom Controls
