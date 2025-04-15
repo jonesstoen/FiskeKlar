@@ -60,6 +60,11 @@ import kotlinx.coroutines.delay
 import org.maplibre.android.maps.MapLibreMap
 import java.time.LocalDate
 import java.time.LocalTime
+import android.util.Log
+import android.widget.Toast
+import androidx.compose.material3.SnackbarResult
+import kotlinx.coroutines.launch
+import no.uio.ifi.in2000.team46.utils.isPointInPolygon
 
 
 /** MapScreen er UI-skjermen der kartet vises, og den kobler sammen ViewModel og den visuelle presentasjonen.
@@ -102,7 +107,7 @@ fun MapScreen(
             if (granted) {
                 mapViewModel.fetchUserLocation(context)
             }
-            delay(10000) // 10 sekunder
+            delay(5000) // 5 sekunder
         }
     }
 
@@ -122,6 +127,7 @@ fun MapScreen(
             skipHiddenState = false
         )
     )
+    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
 
@@ -135,6 +141,7 @@ fun MapScreen(
     }
 
     Scaffold(
+        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) },
         bottomBar = {
             BottomNavBar(
                 currentRoute = "map",
@@ -268,6 +275,42 @@ fun MapScreen(
                                 mapViewModel.zoomToUserLocation(map, context)
                             } else {
                                 mapViewModel.zoomToLocation(map, 63.4449834, 10.9124688, 15.0)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        LaunchedEffect(mapViewModel.userLocation, metAlertsViewModel.metAlertsResponse) {
+            delay(5000) // Delay for å sikre at lokasjon er hentet
+            val currentLocation = mapViewModel.userLocation.value
+            val alertsResponse = metAlertsViewModel.metAlertsResponse.value
+            if (currentLocation == null || alertsResponse == null) {
+                return@LaunchedEffect
+            }
+            alertsResponse.features.forEach { feature ->
+                if (feature.geometry.type.equals("Polygon", ignoreCase = true)) {
+                    val polygon: List<Pair<Double, Double>> = run {
+                        val coordinatesRaw = feature.geometry.coordinates as? List<*>
+                        val firstRing = coordinatesRaw?.firstOrNull() as? List<*>
+                        firstRing?.mapNotNull { item ->
+                            val coord = item as? List<*>
+                            val lon = coord?.getOrNull(0) as? Double
+                            val lat = coord?.getOrNull(1) as? Double
+                            if (lon != null && lat != null) Pair(lon, lat) else null
+                        } ?: emptyList()
+                    }
+                    val inside = isPointInPolygon(currentLocation.latitude, currentLocation.longitude, polygon)
+                    if (inside) {
+                        val alertType = feature.properties.eventAwarenessName
+                        val updatedAlertType = alertType.replace("fare", "").trim()
+                        scope.launch {
+                            val result = snackbarHostState.showSnackbar(
+                                message = "ADVARSEL: Du er i et område med utsatt $updatedAlertType farevarsel",
+                                actionLabel = "Vis mer "
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                metAlertsViewModel.selectFeature(feature.properties.id)
                             }
                         }
                     }
