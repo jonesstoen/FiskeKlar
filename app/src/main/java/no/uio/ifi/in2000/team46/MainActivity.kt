@@ -5,22 +5,23 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import no.uio.ifi.in2000.team46.data.remote.metalerts.RetrofitInstance
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
+import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
+import no.uio.ifi.in2000.team46.presentation.ui.screens.HomeScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.MapScreen
+import no.uio.ifi.in2000.team46.presentation.ui.screens.FishingLogScreen
 import no.uio.ifi.in2000.team46.presentation.ui.theme.TEAM46Theme
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
 import no.uio.ifi.in2000.team46.utils.permissions.LocationPermissionManager
 import org.maplibre.android.MapLibre
 import org.maplibre.android.WellKnownTileServer
@@ -35,7 +36,15 @@ class MainActivity : ComponentActivity() {
     private val metAlertsViewModel: MetAlertsViewModel by viewModels {
         MetAlertsViewModelFactory(MetAlertsRepository(RetrofitInstance.metAlertsApi))
     }
-    private val aisViewModel: AisViewModel by viewModels() // Add AisViewModel
+    private val aisViewModel: AisViewModel by viewModels()
+    private val fishLogViewModel: FishingLogViewModel by viewModels {
+        object : androidx.lifecycle.ViewModelProvider.Factory {
+            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
+                return FishingLogViewModel(FishLogRepository(this@MainActivity)) as T
+            }
+        }
+    }
+    private var currentScreen by mutableStateOf<String>("home")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,16 +61,35 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TEAM46Theme {
-                Scaffold { contentPadding ->
-                    MapScreen(
-                        modifier = Modifier.padding(contentPadding),
-                        locationGranted,
+                when (currentScreen) {
+                    "home" -> HomeScreen(
+                        onNavigateToMap = { currentScreen = "map" },
+                        onNavigateToWeather = { /* TODO: Implementer værskjerm */ },
+                        onNavigateToFishLog = { currentScreen = "fishlog" },
+                        onNavigateToFavorites = { /* TODO: Implementer favoritter */ },
+                        onNavigateToProfile = { currentScreen = "profile" },
+                        onNavigateToAlerts = { currentScreen = "alerts" }
+                    )
+                    "map" -> MapScreen(
+                        granted = locationGranted,
                         locationRepository = locationRepository,
                         mapViewModel = mapViewModel,
                         metAlertsViewModel = metAlertsViewModel,
-                        aisViewModel = aisViewModel
-
+                        aisViewModel = aisViewModel,
+                        onNavigate = { route -> currentScreen = route }
                     )
+                    "fishlog" -> FishingLogScreen(
+                        viewModel = fishLogViewModel,
+                        onNavigate = { route -> currentScreen = route }
+                    )
+                    "profile" -> {
+                        // TODO: Implementer profilskjerm
+                        currentScreen = "home"
+                    }
+                    "alerts" -> {
+                        // TODO: Implementer farevarsler
+                        currentScreen = "home"
+                    }
                 }
             }
         }

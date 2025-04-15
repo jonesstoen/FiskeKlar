@@ -42,6 +42,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import no.uio.ifi.in2000.team46.domain.model.fishlog.FishingData
+import no.uio.ifi.in2000.team46.presentation.ui.components.BottomNavBar
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
 import java.time.LocalDate
 import java.time.LocalTime
@@ -49,7 +50,11 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FishingLogScreen(viewModel: FishingLogViewModel, onNavigateBack: () -> Unit, modifier: Modifier = Modifier) {
+fun FishingLogScreen(
+    viewModel: FishingLogViewModel,
+    onNavigate: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var showAddDialog by remember { mutableStateOf(false) }
     var location by remember { mutableStateOf("") }
     var area by remember { mutableStateOf("") }
@@ -59,18 +64,18 @@ fun FishingLogScreen(viewModel: FishingLogViewModel, onNavigateBack: () -> Unit,
 
     val entries by viewModel.entries.collectAsState()
 
-    Scaffold (
+    Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Fiskelogg") },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Gå tilbake")
-                    }
-                }
+                title = { Text("Fiskelogg") }
             )
         },
-
+        bottomBar = {
+            BottomNavBar(
+                currentRoute = "fishlog",
+                onNavigate = onNavigate
+            )
+        },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { showAddDialog = true },
@@ -88,7 +93,7 @@ fun FishingLogScreen(viewModel: FishingLogViewModel, onNavigateBack: () -> Unit,
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Column (
+                Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.padding(16.dp)
                 ) {
@@ -121,78 +126,78 @@ fun FishingLogScreen(viewModel: FishingLogViewModel, onNavigateBack: () -> Unit,
                 }
             }
         }
-    }
 
-    if (showAddDialog) {
-        AlertDialog(
-            onDismissRequest = {showAddDialog = false},
-            title = { Text("Ny fangst")},
-            text = {
-                Column {
-                    OutlinedTextField(
-                        value = location,
-                        onValueChange = { location = it },
-                        label = { Text("Sted") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = area,
-                        onValueChange = { area = it },
-                        label = { Text("Område") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = fisketype,
-                        onValueChange = { fisketype = it },
-                        label = { Text("Fisketype") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = vekt,
-                        onValueChange = { vekt = it },
-                        label = { Text("Vekt (kg)") },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = notes,
-                        onValueChange = { notes = it },
-                        label = { Text("Notater (vær, agn, etc.)") },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 3
-                    )
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.addEntry(
-                            LocalDate.now(),
-                            LocalTime.now(),
-                            location,
-                            area,
-                            "Fisketype: $fisketype\nVekt: $vekt kg\nNotater: $notes"
+        if (showAddDialog) {
+            AlertDialog(
+                onDismissRequest = { showAddDialog = false },
+                title = { Text("Ny fangst") },
+                text = {
+                    Column {
+                        OutlinedTextField(
+                            value = location,
+                            onValueChange = { location = it },
+                            label = { Text("Sted") },
+                            modifier = Modifier.fillMaxWidth()
                         )
-                        showAddDialog = false
-                        location = ""
-                        area = ""
-                        fisketype = ""
-                        vekt = ""
-                        notes = ""
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = area,
+                            onValueChange = { area = it },
+                            label = { Text("Område") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = fisketype,
+                            onValueChange = { fisketype = it },
+                            label = { Text("Fisketype") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = vekt,
+                            onValueChange = { vekt = it },
+                            label = { Text("Vekt (kg)") },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedTextField(
+                            value = notes,
+                            onValueChange = { notes = it },
+                            label = { Text("Notater (vær, agn, etc.)") },
+                            modifier = Modifier.fillMaxWidth(),
+                            minLines = 3
+                        )
                     }
-                ) {
-                    Text("Lagre")
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            viewModel.addEntry(
+                                LocalDate.now(),
+                                LocalTime.now(),
+                                location,
+                                area,
+                                "Fisketype: $fisketype\nVekt: $vekt kg\nNotater: $notes"
+                            )
+                            showAddDialog = false
+                            location = ""
+                            area = ""
+                            fisketype = ""
+                            vekt = ""
+                            notes = ""
+                        }
+                    ) {
+                        Text("Lagre")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showAddDialog = false }) {
+                        Text("Avbryt")
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAddDialog = false }) {
-                    Text("Avbryt")
-                }
-            }
-        )
+            )
+        }
     }
 }
 

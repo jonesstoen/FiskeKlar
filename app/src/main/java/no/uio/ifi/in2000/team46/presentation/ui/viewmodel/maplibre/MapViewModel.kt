@@ -128,6 +128,16 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
             }
         }
     }
+
+    fun zoomIn(map: MapLibreMap) {
+        val currentZoom = map.cameraPosition.zoom
+        map.animateCamera(CameraUpdateFactory.zoomTo(currentZoom + 1))
+    }
+
+    fun zoomOut(map: MapLibreMap) {
+        val currentZoom = map.cameraPosition.zoom
+        map.animateCamera(CameraUpdateFactory.zoomTo(currentZoom - 1))
+    }
 }
 
 
