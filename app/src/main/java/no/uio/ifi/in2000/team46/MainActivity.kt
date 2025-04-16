@@ -12,10 +12,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
 import no.uio.ifi.in2000.team46.data.remote.metalerts.RetrofitInstance
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
+import no.uio.ifi.in2000.team46.data.repository.UserRepository
 import no.uio.ifi.in2000.team46.presentation.ui.navigation.AppNavHost
 import no.uio.ifi.in2000.team46.presentation.ui.screens.HomeScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.MapScreen
@@ -28,6 +30,8 @@ import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModelF
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModelFactory
 import no.uio.ifi.in2000.team46.utils.permissions.LocationPermissionManager
 import org.maplibre.android.MapLibre
 import org.maplibre.android.WellKnownTileServer
@@ -50,6 +54,9 @@ class MainActivity : ComponentActivity() {
                 return FishingLogViewModel(FishLogRepository(this@MainActivity)) as T
             }
         }
+    }
+    val profileViewModel: ProfileViewModel by viewModels {
+        ProfileViewModelFactory(UserRepository(AppDatabase.getDatabase(this).userDao()))
     }
     private var currentScreen by mutableStateOf<String>("home")
 
@@ -76,7 +83,8 @@ class MainActivity : ComponentActivity() {
                     mapViewModel = mapViewModel,
                     metAlertsViewModel = metAlertsViewModel,
                     aisViewModel = aisViewModel,
-                    forbudViewModel = forbudViewModel
+                    forbudViewModel = forbudViewModel,
+                    profileViewModel = profileViewModel
                 )
             }
         }

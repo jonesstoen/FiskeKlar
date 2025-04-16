@@ -2,6 +2,8 @@ package no.uio.ifi.in2000.team46.presentation.ui.navigation
 
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -20,7 +22,12 @@ import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModelF
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
+import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
+import no.uio.ifi.in2000.team46.data.repository.UserRepository
 import no.uio.ifi.in2000.team46.presentation.ui.screens.FishingLogDetailScreen
+import no.uio.ifi.in2000.team46.presentation.ui.screens.ProfileScreen
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModelFactory
 
 @Composable
 fun AppNavHost(
@@ -32,11 +39,14 @@ fun AppNavHost(
     mapViewModel: MapViewModel,
     metAlertsViewModel: MetAlertsViewModel,
     aisViewModel: AisViewModel,
-    forbudViewModel: ForbudViewModel
+    forbudViewModel: ForbudViewModel,
+    profileViewModel: ProfileViewModel
+
 ) {
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
             HomeScreen(
+                viewModel = profileViewModel,
                 onNavigateToMap = { navController.navigate("map") },
                 onNavigateToWeather = { navController.navigate("weather") },
                 onNavigateToFishLog = { navController.navigate("fishlog") },
@@ -74,13 +84,6 @@ fun AppNavHost(
             )
         }
 
-        // Du kan legge til flere destinasjoner, f.eks. for profil og alerts:
-        composable("profile") {
-            // Implementer profilskjermen eller naviger tilbake til home
-            // Eksempel:
-            // ProfileScreen(onBack = { navController.navigate("home") })
-            navController.navigate("home")
-        }
         composable("alerts") {
             // Implementer alerts-skjermen
             navController.navigate("home")
@@ -93,5 +96,19 @@ fun AppNavHost(
             // Implementer favorittskjermen
             navController.navigate("home")
         }
+        composable("profile") {
+            val context = LocalContext.current
+            val db = remember { AppDatabase.getDatabase(context) }
+            val userRepo = remember { UserRepository(db.userDao()) }
+            val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(userRepo))
+
+            ProfileScreen(
+                viewModel = profileViewModel,
+                onNavigateToHome = { navController.navigate("home") },
+                onNavigateToAlerts = { navController.navigate("alerts") }
+
+            )
+        }
+
     }
 }

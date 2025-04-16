@@ -6,6 +6,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import no.uio.ifi.in2000.team46.R
 import no.uio.ifi.in2000.team46.presentation.ui.components.BottomNavBar
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModel
 import java.time.LocalTime
 
 // Fargepalett
@@ -24,12 +27,13 @@ private val Navy = Color(0xFF1B4965)
 private val LightBlue = Color(0xFF5FA8D3)
 private val Sage = Color(0xFF9DC88D)
 private val LightSage = Color(0xFFBEE9E8)
-private val Background = Color(0xFFCAE9FF)
+val Background = Color(0xFFCAE9FF)
 private val CardGreen = Color(0xFFB5C9B7)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    viewModel: ProfileViewModel,
     onNavigateToMap: () -> Unit,
     onNavigateToWeather: () -> Unit,
     onNavigateToFishLog: () -> Unit,
@@ -37,13 +41,17 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToAlerts: () -> Unit
 ) {
-    val greeting = remember {
-        when (LocalTime.now().hour) {
+    val user by viewModel.user.collectAsState()
+
+    val greeting = remember(user) {
+        val name = user?.name?.split(" ")?.firstOrNull() ?: ""
+        val timeGreeting = when (LocalTime.now().hour) {
             in 5..10 -> "God morgen"
             in 11..14 -> "God formiddag"
             in 15..17 -> "God ettermiddag"
             else -> "God kveld"
         }
+        if (name.isNotBlank()) "$timeGreeting, $name!" else "$timeGreeting!"
     }
 
     Scaffold(

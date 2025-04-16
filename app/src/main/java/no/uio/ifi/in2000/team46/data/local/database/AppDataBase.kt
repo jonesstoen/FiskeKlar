@@ -6,10 +6,13 @@ import androidx.room.RoomDatabase
 import no.uio.ifi.in2000.team46.data.local.database.dao.FishingLogDao
 import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
 import android.content.Context
+import no.uio.ifi.in2000.team46.data.local.database.dao.UserDao
+import no.uio.ifi.in2000.team46.data.local.database.entities.User
 
-@Database(entities = [FishingLog::class], version = 1)
+@Database(entities = [FishingLog::class, User::class], version = 3)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun fishingLogDao(): FishingLogDao
+    abstract fun userDao(): UserDao
 
     companion object {
         @Volatile
@@ -21,7 +24,9 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "app_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
