@@ -2,45 +2,45 @@ package no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
-import no.uio.ifi.in2000.team46.domain.model.fishlog.FishingData
+import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
 import java.time.LocalDate
 import java.time.LocalTime
 
-class FishingLogViewModel (private val repository: FishLogRepository) : ViewModel() {
-    private val _entries = MutableStateFlow<List<FishingData>>(emptyList())
-    val entries: StateFlow<List<FishingData>> = _entries.asStateFlow()
+class FishingLogViewModel(private val repository: FishLogRepository) : ViewModel() {
 
-    init {
-        viewModelScope.launch {
-            repository.getAllEntries().collect { entries ->
-                _entries.value = entries
-            }
-        }
-    }
+    // Eksempel på at vi henter data fra repository (Flow konvertert til StateFlow)
+    val entries = repository.getAllEntries() // Forutsetter at du har en funksjon getAllEntries() i repositoryen
 
-    fun addEntry(date: LocalDate, time: LocalTime, location: String, area: String, notes: String?) {
+    fun addEntry(
+        date: LocalDate,
+        time: LocalTime,
+        location: String,
+        fishType: String,
+        weight: Double,
+        notes: String,
+        imageUri: String?
+    ) {
         viewModelScope.launch {
-            val entry = FishingData(
-                id = System.currentTimeMillis(),
-                date = date,
-                time = time,
+            val entry = FishingLog(
+                date = date.toString(),
+                time = time.toString(),
                 location = location,
-                area = area,
-                notes = notes
+                fishType = fishType,
+                weight = weight,
+                notes = notes,
+                imageUri = imageUri
             )
-
             repository.addEntry(entry)
         }
     }
 
-    fun removeEntry(id : Long) {
+    fun removeEntry(entry: FishingLog) {
         viewModelScope.launch {
-            repository.removeEntry(id)
+            repository.removeEntry(entry)
         }
     }
 }

@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -41,12 +40,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import no.uio.ifi.in2000.team46.domain.model.fishlog.FishingData
+import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
 import no.uio.ifi.in2000.team46.presentation.ui.components.BottomNavBar
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,11 +57,11 @@ fun FishingLogScreen(
     var showAddDialog by remember { mutableStateOf(false) }
     var location by remember { mutableStateOf("") }
     var area by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
     var fisketype by remember { mutableStateOf("") }
     var vekt by remember { mutableStateOf("") }
+    var notes by remember { mutableStateOf("") }
 
-    val entries by viewModel.entries.collectAsState()
+    val entries by viewModel.entries.collectAsState(initial = emptyList())
 
     Scaffold(
         topBar = {
@@ -120,7 +119,7 @@ fun FishingLogScreen(
                 items(entries.sortedByDescending { it.date }) { entry ->
                     FishingEntryCard(
                         entry = entry,
-                        onDelete = { viewModel.removeEntry(entry.id) }
+                        onDelete = { viewModel.removeEntry(entry) }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -173,13 +172,19 @@ fun FishingLogScreen(
                 confirmButton = {
                     Button(
                         onClick = {
+                            val weightDouble = vekt.toDoubleOrNull() ?: 0.0
+                            // Kombiner område og notater til ett samlet felt dersom ønskelig
+                            val combinedNotes = "Område: $area\nNotater: $notes"
                             viewModel.addEntry(
-                                LocalDate.now(),
-                                LocalTime.now(),
-                                location,
-                                area,
-                                "Fisketype: $fisketype\nVekt: $vekt kg\nNotater: $notes"
+                                date = LocalDate.now(),
+                                time = LocalTime.now(),
+                                location = location,
+                                fishType = fisketype,
+                                weight = weightDouble,
+                                notes = combinedNotes,
+                                imageUri = null // Håndter bildeopplasting her om nødvendig
                             )
+                            // Tilbakestill dialogfeltene
                             showAddDialog = false
                             location = ""
                             area = ""
@@ -202,7 +207,7 @@ fun FishingLogScreen(
 }
 
 @Composable
-fun FishingEntryCard( entry : FishingData, onDelete: () -> Unit) {
+fun FishingEntryCard(entry: FishingLog, onDelete: () -> Unit) {
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -218,12 +223,13 @@ fun FishingEntryCard( entry : FishingData, onDelete: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
+                // Siden entry.date og entry.time nå er Strings, viser vi dem direkte.
                 Text(
-                    text = entry.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy")),
+                    text = entry.date,
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
-                    text = entry.time.format(DateTimeFormatter.ofPattern("HH:mm")),
+                    text = entry.time,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
@@ -236,8 +242,13 @@ fun FishingEntryCard( entry : FishingData, onDelete: () -> Unit) {
             "Sted: ${entry.location}",
             style = MaterialTheme.typography.bodyLarge
         )
+        // Legg gjerne til flere felter, f.eks. fisketype og vekt
         Text(
-            "Område: ${entry.area}",
+            "Fisketype: ${entry.fishType}",
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Text(
+            "Vekt: ${entry.weight} kg",
             style = MaterialTheme.typography.bodyLarge
         )
         entry.notes?.let { notes ->
@@ -249,3 +260,5 @@ fun FishingEntryCard( entry : FishingData, onDelete: () -> Unit) {
         }
     }
 }
+
+
