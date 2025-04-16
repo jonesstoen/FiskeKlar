@@ -1,6 +1,7 @@
 package no.uio.ifi.in2000.team46.presentation.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
+import no.uio.ifi.in2000.team46.presentation.ui.components.AddFishingEntryDialog
 import no.uio.ifi.in2000.team46.presentation.ui.components.BottomNavBar
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
 import java.time.LocalDate
@@ -119,7 +121,8 @@ fun FishingLogScreen(
                 items(entries.sortedByDescending { it.date }) { entry ->
                     FishingEntryCard(
                         entry = entry,
-                        onDelete = { viewModel.removeEntry(entry) }
+                        onDelete = { viewModel.removeEntry(entry) },
+                        onClick = { onNavigate("fishingLogDetail/${entry.id}") }
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                 }
@@ -127,79 +130,24 @@ fun FishingLogScreen(
         }
 
         if (showAddDialog) {
-            AlertDialog(
-                onDismissRequest = { showAddDialog = false },
-                title = { Text("Ny fangst") },
-                text = {
-                    Column {
-                        OutlinedTextField(
-                            value = location,
-                            onValueChange = { location = it },
-                            label = { Text("Sted") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = area,
-                            onValueChange = { area = it },
-                            label = { Text("Område") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = fisketype,
-                            onValueChange = { fisketype = it },
-                            label = { Text("Fisketype") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = vekt,
-                            onValueChange = { vekt = it },
-                            label = { Text("Vekt (kg)") },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = notes,
-                            onValueChange = { notes = it },
-                            label = { Text("Notater (vær, agn, etc.)") },
-                            modifier = Modifier.fillMaxWidth(),
-                            minLines = 3
+            AddFishingEntryDialog(
+                onDismiss = { showAddDialog = false },
+                onConfirm = { date, location, fishType, weight, notes, imageUri ->
+                    // Kall din ViewModel-metode for å lagre fangsten.
+                    // Her kan du for eksempel sende LocalTime.now() for tidspunktet om du ønsker det.
+                    if (notes != null) {
+                        viewModel.addEntry(
+                            date = date,
+                            time = LocalTime.now(),
+                            location = location,
+                            fishType = fishType,
+                            weight = weight,
+                            notes = notes,
+                            imageUri = imageUri
                         )
                     }
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            val weightDouble = vekt.toDoubleOrNull() ?: 0.0
-                            // Kombiner område og notater til ett samlet felt dersom ønskelig
-                            val combinedNotes = "Område: $area\nNotater: $notes"
-                            viewModel.addEntry(
-                                date = LocalDate.now(),
-                                time = LocalTime.now(),
-                                location = location,
-                                fishType = fisketype,
-                                weight = weightDouble,
-                                notes = combinedNotes,
-                                imageUri = null // Håndter bildeopplasting her om nødvendig
-                            )
-                            // Tilbakestill dialogfeltene
-                            showAddDialog = false
-                            location = ""
-                            area = ""
-                            fisketype = ""
-                            vekt = ""
-                            notes = ""
-                        }
-                    ) {
-                        Text("Lagre")
-                    }
-                },
-                dismissButton = {
-                    TextButton(onClick = { showAddDialog = false }) {
-                        Text("Avbryt")
-                    }
+                    // Lukker dialogen etter bekreftelse
+                    showAddDialog = false
                 }
             )
         }
@@ -207,7 +155,11 @@ fun FishingLogScreen(
 }
 
 @Composable
-fun FishingEntryCard(entry: FishingLog, onDelete: () -> Unit) {
+fun FishingEntryCard(
+    entry: FishingLog,
+    onDelete: () -> Unit,
+    onClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .padding(16.dp)
@@ -215,6 +167,7 @@ fun FishingEntryCard(entry: FishingLog, onDelete: () -> Unit) {
             .shadow(4.dp, RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable { onClick() }
             .padding(16.dp)
     ) {
         Row(

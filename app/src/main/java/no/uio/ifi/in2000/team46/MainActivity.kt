@@ -11,10 +11,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team46.data.remote.metalerts.RetrofitInstance
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
+import no.uio.ifi.in2000.team46.presentation.ui.navigation.AppNavHost
 import no.uio.ifi.in2000.team46.presentation.ui.screens.HomeScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.MapScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.FishingLogScreen
@@ -66,37 +68,16 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TEAM46Theme {
-                when (currentScreen) {
-                    "home" -> HomeScreen(
-                        onNavigateToMap = { currentScreen = "map" },
-                        onNavigateToWeather = { /* TODO: Implementer værskjerm */ },
-                        onNavigateToFishLog = { currentScreen = "fishlog" },
-                        onNavigateToFavorites = { /* TODO: Implementer favoritter */ },
-                        onNavigateToProfile = { currentScreen = "profile" },
-                        onNavigateToAlerts = { currentScreen = "alerts" }
-                    )
-                    "map" -> MapScreen(
-                        granted = locationGranted,
-                        locationRepository = locationRepository,
-                        mapViewModel = mapViewModel,
-                        metAlertsViewModel = metAlertsViewModel,
-                        aisViewModel = aisViewModel,
-                        forbudViewModel = forbudViewModel,
-                        onNavigate = { route -> currentScreen = route }
-                    )
-                    "fishlog" -> FishingLogScreen(
-                        viewModel = fishLogViewModel,
-                        onNavigate = { route -> currentScreen = route }
-                    )
-                    "profile" -> {
-                        // TODO: Implementer profilskjerm
-                        currentScreen = "home"
-                    }
-                    "alerts" -> {
-                        // TODO: Implementer farevarsler
-                        currentScreen = "home"
-                    }
-                }
+                val navController = rememberNavController()
+                AppNavHost(
+                    navController = navController,
+                    fishLogViewModel = fishLogViewModel,
+                    locationRepository = locationRepository,
+                    mapViewModel = mapViewModel,
+                    metAlertsViewModel = metAlertsViewModel,
+                    aisViewModel = aisViewModel,
+                    forbudViewModel = forbudViewModel
+                )
             }
         }
     }
