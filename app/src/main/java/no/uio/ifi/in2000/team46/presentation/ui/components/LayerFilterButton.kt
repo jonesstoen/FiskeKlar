@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -54,22 +55,47 @@ fun LayerFilterButton(
     val error by aisViewModel.error.collectAsState()
     val selectedVesselTypes by aisViewModel.selectedVesselTypes.collectAsState()
 
-    // Animert rotasjon for pilen
+    // Animasjon for pilrotasjon
+    //animation for arrowrotation
     val vesselTypesArrowRotation by animateFloatAsState(if (vesselTypesExpanded) 180f else 0f)
 
-    Box(modifier = modifier) {
-        // Filter-knapp
-        FloatingActionButton(
-            onClick = {
-                expanded = !expanded
-            },
-            modifier =
-            Modifier.align(Alignment.BottomStart)
-        ) {
-            Icon(imageVector = Icons.Default.Layers , contentDescription = "Filter Layers")
+    // wrapping the content in a box
+    Box(modifier = modifier.fillMaxSize()) {
+
+        // when expanded, show a transparent overlay to cover the rest of the screen, in order
+        // to close the filter panel when clicking outside of it
+        if (expanded) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    // Bruk en gjennomsiktig bakgrunn for å sikre at området tar opp plassen, men er "usynlig"
+                    .background(Color.Transparent)
+                    // clickable() for å lukke panelet ved trykk utenfor
+                    .clickable(
+                        // Bruker en tom interactionSource og ingen indikasjon slik at overlayet ikke viser visuell feedback
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    ) {
+                        expanded = false
+                    }
+            )
         }
 
-        // Ekspandert filter-panel
+        // FloatingActionButton has a higher zIndex than the overlay, so it is clickable
+        FloatingActionButton(
+            onClick = {
+                // Toggle expanded state
+                expanded = !expanded
+            },
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .zIndex(2f)
+        ) {
+            Icon(imageVector = Icons.Default.Layers, contentDescription = "Filter Layers")
+        }
+
+
+        // Expanded filter panel with higher zIndex so it is interactive and does not receive "close" clicks from the overlay
         AnimatedVisibility(
             visible = expanded,
             enter = fadeIn() + expandVertically(),
@@ -77,7 +103,7 @@ fun LayerFilterButton(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(bottom = 70.dp, start = 8.dp)
-                .zIndex(1f)
+                .zIndex(3f)
         ) {
             Column(
                 modifier = Modifier
@@ -86,17 +112,17 @@ fun LayerFilterButton(
                     .padding(16.dp)
                     .width(300.dp)
             ) {
-                Row () {
+                Row {
                     Icon(
-                        imageVector = Icons.Default.Layers ,
+                        imageVector = Icons.Default.Layers,
                         contentDescription = "Filter Layers",
-                        modifier = Modifier.padding(end=8.dp)
+                        modifier = Modifier.padding(end = 8.dp)
                     )
-                    Text("Kartlag", modifier = Modifier.padding(bottom = 8.dp),fontWeight = FontWeight.Bold)
+                    Text("Kartlag", fontWeight = FontWeight.Bold)
                 }
 
 
-                // AIS-lag hovedrad med pil for ekspandering
+                // ais main row with arrow for expanding
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -124,7 +150,8 @@ fun LayerFilterButton(
                             .clickable { vesselTypesExpanded = !vesselTypesExpanded }
                     )
 
-                    // Pil for ekspandering av fartøytyper
+
+                    // Arrow for expanding vessel types
                     Icon(
                         imageVector = Icons.Default.ArrowDropDown,
                         contentDescription = "Expand vessel types",
@@ -143,15 +170,19 @@ fun LayerFilterButton(
                             )
                         } else {
                             IconButton(onClick = { aisViewModel.refreshVesselPositions() }) {
-                                Icon(imageVector = Icons.Default.Refresh, contentDescription = "Oppdater")
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = "Oppdater"
+                                )
                             }
                         }
                     }
                 }
 
-                // Vis fartøytype-filtre basert på ekspanderingsstatus, uavhengig av om AIS-laget er aktivert
+
+                // Shows vessel type filters if AIS layer is expanded
                 AnimatedVisibility(visible = vesselTypesExpanded) {
-                    HorizontalDivider(modifier = Modifier.padding(bottom=8.dp))
+                    HorizontalDivider(modifier = Modifier.padding(bottom = 8.dp))
 
                     LazyColumn(
                         modifier = Modifier
@@ -185,7 +216,7 @@ fun LayerFilterButton(
                                     onCheckedChange = { isChecked ->
                                         if (!isAisLayerVisible) {
                                             aisViewModel.activateLayer()
-                                            aisViewModel.clearSelectedVesselTypes() // Clear all first
+                                            aisViewModel.clearSelectedVesselTypes() // clears all other types first
                                         }
                                         aisViewModel.toggleVesselType(type)
                                     }
@@ -194,7 +225,8 @@ fun LayerFilterButton(
                         }
                     }
                 }
-                // MetAlerts-lag hovedrad
+
+                // MetAlerts-layer main row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -215,7 +247,8 @@ fun LayerFilterButton(
                         modifier = Modifier.weight(1f)
                     )
                 }
-// Forbudsområder-lag hovedrad
+
+                // forbud-layer main row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
@@ -236,7 +269,7 @@ fun LayerFilterButton(
                     )
                 }
 
-                // Vis eventuelle feilmeldinger
+                // error messages
                 error?.let { errorMessage ->
                     Text(
                         text = errorMessage,
