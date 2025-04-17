@@ -85,9 +85,7 @@ fun MapScreen(
     var showAddDialog by remember { mutableStateOf(false) }
 
 
-
-
-// Oppdater brukerens posisjon hvert 10. sekund
+    //updating the user's position every 5 seconds
     LaunchedEffect(Unit) {
         while (true) {
             if (granted) {
@@ -132,7 +130,6 @@ fun MapScreen(
             .distinctUntilChanged()
             .collect { state ->
                 Log.d("MapScreen", "Bottom sheet state: $state")
-                // Hvis bottom sheet ikke er fullt ekspandert, antas det å være lukket.
                 // if the bottom sheet is not fully expanded, it is assumed to be closed.(if it is partially expanded, it is still considered closed)
                 if (state != SheetValue.Expanded) {
                     metAlertsViewModel.selectFeature(null)
@@ -186,9 +183,9 @@ fun MapScreen(
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopStart)
-                        .padding(start = 16.dp, end = 100.dp) // Gir rom til WeatherDisplay
+                        .padding(start = 16.dp, end = 100.dp)
                 ) {
-                    // Search Box - Top Left
+                    // Search Box Top Left
                     mapLibreMap?.let { map ->
                         val userLocation by mapViewModel.userLocation.collectAsState()
                         SearchBox(
@@ -222,7 +219,7 @@ fun MapScreen(
                     }
                 }
 
-                // Weather Display - Top Right
+                // Weather Display Top Right
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
@@ -264,7 +261,7 @@ fun MapScreen(
                     )
                 }
 
-                // Location Button - Bottom Right
+                // Location Button, Bottom Right
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
@@ -283,7 +280,7 @@ fun MapScreen(
             }
         }
         LaunchedEffect(mapViewModel.userLocation, metAlertsViewModel.metAlertsResponse) {
-            delay(5000) // Delay for å sikre at lokasjon er hentet
+            delay(5000) // delay to ensure the map is loaded
             val currentLocation = mapViewModel.userLocation.value
             val alertsResponse = metAlertsViewModel.metAlertsResponse.value
             if (currentLocation == null || alertsResponse == null) {

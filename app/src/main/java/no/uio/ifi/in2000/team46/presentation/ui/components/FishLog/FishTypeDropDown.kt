@@ -38,7 +38,7 @@ fun FishTypeDropdown(
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = !expanded },
-        modifier = modifier.fillMaxWidth(1f)       // 90% bredde
+        modifier = modifier.fillMaxWidth(1f)
     ) {
         OutlinedTextField(
             value = selected,
@@ -52,7 +52,7 @@ fun FishTypeDropdown(
                 )
             },
             modifier = Modifier
-                .menuAnchor()                              // forankrer menyen
+                .menuAnchor()
                 .fillMaxWidth(),
             shape = RoundedCornerShape(8.dp),
             colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
@@ -62,11 +62,11 @@ fun FishTypeDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false },
             modifier = Modifier
-                .fillMaxWidth(0.5f)                       // matcher tekstfeltet
-                .heightIn(max = 200.dp)                   // maks‑høyde, rullbar
-                .clip(RoundedCornerShape(12.dp))          // myke hjørner
+                .fillMaxWidth(0.5f)          // matching textfield
+                .heightIn(max = 200.dp)                   // max height , scrollable
+                .clip(RoundedCornerShape(12.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .shadow(4.dp, RoundedCornerShape(12.dp))  // litt skygge
+                .shadow(4.dp, RoundedCornerShape(12.dp))
         ) {
             fishTypes.forEach { type ->
                 DropdownMenuItem(

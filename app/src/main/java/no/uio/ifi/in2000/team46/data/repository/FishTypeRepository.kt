@@ -8,7 +8,7 @@ import no.uio.ifi.in2000.team46.data.local.database.entities.FishType
 class FishTypeRepository(
     private val dao: FishTypeDao
 ) {
-    /** Gir en Flow over alle fisketyper, sortert alfabetisk */
+    // Fetching all fish types from the database, and sorting them by name
     val allTypes: Flow<List<FishType>> =
         dao.getAll()                     // Flow<List<FishType>>
             .map { list -> list.sortedBy { it.name } }

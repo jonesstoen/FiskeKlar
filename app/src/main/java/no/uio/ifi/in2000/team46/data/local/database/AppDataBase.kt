@@ -42,7 +42,8 @@ abstract class AppDatabase : RoomDatabase() {
                     .addCallback(object : Callback() {
                         override fun onOpen(db: SupportSQLiteDatabase) {
                             super.onOpen(db)
-                            // Kjør alltid ved åpning av DB: pre‑populer hvis tom
+                            // This is a workaround for the fact that Room does not support pre-populating the database
+                            // always pre-populate the database when opened in order to be sure that the required data is there
                             INSTANCE?.let { database ->
                                 CoroutineScope(Dispatchers.IO).launch {
                                     val dao = database.fishTypeDao()

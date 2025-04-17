@@ -146,7 +146,7 @@ fun FishingEntryCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Thumbnail (hvis bilde-URI finnes)
+            // thumbnail  for entry
             entry.imageUri?.let { uri ->
                 AsyncImage(
                     model = uri,
@@ -158,7 +158,7 @@ fun FishingEntryCard(
                 Spacer(Modifier.width(8.dp))
             }
 
-            // Dato, tid, fisketype og vekt
+            // date time fishtype and weight
             Column(
                 modifier = Modifier
                     .weight(1f),
@@ -175,7 +175,7 @@ fun FishingEntryCard(
                 )
             }
 
-            // Slett-knapp
+            // delete button
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, contentDescription = "Slett")
             }

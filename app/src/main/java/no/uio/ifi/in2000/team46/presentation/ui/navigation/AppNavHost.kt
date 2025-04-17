@@ -33,9 +33,7 @@ import java.time.LocalTime
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    // Du kan levere inn dine ViewModels her om du ønsker, eller hente dem i destinasjonene med viewModel().
     fishLogViewModel: FishingLogViewModel,
-    // Her viser vi bare et par eksempler; du kan også hente andre ViewModels.
     locationRepository: LocationRepository,
     mapViewModel: MapViewModel,
     metAlertsViewModel: MetAlertsViewModel,
@@ -58,7 +56,7 @@ fun AppNavHost(
         }
         composable("map") {
             MapScreen(
-                granted = true, // Her sett inn logikken for tillatelser
+                granted = true, //TODO: Implement location permission check logic
                 locationRepository = locationRepository,
                 mapViewModel = mapViewModel,
                 metAlertsViewModel = metAlertsViewModel,
@@ -106,15 +104,13 @@ fun AppNavHost(
         }
 
         composable("alerts") {
-            // Implementer alerts-skjermen
+
             navController.navigate("home")
         }
         composable("weather") {
-            // Implementer værskjermen
             navController.navigate("home")
         }
         composable("favorites") {
-            // Implementer favorittskjermen
             navController.navigate("home")
         }
         composable("profile") {

@@ -13,12 +13,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import no.uio.ifi.in2000.team46.R
 import no.uio.ifi.in2000.team46.data.local.database.entities.User
 import no.uio.ifi.in2000.team46.presentation.ui.screens.Background
 
@@ -27,7 +30,7 @@ import no.uio.ifi.in2000.team46.presentation.ui.screens.Background
 fun ProfileContent(
     user: User,
     onClearUser: () -> Unit,
-    onEditUser: () -> Unit = {} // valgfri
+    onEditUser: () -> Unit = {} // placeholder for edit user action
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -92,13 +95,17 @@ fun ProfileContent(
                         Text("Fiskestatistikk", style = MaterialTheme.typography.titleMedium)
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            StatItem("28", "Totalt antall fisketurer", Icons.Default.Schedule)
-                            StatItem("Nesodden", "Favorittområde", Icons.Default.Place)
+                            StatItem("28", "Antall fisketurer", IconType.Vector(Icons.Default.Schedule))
+                            StatItem("Nesodden", "Favorittområde", IconType.Vector(Icons.Default.Place))
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            StatItem("Torsk", "Flest fanget fisk", Icons.Default.Schedule)
-                            StatItem("134", "Timer på sjøen", Icons.Default.Schedule)
+                            StatItem(
+                                "Torsk",
+                                "Flest fanget fisk",
+                                IconType.Resource(painterResource(id = R.drawable.fish))
+                            )
+                            StatItem("134", "Timer på sjøen", IconType.Vector(Icons.Default.Schedule))
                         }
                     }
                 }
@@ -150,11 +157,27 @@ fun ProfileContent(
     }
 }
 
-
+// to be able to use both vector and resource icons in stat item
+sealed class IconType {
+    data class Vector(val imageVector: ImageVector) : IconType()
+    data class Resource(val painter: Painter) : IconType()
+}
 @Composable
-fun StatItem(value: String, label: String, icon: ImageVector) {
+fun StatItem(value: String, label: String, icon: IconType) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Icon(icon, contentDescription = label, tint = Color(0xFF2A475E))
+        when (icon) {
+            is IconType.Vector -> Icon(
+                imageVector = icon.imageVector,
+                contentDescription = label,
+                tint = Color(0xFF2A475E)
+            )
+            is IconType.Resource -> Icon(
+                painter = icon.painter,
+                contentDescription = label,
+                tint = Color(0xFF2A475E),
+                modifier = Modifier.size(24.dp)
+            )
+        }
         Text(value, style = MaterialTheme.typography.bodyLarge)
         Text(label, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
     }
@@ -165,7 +188,7 @@ fun SettingsItem(title: String, icon: ImageVector) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Handle click */ }
+            .clickable { /* Handle click */ } //TODO: Handle click action
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

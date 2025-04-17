@@ -35,10 +35,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import no.uio.ifi.in2000.team46.R
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
-
+import androidx.compose.foundation.layout.size
 import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
 
 import java.time.LocalDate
@@ -55,7 +57,7 @@ fun FishingLogDetailScreen(
     viewModel: FishingLogViewModel,
     onBack: () -> Unit
 ) {
-    // Hent entry
+    // get the entry from the viewModel
     val entries by viewModel.entries.collectAsState(initial = emptyList())
     val entry: FishingLog? = entries.find { it.id == entryId }
 
@@ -83,7 +85,7 @@ fun FishingLogDetailScreen(
             return@Scaffold
         }
 
-        // Formattering
+        // formatting of date and time
 
         val timeFmt = DateTimeFormatter.ofPattern("HH:mm")
         val time = LocalTime.parse(entry.time).format(timeFmt)
@@ -98,10 +100,11 @@ fun FishingLogDetailScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Dato + tid øverst
+            // Date and time
             Text(date, style = MaterialTheme.typography.titleLarge)
 
-            // Kort med alle detaljer
+
+            //card for all details
             Card(
                 modifier = Modifier.fillMaxWidth().weight(1f),
                 shape = MaterialTheme.shapes.medium,
@@ -111,7 +114,7 @@ fun FishingLogDetailScreen(
                     modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Bilde (hvis lagt til)
+                    // picture if added
                     entry.imageUri?.let { uri ->
                         AsyncImage(
                             model = uri,
@@ -124,16 +127,20 @@ fun FishingLogDetailScreen(
                         )
                     }
 
-                    // Sted
+                    // place
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Place, contentDescription = null)
                         Spacer(Modifier.width(8.dp))
                         Text(entry.location.ifBlank { "Ukjent sted" }, style = MaterialTheme.typography.bodyLarge)
                     }
 
-                    // Fisketype og vekt
+                    //fishtype and weight
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.Face, contentDescription = null) // bytt til et fiskeikon om du har
+                        Icon(
+                            painter = painterResource(id = R.drawable.fish),
+                            contentDescription = "Fish Icon",
+                            modifier = Modifier.size(24.dp)
+                        )
                         Spacer(Modifier.width(8.dp))
                         Text(entry.fishType.ifBlank { "Ukjent fisketype" }, style = MaterialTheme.typography.bodyLarge)
                         Spacer(Modifier.width(16.dp))
@@ -142,7 +149,7 @@ fun FishingLogDetailScreen(
                         Text("${"%.1f".format(entry.weight)} kg", style = MaterialTheme.typography.bodyLarge)
                     }
 
-                    // Notater-seksjon
+                    // notes section
                     entry.notes?.takeIf { it.isNotBlank() }?.let { notes ->
                         Text("Notater", style = MaterialTheme.typography.titleSmall)
                         Text(notes, style = MaterialTheme.typography.bodyMedium)

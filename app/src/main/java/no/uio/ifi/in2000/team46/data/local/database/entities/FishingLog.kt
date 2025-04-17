@@ -11,6 +11,6 @@ data class FishingLog(
     val location: String,
     val fishType: String,
     val weight: Double,
-    val notes : String? = null, // For å lagre notater
-    val imageUri: String? = null // For å lagre URI til bildet
+    val notes : String? = null,
+    val imageUri: String? = null
 )

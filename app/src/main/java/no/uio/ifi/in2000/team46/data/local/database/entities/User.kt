@@ -5,7 +5,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "user")
 data class User(
-    @PrimaryKey(autoGenerate = false) val id: Int = 1, // alltid én bruker lagret
+    @PrimaryKey(autoGenerate = false) val id: Int = 1, // always one user saved
     val name: String,
     val username: String,
     val memberSince: String,

@@ -23,6 +23,7 @@ import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewMod
 import java.time.LocalTime
 
 // Fargepalett
+// color palette from https://coolors.co/1b4965-5fa8d3-9dc88d-bee9e8-cae9ff
 private val Navy = Color(0xFF1B4965)
 private val LightBlue = Color(0xFF5FA8D3)
 private val Sage = Color(0xFF9DC88D)
@@ -88,14 +89,14 @@ fun HomeScreen(
                 )
             }
 
-            // Greeting
+            // Greeting shown to the user
             Text(
                 text = "$greeting!",
                 style = MaterialTheme.typography.headlineSmall,
                 color = Navy
             )
 
-            // Grid av hurtigknapper
+            // Grid of quickactions
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)

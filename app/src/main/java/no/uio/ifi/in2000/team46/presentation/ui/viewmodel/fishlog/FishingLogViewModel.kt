@@ -19,12 +19,14 @@ class FishingLogViewModel(
     private val fishTypeRepo: FishTypeRepository
 ) : ViewModel() {
 
-    /** Alle loggede fangster som StateFlow med eager start */
+
+    //all fishing logs prepopulated in the database
     val entries: StateFlow<List<FishingLog>> = fishLogRepo
         .getAllEntries()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    /** Alle pre‑populerte fisketyper som StateFlow */
+
+    //all fish types prepopulated in the database
     val fishTypes: StateFlow<List<FishType>> = fishTypeRepo
         .allTypes
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -58,7 +60,7 @@ class FishingLogViewModel(
         }
     }
 
-    // Enkel factory for å kunne sende inn to repo-er
+    // factory for creating the ViewModel
     class FishLogViewModelFactory(
         private val fishLogRepo: FishLogRepository,
         private val fishTypeRepo: FishTypeRepository
