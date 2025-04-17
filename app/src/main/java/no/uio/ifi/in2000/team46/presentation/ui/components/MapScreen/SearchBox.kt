@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team46.presentation.ui.components
+package no.uio.ifi.in2000.team46.presentation.ui.components.MapScreen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -26,7 +26,6 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import kotlinx.coroutines.delay
 import no.uio.ifi.in2000.team46.data.remote.geocoding.Feature
 import org.maplibre.android.maps.MapLibreMap
 

@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team46.presentation.ui.components
+package no.uio.ifi.in2000.team46.presentation.ui.components.MapScreen
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding

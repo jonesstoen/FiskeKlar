@@ -5,23 +5,18 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
 import no.uio.ifi.in2000.team46.data.remote.metalerts.RetrofitInstance
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
+import no.uio.ifi.in2000.team46.data.repository.FishTypeRepository
 import no.uio.ifi.in2000.team46.data.repository.UserRepository
 import no.uio.ifi.in2000.team46.presentation.ui.navigation.AppNavHost
-import no.uio.ifi.in2000.team46.presentation.ui.screens.HomeScreen
-import no.uio.ifi.in2000.team46.presentation.ui.screens.MapScreen
-import no.uio.ifi.in2000.team46.presentation.ui.screens.FishingLogScreen
 import no.uio.ifi.in2000.team46.presentation.ui.theme.TEAM46Theme
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.forbud.ForbudViewModel
@@ -48,12 +43,17 @@ class MainActivity : ComponentActivity() {
         MetAlertsViewModelFactory(MetAlertsRepository(RetrofitInstance.metAlertsApi))
     }
     private val aisViewModel: AisViewModel by viewModels()
+    private val fishLogRepo by lazy {
+        FishLogRepository(this)
+    }
+    private val fishTypeRepo by lazy {
+        FishTypeRepository(
+            AppDatabase.getDatabase(this)
+                .fishTypeDao()
+        )
+    }
     private val fishLogViewModel: FishingLogViewModel by viewModels {
-        object : androidx.lifecycle.ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                return FishingLogViewModel(FishLogRepository(this@MainActivity)) as T
-            }
-        }
+        FishingLogViewModel.FishLogViewModelFactory(fishLogRepo, fishTypeRepo)
     }
     val profileViewModel: ProfileViewModel by viewModels {
         ProfileViewModelFactory(UserRepository(AppDatabase.getDatabase(this).userDao()))

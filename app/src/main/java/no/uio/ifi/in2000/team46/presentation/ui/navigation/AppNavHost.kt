@@ -10,7 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 
-import no.uio.ifi.in2000.team46.presentation.ui.screens.FishingLogScreen
+import no.uio.ifi.in2000.team46.presentation.ui.screens.FishLog.FishingLogScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.HomeScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.MapScreen
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
@@ -18,16 +18,17 @@ import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModelFactory
 import androidx.lifecycle.viewmodel.compose.viewModel
 import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
 import no.uio.ifi.in2000.team46.data.repository.UserRepository
-import no.uio.ifi.in2000.team46.presentation.ui.screens.FishingLogDetailScreen
+import no.uio.ifi.in2000.team46.presentation.ui.screens.FishLog.AddFishingEntryScreen
+import no.uio.ifi.in2000.team46.presentation.ui.screens.FishLog.FishingLogDetailScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.ProfileScreen
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModelFactory
+import java.time.LocalDate
+import java.time.LocalTime
 
 @Composable
 fun AppNavHost(
@@ -70,6 +71,26 @@ fun AppNavHost(
             FishingLogScreen(
                 viewModel = fishLogViewModel,
                 onNavigate = { route -> navController.navigate(route) }
+            )
+        }
+        composable("addFishingEntry") {
+            AddFishingEntryScreen(
+                viewModel = fishLogViewModel,
+                onCancel = { navController.popBackStack() },
+                onSave = { date: LocalDate, time: LocalTime, location, fishType, weight, notes, imageUri ->
+                    if (notes != null) {
+                        fishLogViewModel.addEntry(
+                            date = date,
+                            time = time,
+                            location = location,
+                            fishType = fishType,
+                            weight = weight,
+                            notes = notes,
+                            imageUri = imageUri
+                        )
+                    }
+                    navController.popBackStack()
+                }
             )
         }
         composable(

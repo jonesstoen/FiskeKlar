@@ -9,21 +9,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomSheetScaffold
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.SheetValue
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.runtime.DisposableEffect
@@ -36,32 +26,26 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.layers.AisLayer
 import no.uio.ifi.in2000.team46.map.layers.ForbudLayer
 import no.uio.ifi.in2000.team46.map.layers.MetAlertsLayerComponent
 import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.presentation.ui.components.BottomNavBar
-import no.uio.ifi.in2000.team46.presentation.ui.components.LayerFilterButton
-import no.uio.ifi.in2000.team46.presentation.ui.components.SearchBox
-import no.uio.ifi.in2000.team46.presentation.ui.components.ZoomButton
+import no.uio.ifi.in2000.team46.presentation.ui.components.MapScreen.LayerFilterButton
+import no.uio.ifi.in2000.team46.presentation.ui.components.MapScreen.SearchBox
+import no.uio.ifi.in2000.team46.presentation.ui.components.MapScreen.ZoomButton
 import no.uio.ifi.in2000.team46.presentation.ui.components.weather.WeatherDisplay
 import no.uio.ifi.in2000.team46.presentation.ui.components.metAlerts.MetAlertsBottomSheetContent
-import no.uio.ifi.in2000.team46.presentation.ui.components.weather.WeatherDisplay
-import no.uio.ifi.in2000.team46.presentation.ui.components.zoomToLocationButton
+import no.uio.ifi.in2000.team46.presentation.ui.components.MapScreen.zoomToLocationButton
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.search.SearchViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
 import kotlinx.coroutines.delay
 import org.maplibre.android.maps.MapLibreMap
-import java.time.LocalDate
-import java.time.LocalTime
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -99,7 +83,7 @@ fun MapScreen(
     val isShowingHistory by searchViewModel.showingHistory.collectAsState()
     var showFishingLog by remember { mutableStateOf(false) }
     var showAddDialog by remember { mutableStateOf(false) }
-    val fishingLogViewModel: FishingLogViewModel = viewModel { FishingLogViewModel(FishLogRepository(context))}
+
 
 
 
