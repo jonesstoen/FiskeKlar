@@ -16,10 +16,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import no.uio.ifi.in2000.team46.R
-import no.uio.ifi.in2000.team46.presentation.ui.components.BottomNavBar
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModel
+import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import java.time.LocalTime
 
 // Fargepalett
