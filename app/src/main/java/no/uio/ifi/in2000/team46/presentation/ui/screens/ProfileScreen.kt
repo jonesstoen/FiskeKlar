@@ -32,15 +32,7 @@ fun ProfileScreen(
 
     Scaffold(
         bottomBar = {
-            BottomNavBar(
-                currentRoute = "profile",
-                onNavigate = { route ->
-                    when (route) {
-                        "home" -> onNavigateToHome()
-                        "alerts" -> onNavigateToAlerts()
-                    }
-                }
-            )
+
         },
         containerColor = Background
     ) { paddingValues ->

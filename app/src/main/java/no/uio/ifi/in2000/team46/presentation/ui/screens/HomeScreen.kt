@@ -57,17 +57,7 @@ fun HomeScreen(
 
     Scaffold(
         containerColor = Background,
-        bottomBar = {
-            BottomNavBar(
-                currentRoute = "home",
-                onNavigate = { route ->
-                    when (route) {
-                        "profile" -> onNavigateToProfile()
-                        "alerts" -> onNavigateToAlerts()
-                    }
-                }
-            )
-        }
+
     ) { paddingValues ->
         Column(
             modifier = Modifier

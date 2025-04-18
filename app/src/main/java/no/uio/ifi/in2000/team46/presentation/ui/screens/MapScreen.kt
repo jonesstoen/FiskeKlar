@@ -52,7 +52,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.utils.isPointInPolygon
 
-
+/*
 /** MapScreen er UI-skjermen der kartet vises, og den kobler sammen ViewModel og den visuelle presentasjonen.
  * Dette er en Composable-skjerm som integrerer MapView (fra tradisjonell Android View) i et Jetpack Compose-miljø.
  * Bruk av AndroidView: Den benytter AndroidView for å legge inn et MapView i Compose-layouten.
@@ -316,4 +316,4 @@ fun MapScreen(
             }
         }
     }
-}
+}*/

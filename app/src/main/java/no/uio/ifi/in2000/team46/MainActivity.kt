@@ -5,44 +5,44 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
-import no.uio.ifi.in2000.team46.data.remote.metalerts.RetrofitInstance
-import no.uio.ifi.in2000.team46.data.repository.LocationRepository
-import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
 import no.uio.ifi.in2000.team46.data.repository.FishTypeRepository
+import no.uio.ifi.in2000.team46.data.repository.LocationRepository
+import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 import no.uio.ifi.in2000.team46.data.repository.UserRepository
+import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.presentation.ui.navigation.AppNavHost
 import no.uio.ifi.in2000.team46.presentation.ui.theme.TEAM46Theme
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.search.SearchViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModelFactory
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModel
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModelFactory
-import no.uio.ifi.in2000.team46.utils.permissions.LocationPermissionManager
 import org.maplibre.android.MapLibre
 import org.maplibre.android.WellKnownTileServer
 
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModelFactory
+
+
 class MainActivity : ComponentActivity() {
-    private lateinit var locationPermissionManager: LocationPermissionManager
-    private var locationGranted by mutableStateOf(false)
+    // Hoist all your ViewModels here so they survive navigation
     private val locationRepository by lazy { LocationRepository(this) }
+
     private val mapViewModel: MapViewModel by viewModels {
-        MapViewModelFactory(LocationRepository(this))
-    }
-    private val forbudViewModel: ForbudViewModel by viewModels()
-    private val metAlertsViewModel: MetAlertsViewModel by viewModels {
-        MetAlertsViewModelFactory(MetAlertsRepository(RetrofitInstance.metAlertsApi))
+        MapViewModelFactory(locationRepository, MetAlertsRepository())
     }
     private val aisViewModel: AisViewModel by viewModels()
+    private val forbudViewModel: ForbudViewModel by viewModels()
+    private val metAlertsViewModel: MetAlertsViewModel by viewModels {
+        MetAlertsViewModelFactory(MetAlertsRepository())
+    }
+    private val searchViewModel: SearchViewModel by viewModels()
     private val fishLogRepo by lazy {
         FishLogRepository(this)
     }
@@ -55,38 +55,35 @@ class MainActivity : ComponentActivity() {
     private val fishLogViewModel: FishingLogViewModel by viewModels {
         FishingLogViewModel.FishLogViewModelFactory(fishLogRepo, fishTypeRepo)
     }
-    val profileViewModel: ProfileViewModel by viewModels {
+    private val profileViewModel: ProfileViewModel by viewModels {
         ProfileViewModelFactory(UserRepository(AppDatabase.getDatabase(this).userDao()))
     }
-    private var currentScreen by mutableStateOf<String>("home")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // initialize MapLibre
         MapLibre.getInstance(this, "kPH7fJZHXa4Pj6d1oIuw", WellKnownTileServer.MapTiler)
         enableEdgeToEdge()
-
-        locationPermissionManager = LocationPermissionManager(this)
-        locationPermissionManager.checkAndRequestPermission { granted ->
-            if (granted) {
-                mapViewModel.fetchUserLocation(this)
-                locationGranted = true
-            }
-        }
 
         setContent {
             TEAM46Theme {
                 val navController = rememberNavController()
+                // Hoist your single MapView
+                val mapView = rememberMapViewWithLifecycle()
+
                 AppNavHost(
-                    navController = navController,
-                    fishLogViewModel = fishLogViewModel,
-                    locationRepository = locationRepository,
-                    mapViewModel = mapViewModel,
-                    metAlertsViewModel = metAlertsViewModel,
-                    aisViewModel = aisViewModel,
-                    forbudViewModel = forbudViewModel,
-                    profileViewModel = profileViewModel
+                    navController       = navController,
+                    mapView             = mapView,
+                    mapViewModel        = mapViewModel,
+                    aisViewModel        = aisViewModel,
+                    metAlertsViewModel  = metAlertsViewModel,
+                    forbudViewModel     = forbudViewModel,
+                    searchViewModel     = searchViewModel,
+                    fishLogViewModel    = fishLogViewModel,
+                    profileViewModel    = profileViewModel
                 )
             }
         }
     }
 }
+

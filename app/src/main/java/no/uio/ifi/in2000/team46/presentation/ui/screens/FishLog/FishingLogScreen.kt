@@ -62,12 +62,7 @@ fun FishingLogScreen(
                 title = { Text("Fiskelogg") }
             )
         },
-        bottomBar = {
-            BottomNavBar(
-                currentRoute = "fishlog",
-                onNavigate = onNavigate
-            )
-        },
+
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { onNavigate("addFishingEntry") },

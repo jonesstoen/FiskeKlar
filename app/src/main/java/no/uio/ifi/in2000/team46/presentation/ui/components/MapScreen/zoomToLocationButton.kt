@@ -8,14 +8,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun zoomToLocationButton(modifier: Modifier = Modifier, onClick : ()-> Unit) {
+fun zoomToLocationButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     FloatingActionButton(
         modifier = modifier,
-        onClick = onClick) {
-        Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Zoom to location")
-
-
+        onClick = onClick
+    ) {
+        Icon(
+            imageVector = Icons.Default.LocationOn,
+            contentDescription = "Zoom to location"
+        )
     }
-
-
 }

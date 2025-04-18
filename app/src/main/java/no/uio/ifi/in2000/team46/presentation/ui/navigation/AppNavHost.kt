@@ -1,131 +1,176 @@
 package no.uio.ifi.in2000.team46.presentation.ui.navigation
 
-
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Map
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
-
-import no.uio.ifi.in2000.team46.presentation.ui.screens.FishLog.FishingLogScreen
-import no.uio.ifi.in2000.team46.presentation.ui.screens.HomeScreen
-import no.uio.ifi.in2000.team46.presentation.ui.screens.MapScreen
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
-import no.uio.ifi.in2000.team46.data.repository.LocationRepository
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.forbud.ForbudViewModel
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
-import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
-import no.uio.ifi.in2000.team46.data.repository.UserRepository
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.*
+import androidx.navigation.navArgument
+import no.uio.ifi.in2000.team46.map.rememberMapViewWithLifecycle
+import no.uio.ifi.in2000.team46.presentation.ui.components.MapScreen.MapScreen2
+import no.uio.ifi.in2000.team46.presentation.ui.screens.HomeScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.FishLog.AddFishingEntryScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.FishLog.FishingLogDetailScreen
+import no.uio.ifi.in2000.team46.presentation.ui.screens.FishLog.FishingLogScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.ProfileScreen
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.fishlog.FishingLogViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.profile.ProfileViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.maplibre.MapViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.weather.MetAlertsViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.ais.AisViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.forbud.ForbudViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.viewmodel.search.SearchViewModel
+import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
+import no.uio.ifi.in2000.team46.data.repository.LocationRepository
+import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
+import no.uio.ifi.in2000.team46.data.repository.UserRepository
 import java.time.LocalDate
 import java.time.LocalTime
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    fishLogViewModel: FishingLogViewModel,
-    locationRepository: LocationRepository,
+    mapView: org.maplibre.android.maps.MapView,
     mapViewModel: MapViewModel,
-    metAlertsViewModel: MetAlertsViewModel,
     aisViewModel: AisViewModel,
+    metAlertsViewModel: MetAlertsViewModel,
     forbudViewModel: ForbudViewModel,
+    searchViewModel: SearchViewModel,
+    fishLogViewModel: FishingLogViewModel,
     profileViewModel: ProfileViewModel
-
 ) {
-    NavHost(navController = navController, startDestination = "home") {
-        composable("home") {
-            HomeScreen(
-                viewModel = profileViewModel,
-                onNavigateToMap = { navController.navigate("map") },
-                onNavigateToWeather = { navController.navigate("weather") },
-                onNavigateToFishLog = { navController.navigate("fishlog") },
-                onNavigateToFavorites = { navController.navigate("favorites") },
-                onNavigateToProfile = { navController.navigate("profile") },
-                onNavigateToAlerts = { navController.navigate("alerts") }
-            )
-        }
-        composable("map") {
-            MapScreen(
-                granted = true, //TODO: Implement location permission check logic
-                locationRepository = locationRepository,
-                mapViewModel = mapViewModel,
-                metAlertsViewModel = metAlertsViewModel,
-                aisViewModel = aisViewModel,
-                forbudViewModel = forbudViewModel,
-                onNavigate = { route -> navController.navigate(route) }
-            )
-        }
-        composable("fishlog") {
-            FishingLogScreen(
-                viewModel = fishLogViewModel,
-                onNavigate = { route -> navController.navigate(route) }
-            )
-        }
-        composable("addFishingEntry") {
-            AddFishingEntryScreen(
-                viewModel = fishLogViewModel,
-                onCancel = { navController.popBackStack() },
-                onSave = { date: LocalDate, time: LocalTime, location, fishType, weight, notes, imageUri ->
-                    if (notes != null) {
-                        fishLogViewModel.addEntry(
-                            date = date,
-                            time = time,
-                            location = location,
-                            fishType = fishType,
-                            weight = weight,
-                            notes = notes,
-                            imageUri = imageUri
-                        )
+    val backStack by navController.currentBackStackEntryAsState()
+    val currentRoute = backStack?.destination?.route
+
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                listOf(
+                    "home"    to Icons.Default.Home,
+                    "map"     to Icons.Default.Map,
+                    "profile" to Icons.Default.Person
+                ).forEach { (route, icon) ->
+                    val title = when(route) {
+                        "home"    -> "Hjem"
+                        "map"     -> "Kart"
+                        "profile" -> "Min Side"
+                        else      -> route
                     }
-                    navController.popBackStack()
+                    NavigationBarItem(
+                        icon = { Icon(icon, contentDescription = route) },
+                        label = { Text(title) },
+                        selected = currentRoute == route,
+                        onClick = {
+                            navController.navigate(route) {
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    inclusive = false
+                                }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
                 }
-            )
+            }
         }
-        composable(
-            "fishingLogDetail/{entryId}",
-            arguments = listOf(navArgument("entryId") { type = NavType.IntType })
-        ) { backStackEntry ->
-            val entryId = backStackEntry.arguments?.getInt("entryId") ?: 0
-            FishingLogDetailScreen(
-                entryId = entryId,
-                viewModel = fishLogViewModel,
-                onBack = { navController.popBackStack() }
-            )
-        }
+    ) { innerPadding ->
+        NavHost(
+            navController    = navController,
+            startDestination = "home",
+            modifier         = Modifier.padding(innerPadding)
+        ) {
+            composable("home") {
+                val ctx = LocalContext.current
+                val db = AppDatabase.getDatabase(ctx)
+                val userRepo = UserRepository(db.userDao())
+                HomeScreen(
+                    viewModel = profileViewModel,
+                    onNavigateToMap       = { navController.navigate("map") },
+                    onNavigateToWeather   = { navController.navigate("weather") },
+                    onNavigateToFishLog   = { navController.navigate("fishlog") },
+                    onNavigateToFavorites = { navController.navigate("favorites") },
+                    onNavigateToProfile   = { navController.navigate("profile") },
+                    onNavigateToAlerts    = { navController.navigate("alerts") }
+                )
+            }
 
-        composable("alerts") {
+            composable("map") {
+                MapScreen2(
+                    mapView            = mapView,
+                    mapViewModel       = mapViewModel,
+                    aisViewModel       = aisViewModel,
+                    metAlertsViewModel = metAlertsViewModel,
+                    forbudViewModel    = forbudViewModel,
+                    searchViewModel    = searchViewModel
+                )
+            }
 
-            navController.navigate("home")
-        }
-        composable("weather") {
-            navController.navigate("home")
-        }
-        composable("favorites") {
-            navController.navigate("home")
-        }
-        composable("profile") {
-            val context = LocalContext.current
-            val db = remember { AppDatabase.getDatabase(context) }
-            val userRepo = remember { UserRepository(db.userDao()) }
-            val profileViewModel: ProfileViewModel = viewModel(factory = ProfileViewModelFactory(userRepo))
+            composable("fishlog") {
+                FishingLogScreen(
+                    viewModel = fishLogViewModel,
+                    onNavigate = { route -> navController.navigate(route) }
+                )
+            }
 
-            ProfileScreen(
-                viewModel = profileViewModel,
-                onNavigateToHome = { navController.navigate("home") },
-                onNavigateToAlerts = { navController.navigate("alerts") }
+            composable("addFishingEntry") {
+                AddFishingEntryScreen(
+                    viewModel = fishLogViewModel,
+                    onCancel = { navController.popBackStack() },
+                    onSave = { date, time, location, fishType, weight, notes, imageUri ->
+                        notes?.let { fishLogViewModel.addEntry(date, time, location, fishType, weight, it, imageUri) }
+                        navController.popBackStack()
+                    }
+                )
+            }
 
-            )
+            composable(
+                "fishingLogDetail/{entryId}",
+                arguments = listOf(navArgument("entryId") { type = NavType.IntType })
+            ) { backStackEntry ->
+                val entryId = backStackEntry.arguments?.getInt("entryId") ?: 0
+                FishingLogDetailScreen(
+                    entryId   = entryId,
+                    viewModel = fishLogViewModel,
+                    onBack    = { navController.popBackStack() }
+                )
+            }
+
+            composable("alerts") {
+                // TODO: implement AlertsScreen
+            }
+            composable("weather") {
+                // TODO: implement WeatherScreen
+            }
+            composable("favorites") {
+                // TODO: implement FavoritesScreen
+            }
+
+            composable("profile") {
+                ProfileScreen(
+                    viewModel         = profileViewModel,
+                    onNavigateToHome  = { navController.navigate("home") },
+                    onNavigateToAlerts = { navController.navigate("alerts") }
+                )
+            }
         }
-
     }
 }

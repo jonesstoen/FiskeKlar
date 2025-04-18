@@ -12,8 +12,12 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.tasks.Task
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.map.MapConstants
@@ -21,9 +25,15 @@ import no.uio.ifi.in2000.team46.map.MapController
 import no.uio.ifi.in2000.team46.map.utils.addUserLocationIndicator
 import no.uio.ifi.in2000.team46.utils.ais.VesselIconHelper
 import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
+import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
+import no.uio.ifi.in2000.team46.data.repository.Result
+import no.uio.ifi.in2000.team46.utils.isPointInPolygon
+import no.uio.ifi.in2000.team46.domain.model.metalerts.Feature
+import no.uio.ifi.in2000.team46.domain.model.metalerts.MetAlertsResponse
+//import mapconstants
 
 /**MapViewModel styrer forretningslogikken og tilstanden for kartet.
  *
@@ -32,14 +42,26 @@ import org.maplibre.android.maps.MapLibreMap
  * kameraets posisjon ved hjelp av LiveData.
  */
 
-class MapViewModel(private val locationRepository: LocationRepository) : ViewModel() {
-    // Startverdier for kartet
+
+/** Hendelser som MapViewModel kan skyte ut til UI (snackbar osv). */
+sealed class MapUiEvent {
+    data class ShowAlertSnackbar(val message: String) : MapUiEvent()
+}
+
+class MapViewModel(
+    private val locationRepository: LocationRepository,
+    private val metAlertsRepository: MetAlertsRepository
+) : ViewModel() {
+
+    // ----- Konstanter og API‑nøkler -----
+    private val apiKey = "kPH7fJZHXa4Pj6d1oIuw"
+    val styleUrl: String =
+        "https://api.maptiler.com/maps/basic/style.json?key=$apiKey"
+
     private val initialLat: Double = MapConstants.INITIAL_LAT
     private val initialLon: Double = MapConstants.INITIAL_LON
-    private val initialZoom: Double = MapConstants.INITIAL_ZOOM
 
-    //for fetching the user location
-    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    // ----- StateFlows for UI‑binding -----
     private val _userLocation = MutableStateFlow<Location?>(null)
     val userLocation: StateFlow<Location?> = _userLocation
 
@@ -49,96 +71,165 @@ class MapViewModel(private val locationRepository: LocationRepository) : ViewMod
     private val _weatherSymbol = MutableStateFlow<String?>(null)
     val weatherSymbol: StateFlow<String?> = _weatherSymbol
 
-    private val weatherService = WeatherService()
-    private val apiKey = "kPH7fJZHXa4Pj6d1oIuw"
-    //url for å hente kartstilen kan endres til ønsket stil
-    val styleUrl: String = "https://api.maptiler.com/maps/basic/style.json?key=$apiKey"
+    // MetAlerts (filtrert til marine)
+    private val _metAlertsResponse = MutableStateFlow<MetAlertsResponse?>(null)
+    val metAlertsResponse: StateFlow<MetAlertsResponse?> = _metAlertsResponse
 
-    // State for kamera-posisjon, livedate slik at andre komponenter kan observere endringer
-    private val _cameraPosition = MutableLiveData<LatLng>()
-    val cameraPosition: LiveData<LatLng> = _cameraPosition
-    /**
-     * funksjonen tar inn ett maplibre kart og :
-     * setter kartets stil til styleUrl
-     * bruker mapController til å sette initial view
-     * oppdaterer kamera posisjonen
-     */
+    // Hendelser til UI (snackbar)
+    private val _uiEvents = MutableSharedFlow<MapUiEvent>()
+    val uiEvents: SharedFlow<MapUiEvent> = _uiEvents
+
+    // Weather‑service
+    private val weatherService = WeatherService()
+
+    init {
+        // Hent varslene én gang
+        fetchMetAlerts()
+        // Start polling av posisjon + sjekk polygon
+        startLocationPolling()
+    }
+
+    /** Henter varsler fra repository og filtrer ut kun \"marine\". */
+    private fun fetchMetAlerts() {
+        viewModelScope.launch {
+            when (val result = metAlertsRepository.getAlerts()) {
+                is Result.Success -> {
+                    val marineOnly = result.data.features.filter {
+                        it.properties.geographicDomain == "marine"
+                    }
+                    _metAlertsResponse.value = MetAlertsResponse(
+                        features = marineOnly,
+                        lang = result.data.lang,
+                        lastChange = result.data.lastChange,
+                        type = result.data.type
+                    )
+                }
+                is Result.Error -> {
+                    Log.e(
+                        "MapViewModel",
+                        "Error fetching MetAlerts: ${result.exception.message}"
+                    )
+                }
+            }
+        }
+    }
+
+    /** Poller brukerposisjon hvert 5 sekund, oppdaterer temperatur og sjekker polygon‑alarmer. */
+    private fun startLocationPolling() {
+        viewModelScope.launch {
+            while (isActive) {
+                val loc = locationRepository.getCurrentLocation()
+                _userLocation.value = loc
+
+                // Oppdater temperatur ved ny posisjon
+                loc?.let { updateTemperature(it.latitude, it.longitude) }
+
+                // Sjekk om vi står i et polygon‑varsel
+                checkForPolygons(loc)
+
+                delay(5_000)
+            }
+        }
+    }
+
+    /** Går gjennom alle Polygon‑varsler og emitter snackbar‑event om brukeren er innenfor. */
+    private suspend fun checkForPolygons(location: Location?) {
+        val alerts = _metAlertsResponse.value ?: return
+        if (location == null) return
+
+        for (feature in alerts.features) {
+            if (feature.geometry.type.equals("Polygon", ignoreCase = true)) {
+                val polygon = extractPolygonCoordinates(feature)
+                if (isPointInPolygon(location.latitude, location.longitude, polygon)) {
+                    val raw = feature.properties.eventAwarenessName
+                    val trimmed = raw.replace("fare", "").trim()
+                    _uiEvents.emit(
+                        MapUiEvent.ShowAlertSnackbar(
+                            "ADVARSEL: Du er i et område med utsatt $trimmed farevarsel"
+                        )
+                    )
+                    return
+                }
+            }
+        }
+    }
+
+    /** Ekstraherer en liste av (lon,lat)-par fra GeoJSON Polygon. */
+    private fun extractPolygonCoordinates(
+        feature: Feature
+    ): List<Pair<Double, Double>> {
+        val coordsRaw = feature.geometry.coordinates as? List<*>
+        val firstRing = coordsRaw?.firstOrNull() as? List<*>
+        return firstRing?.mapNotNull { item ->
+            val coord = item as? List<*>
+            val lon = coord?.getOrNull(0) as? Double
+            val lat = coord?.getOrNull(1) as? Double
+            if (lon != null && lat != null) Pair(lon, lat) else null
+        } ?: emptyList()
+    }
+
+    /** Setter stil og initial visning når kartet er klart. */
     fun initializeMap(map: MapLibreMap, context: Context) {
         map.setStyle(styleUrl) { style ->
             try {
-                // Add vessel icons using the helper
-
-
-                // Continue with your other initialization tasks
                 val controller = MapController(map)
-                val lat = userLocation.value?.latitude ?: initialLat
-                val lon = userLocation.value?.longitude ?: initialLon
-                val zoom = userLocation.value?.let { 10.0 } ?: initialZoom
-                controller.setInitialView(lat, lon, zoom)
-                _cameraPosition.value = LatLng(lat, lon)
-                addUserLocationIndicator(map, style, lat, lon)
+                controller.setInitialView(
+                    initialLat, initialLon,
+                    zoom = MapConstants.INITIAL_ZOOM
+                )
+                addUserLocationIndicator(map, style, initialLat, initialLon)
                 VesselIconHelper.addVesselIconsToStyle(context, style)
-                updateTemperature(lat, lon)
             } catch (e: Exception) {
                 Log.e("MapViewModel", "Error initializing map: ${e.message}")
             }
         }
     }
 
+    /** Henter temperatur og symbolkode for gitt posisjon. */
     private fun updateTemperature(lat: Double, lon: Double) {
         viewModelScope.launch {
             try {
-                val weatherData = weatherService.getWeatherData(lat, lon)
-                _temperature.value = weatherData.temperature
-                _weatherSymbol.value = weatherData.symbolCode
+                val data = weatherService.getWeatherData(lat, lon)
+                _temperature.value = data.temperature
+                _weatherSymbol.value = data.symbolCode
             } catch (e: Exception) {
-                Log.e("MapViewModel", "Error fetching weather data: ${e.message}")
+                Log.e("MapViewModel", "Error fetching weather: ${e.message}")
             }
         }
     }
 
-    fun zoomToLocation(map: MapLibreMap, lat: Double, lon: Double, zoom: Double = 10.0){
+    /** Zoom til angitt posisjon, oppdaterer temperatur. */
+    fun zoomToLocation(map: MapLibreMap, lat: Double, lon: Double, zoom: Double) {
         try {
-            val controller = MapController(map)
-            controller.zoomToLocation(lat, lon, zoom)
-            _cameraPosition.value = LatLng(lat, lon)
+            MapController(map).zoomToLocation(lat, lon, zoom)
             updateTemperature(lat, lon)
         } catch (e: Exception) {
-            Log.e("MapViewModel", "Error zooming to location: ${e.message}")
+            Log.e("MapViewModel", "Error zooming: ${e.message}")
         }
-
     }
+
+    /** Zoom til siste kjente brukerposisjon + markør. */
     fun zoomToUserLocation(map: MapLibreMap, context: Context) {
         viewModelScope.launch {
-            val location = locationRepository.getCurrentLocation()
-            location?.let {
-                zoomToLocation(map, it.latitude, it.longitude,20.0)
+            val loc = locationRepository.getFastLocation()
+            loc?.let {
+                zoomToLocation(map, it.latitude, it.longitude, MapConstants.INITIAL_ZOOM)
                 addUserLocationIndicator(map, map.style!!, it.latitude, it.longitude)
-                updateTemperature(it.latitude, it.longitude)
             }
         }
     }
 
-    fun fetchUserLocation(context: Context) {
-        viewModelScope.launch {
-            val location = locationRepository.getCurrentLocation()
-            _userLocation.value = location
-            location?.let {
-                updateTemperature(it.latitude, it.longitude)
-            }
-        }
-    }
-
+    /** Enkel zoom‑in/zoom‑out. */
     fun zoomIn(map: MapLibreMap) {
-        val currentZoom = map.cameraPosition.zoom
-        map.animateCamera(CameraUpdateFactory.zoomTo(currentZoom + 1))
+        val z = map.cameraPosition.zoom
+        map.animateCamera(CameraUpdateFactory.zoomTo(z + 1))
     }
-
     fun zoomOut(map: MapLibreMap) {
-        val currentZoom = map.cameraPosition.zoom
-        map.animateCamera(CameraUpdateFactory.zoomTo(currentZoom - 1))
+        val z = map.cameraPosition.zoom
+        map.animateCamera(CameraUpdateFactory.zoomTo(z - 1))
     }
 }
+
 
 
 

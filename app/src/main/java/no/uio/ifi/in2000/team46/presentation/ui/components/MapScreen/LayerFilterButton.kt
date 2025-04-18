@@ -60,7 +60,7 @@ fun LayerFilterButton(
     val vesselTypesArrowRotation by animateFloatAsState(if (vesselTypesExpanded) 180f else 0f)
 
     // wrapping the content in a box
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(modifier = modifier) {
 
         // when expanded, show a transparent overlay to cover the rest of the screen, in order
         // to close the filter panel when clicking outside of it
@@ -212,7 +212,7 @@ fun LayerFilterButton(
                                 Spacer(modifier = Modifier.weight(1f))
                                 Switch(
                                     modifier = Modifier.scale(0.7f),
-                                    checked = isAisLayerVisible && aisViewModel.isVesselTypeSelected(type),
+                                    checked = isAisLayerVisible && selectedVesselTypes.contains(type),
                                     onCheckedChange = { isChecked ->
                                         if (!isAisLayerVisible) {
                                             aisViewModel.activateLayer()
