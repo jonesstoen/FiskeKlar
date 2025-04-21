@@ -12,12 +12,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.clickable
 import no.uio.ifi.in2000.team46.R
 
 @Composable
 fun WeatherDisplay(
     temperature: Double?,
     symbolCode: String?,
+    onWeatherClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -25,6 +27,7 @@ fun WeatherDisplay(
             .clip(RoundedCornerShape(8.dp))
             .background(Color.White.copy(alpha = 0.9f))
             .padding(8.dp)
+            .clickable(onClick = onWeatherClick)
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),

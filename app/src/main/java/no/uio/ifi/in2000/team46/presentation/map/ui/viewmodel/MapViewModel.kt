@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
@@ -27,6 +28,10 @@ import no.uio.ifi.in2000.team46.data.repository.Result
 import no.uio.ifi.in2000.team46.utils.isPointInPolygon
 import no.uio.ifi.in2000.team46.domain.model.metalerts.Feature
 import no.uio.ifi.in2000.team46.domain.model.metalerts.MetAlertsResponse
+import java.net.URL
+import org.json.JSONObject
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
 //import mapconstants
 
 /**MapViewModel styrer forretningslogikken og tilstanden for kartet.
@@ -75,6 +80,12 @@ class MapViewModel(
 
     // Weather‑service
     private val weatherService = WeatherService()
+
+    private val _selectedLocation = MutableStateFlow<Pair<Double, Double>?>(null)
+    val selectedLocation: StateFlow<Pair<Double, Double>?> = _selectedLocation.asStateFlow()
+
+    private val _locationName = MutableStateFlow<String>("Nåværende posisjon")
+    val locationName: StateFlow<String> = _locationName.asStateFlow()
 
     init {
         // Hent varslene én gang
@@ -197,6 +208,7 @@ class MapViewModel(
         try {
             MapController(map).zoomToLocation(lat, lon, zoom)
             updateTemperature(lat, lon)
+            updateLocationName(lat, lon)
         } catch (e: Exception) {
             Log.e("MapViewModel", "Error zooming: ${e.message}")
         }
@@ -221,6 +233,79 @@ class MapViewModel(
     fun zoomOut(map: MapLibreMap) {
         val z = map.cameraPosition.zoom
         map.animateCamera(CameraUpdateFactory.zoomTo(z - 1))
+    }
+
+    fun updateWeatherForLocation(latitude: Double, longitude: Double) {
+        // Valider koordinater
+        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+            Log.e("MapViewModel", "Ugyldige koordinater: lat=$latitude, lon=$longitude")
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                Log.d("MapViewModel", "Henter værdata for koordinater: lat=$latitude, lon=$longitude")
+                val weatherData = weatherService.getWeatherData(latitude, longitude)
+                
+                if (weatherData.temperature == null || weatherData.symbolCode == null) {
+                    Log.w("MapViewModel", "Manglende værdata for koordinater: lat=$latitude, lon=$longitude")
+                    return@launch
+                }
+
+                Log.d("MapViewModel", "Oppdaterer værdata: temp=${weatherData.temperature}, symbol=${weatherData.symbolCode}")
+                _temperature.value = weatherData.temperature
+                _weatherSymbol.value = weatherData.symbolCode
+                
+                // Oppdater stedsnavn etter at været er oppdatert
+                updateLocationName(latitude, longitude)
+            } catch (e: Exception) {
+                Log.e("MapViewModel", "Feil ved henting av værdata: ${e.message}")
+                // Behold eksisterende verdier ved feil
+            }
+        }
+    }
+
+    fun setSelectedLocation(latitude: Double, longitude: Double) {
+        _selectedLocation.value = Pair(latitude, longitude)
+    }
+
+    suspend fun getLocationName(latitude: Double, longitude: Double): String {
+        return try {
+            withContext(Dispatchers.IO) {
+                val url = URL("https://nominatim.openstreetmap.org/reverse?format=json&lat=$latitude&lon=$longitude&addressdetails=1")
+                val connection = url.openConnection()
+                connection.setRequestProperty("User-Agent", "MetAlerts/1.0")
+                
+                val response = connection.inputStream.bufferedReader().use { it.readText() }
+                val jsonObject = JSONObject(response)
+                
+                val address = jsonObject.optJSONObject("address")
+                if (address == null) {
+                    return@withContext "Nåværende posisjon"
+                }
+                
+                val street = address.optString("road", "")
+                val city = address.optString("city", "")
+                val municipality = address.optString("municipality", "")
+                
+                when {
+                    street.isNotEmpty() && city.isNotEmpty() -> "$street, $city"
+                    street.isNotEmpty() && municipality.isNotEmpty() -> "$street, $municipality"
+                    street.isNotEmpty() -> street
+                    city.isNotEmpty() -> city
+                    municipality.isNotEmpty() -> municipality
+                    else -> "Nåværende posisjon"
+                }
+            }
+        } catch (e: Exception) {
+            "Nåværende posisjon"
+        }
+    }
+
+    fun updateLocationName(latitude: Double, longitude: Double) {
+        viewModelScope.launch {
+            _locationName.value = getLocationName(latitude, longitude)
+        }
     }
 }
 

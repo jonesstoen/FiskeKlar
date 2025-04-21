@@ -20,6 +20,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import no.uio.ifi.in2000.team46.presentation.map.ui.screens.MapScreen2
 import no.uio.ifi.in2000.team46.presentation.ui.screens.HomeScreen
 import no.uio.ifi.in2000.team46.presentation.fishlog.ui.screens.AddFishingEntryScreen
@@ -35,8 +37,9 @@ import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.SearchViewModel
 import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
 import no.uio.ifi.in2000.team46.data.repository.UserRepository
+import no.uio.ifi.in2000.team46.presentation.ui.screens.WeatherDetailScreen
+import no.uio.ifi.in2000.team46.domain.model.weather.WeatherData
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -110,7 +113,8 @@ fun AppNavHost(
                     aisViewModel       = aisViewModel,
                     metAlertsViewModel = metAlertsViewModel,
                     forbudViewModel    = forbudViewModel,
-                    searchViewModel    = searchViewModel
+                    searchViewModel    = searchViewModel,
+                    navController      = navController
                 )
             }
 
@@ -149,6 +153,44 @@ fun AppNavHost(
             }
             composable("weather") {
                 // TODO: implement WeatherScreen
+            }
+            composable(
+                "weather_detail/{temperature}/{feelsLike}/{highTemp}/{lowTemp}/{symbolCode}/{description}/{locationName}",
+                arguments = listOf(
+                    navArgument("temperature") { type = NavType.FloatType },
+                    navArgument("feelsLike") { type = NavType.FloatType },
+                    navArgument("highTemp") { type = NavType.FloatType },
+                    navArgument("lowTemp") { type = NavType.FloatType },
+                    navArgument("symbolCode") { type = NavType.StringType },
+                    navArgument("description") { type = NavType.StringType },
+                    navArgument("locationName") { type = NavType.StringType }
+                )
+            ) { backStackEntry ->
+                val temperature = backStackEntry.arguments?.getFloat("temperature")?.toDouble()
+                val feelsLike = backStackEntry.arguments?.getFloat("feelsLike")?.toDouble()
+                val highTemp = backStackEntry.arguments?.getFloat("highTemp")?.toDouble()
+                val lowTemp = backStackEntry.arguments?.getFloat("lowTemp")?.toDouble()
+                val symbolCode = backStackEntry.arguments?.getString("symbolCode")
+                val description = backStackEntry.arguments?.getString("description")
+                val encodedLocationName = backStackEntry.arguments?.getString("locationName")
+                android.util.Log.d("WeatherDebug", "Received encoded location name: $encodedLocationName")
+                val locationName = encodedLocationName?.let {
+                    URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+                } ?: "Nåværende posisjon"
+                android.util.Log.d("WeatherDebug", "Decoded location name: $locationName")
+
+                if (temperature != null && feelsLike != null && highTemp != null && 
+                    lowTemp != null && symbolCode != null && description != null) {
+                    WeatherDetailScreen(
+                        navController = navController,
+                        weatherData = WeatherData(temperature, symbolCode),
+                        locationName = locationName,
+                        feelsLike = feelsLike,
+                        highTemp = highTemp,
+                        lowTemp = lowTemp,
+                        weatherDescription = description
+                    )
+                }
             }
             composable("favorites") {
                 // TODO: implement FavoritesScreen
