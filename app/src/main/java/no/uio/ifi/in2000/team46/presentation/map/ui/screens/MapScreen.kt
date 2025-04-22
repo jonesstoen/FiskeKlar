@@ -1,6 +1,7 @@
 package no.uio.ifi.in2000.team46.presentation.map.ui.screens
 
 import android.Manifest
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import no.uio.ifi.in2000.team46.presentation.map.utils.addUserLocationIndicator
@@ -66,10 +68,13 @@ fun MapScreen(
 
     // Snackbar host
     val snackbarHostState = remember { SnackbarHostState() }
+    // Expand/hide bottom sheet on MetAlert selection
+    val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()
+    val bottomSheetState by mapViewModel.bottomSheetState.collectAsState()
 
-    // Bottom sheet state — allow Hidden initial value by disabling skipHiddenState
+    // Bottom sheet state
     val sheetState = rememberStandardBottomSheetState(
-        initialValue = SheetValue.Hidden,
+        initialValue = bottomSheetState,
         skipHiddenState = false
     )
     val scaffoldState = rememberBottomSheetScaffoldState(
@@ -99,11 +104,32 @@ fun MapScreen(
         }
     }
 
-    // Expand/hide bottom sheet on MetAlert selection
-    val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()
+
+
+
+
+    // Expand/hide bottom sheet when MetAlert is selected
     LaunchedEffect(selectedFeature) {
-        if (selectedFeature != null) scaffoldState.bottomSheetState.expand()
-        else scaffoldState.bottomSheetState.hide()
+        if (selectedFeature != null) {
+            scaffoldState.bottomSheetState.expand()
+        } else {
+            scaffoldState.bottomSheetState.hide()
+        }
+    }
+
+    // Observe bottom sheet state and reset MetAlert when it's fully hidden
+    LaunchedEffect(scaffoldState.bottomSheetState) {
+        snapshotFlow { scaffoldState.bottomSheetState.currentValue }
+            .distinctUntilChanged()
+            .collect { state ->
+                Log.d("MapScreen", "Bottom sheet state: $state")
+
+                // Reset MetAlert only when the bottom sheet is fully hidden
+                if (state != SheetValue.Expanded) {
+                    metAlertsViewModel.selectFeature(null)  // Reset the selected MetAlert
+                    Log.d("MapScreen", "Selected alert cleared because bottom sheet is Hidden.")
+                }
+            }
     }
 
     // BottomSheetScaffold wraps the map + layers + controls

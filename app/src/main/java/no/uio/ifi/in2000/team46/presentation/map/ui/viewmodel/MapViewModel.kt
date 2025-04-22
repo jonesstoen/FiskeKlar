@@ -5,6 +5,8 @@ package no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel
 import android.content.Context
 import android.location.Location
 import android.util.Log
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SheetValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.delay
@@ -75,6 +77,14 @@ class MapViewModel(
 
     // Weather‑service
     private val weatherService = WeatherService()
+
+    private val _selectedFeature = MutableStateFlow<Feature?>(null)  // For valgt MetAlert
+    val selectedFeature: StateFlow<Feature?> = _selectedFeature
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    private val _bottomSheetState = MutableStateFlow<SheetValue>(SheetValue.Hidden)
+    @OptIn(ExperimentalMaterial3Api::class)
+    val bottomSheetState: StateFlow<SheetValue> = _bottomSheetState
 
     init {
         // Hent varslene én gang
@@ -189,6 +199,26 @@ class MapViewModel(
             } catch (e: Exception) {
                 Log.e("MapViewModel", "Error fetching weather: ${e.message}")
             }
+        }
+    }
+
+    // Når et MetAlert er valgt, endre bottom sheet state
+    @OptIn(ExperimentalMaterial3Api::class)
+    fun selectMetAlert(feature: Feature?) {
+        _selectedFeature.value = feature
+        if (feature != null) {
+            _bottomSheetState.value = SheetValue.Expanded  // Expand bottom sheet
+        } else {
+            _bottomSheetState.value = SheetValue.Hidden  // Hide bottom sheet
+        }
+    }
+
+    // Reset valgt MetAlert når bottom sheet ikke er utvidet
+    @OptIn(ExperimentalMaterial3Api::class)
+    fun resetMetAlertSelectionIfNeeded(state: SheetValue) {
+        // Hvis bottom sheet er delvis utvidet eller skjult, nullstill MetAlert
+        if (state != SheetValue.Expanded) {
+            _selectedFeature.value = null  // Nullstiller MetAlert hvis bottom sheet ikke er fullt utvidet
         }
     }
 
