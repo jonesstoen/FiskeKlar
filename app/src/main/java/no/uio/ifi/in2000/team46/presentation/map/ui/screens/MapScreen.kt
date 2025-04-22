@@ -38,7 +38,7 @@ import no.uio.ifi.in2000.team46.presentation.map.ui.components.MapViewContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapScreen2(
+fun MapScreen(
     mapView: MapView,
     mapViewModel: MapViewModel = viewModel(
         factory = MapViewModelFactory(

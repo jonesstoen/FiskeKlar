@@ -20,7 +20,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
-import no.uio.ifi.in2000.team46.presentation.map.ui.screens.MapScreen2
+import no.uio.ifi.in2000.team46.presentation.map.ui.screens.MapScreen
 import no.uio.ifi.in2000.team46.presentation.ui.screens.HomeScreen
 import no.uio.ifi.in2000.team46.presentation.fishlog.ui.screens.AddFishingEntryScreen
 import no.uio.ifi.in2000.team46.presentation.fishlog.ui.screens.FishingLogDetailScreen
@@ -104,7 +104,7 @@ fun AppNavHost(
             }
 
             composable("map") {
-                MapScreen2(
+                MapScreen(
                     mapView            = mapView,
                     mapViewModel       = mapViewModel,
                     aisViewModel       = aisViewModel,
