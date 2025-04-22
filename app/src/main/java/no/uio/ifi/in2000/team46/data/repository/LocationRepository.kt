@@ -14,24 +14,36 @@ import kotlinx.coroutines.tasks.await
 class LocationRepository(private val context: Context) {
     private val fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
-
+    // method for getting the last known location fast if already available
     @SuppressLint("MissingPermission")
-    suspend fun getCurrentLocation(): Location? {
+    suspend fun getFastLocation(): Location? {
+
+        //check permissions
         if (ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_FINE_LOCATION
+                context, Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED &&
             ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                context, Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
             return null
         }
 
+        // try to get the last known location
+        val last = fusedLocationClient.lastLocation.await()
+        if (last != null) return last
+
+        // if no last known location, get the current location
+        return fusedLocationClient
+            .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
+            .await()
+    }
+
+
+    @SuppressLint("MissingPermission")
+    suspend fun getCurrentLocation(): Location? {
         return try {
-            val lastLocation = fusedLocationClient.lastLocation.await()
-            lastLocation ?: fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null).await()
+            getFastLocation()
         } catch (e: SecurityException) {
             null
         }
