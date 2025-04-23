@@ -26,4 +26,12 @@ object RetrofitInstance {
             .build()
             .create(MetAlertsDatasource::class.java)
     }
+    val sunInfoApi: SunInfoApi by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(SunInfoApi::class.java)
+    }
 }
