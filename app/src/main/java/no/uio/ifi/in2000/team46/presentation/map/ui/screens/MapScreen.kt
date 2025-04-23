@@ -41,7 +41,7 @@ import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModelFactory
 import no.uio.ifi.in2000.team46.data.repository.GribRepository
 import no.uio.ifi.in2000.team46.data.remote.grib.GribRetrofitInstance
-import no.uio.ifi.in2000.team46.presentation.grib.components.WindLayer
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -145,12 +145,6 @@ fun MapScreen(
             )
         )
     )
-    val windResult by gribViewModel.windData.collectAsState()
-
-// Start nedlasting
-    LaunchedEffect(Unit) {
-        gribViewModel.fetchWindData()
-    }
 
     // BottomSheetScaffold wraps the map + layers + controls
     BottomSheetScaffold(
@@ -185,29 +179,16 @@ fun MapScreen(
             // 2) Layers
             mapLibreMap?.let { map ->
                 MapLayers(
-                    mapView            = mapView,
+                    map        = map,
+                    mapView    = mapView,
                     aisViewModel       = aisViewModel,
                     metAlertsViewModel = metAlertsViewModel,
-                    forbudViewModel    = forbudViewModel
+                    forbudViewModel    = forbudViewModel,
+                    gribViewModel      = gribViewModel
                 )
             }
             // 2.5) Wind layer
-            mapLibreMap?.let { map ->
-                when (val result = windResult) {
-                    is no.uio.ifi.in2000.team46.data.repository.Result.Success -> {
-                        WindLayer(
-                            map = map,
-                            mapView = mapView,
-                            windData = result.data,
-                            threshold = 15.0 // valgfri terskel
-                        )
-                    }
-                    is no.uio.ifi.in2000.team46.data.repository.Result.Error -> {
-                        Log.e("WindLayer", "Feil ved henting av GRIB: ${result.exception.message}")
-                    }
-                    else -> Unit
-                }
-            }
+
 
             // 3) Controls
             mapLibreMap?.let { map ->
@@ -219,6 +200,7 @@ fun MapScreen(
                     aisViewModel          = aisViewModel,
                     forbudViewModel       = forbudViewModel,
                     hasLocationPermission = hasLocationPermission,
+                    gribViewModel         = gribViewModel,
                     onRequestPermission   = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
                 )
             }

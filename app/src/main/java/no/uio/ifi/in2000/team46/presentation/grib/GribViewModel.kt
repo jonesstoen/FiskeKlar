@@ -15,11 +15,23 @@ class GribViewModel(
     private val _windData = MutableStateFlow<Result<List<WindVector>>?>(null)
     val windData: StateFlow<Result<List<WindVector>>?> = _windData
 
+    private val _isLayerVisible = MutableStateFlow(false)
+    val isLayerVisible: StateFlow<Boolean> = _isLayerVisible
+
     fun fetchWindData(forceRefresh: Boolean = false) {
         viewModelScope.launch {
             val result = repository.getWindData(forceRefresh)
             _windData.value = result
         }
+    }
+    fun activateLayer() {
+        _isLayerVisible.value = true
+        fetchWindData(forceRefresh = false)
+    }
+
+    fun deactivateLayer() {
+        _isLayerVisible.value = false
+        _windData.value = null
     }
 }
 class GribViewModelFactory(

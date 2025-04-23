@@ -34,7 +34,9 @@ import no.uio.ifi.in2000.team46.domain.model.ais.VesselTypes
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
 import androidx.compose.ui.text.font.FontWeight
+import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
+import no.uio.ifi.in2000.team46.data.repository.Result
 
 
 @Composable
@@ -42,6 +44,7 @@ fun LayerFilterButton(
     aisViewModel: AisViewModel,
     metAlertsViewModel: MetAlertsViewModel,
     forbudViewModel: ForbudViewModel,
+    gribViewModel: GribViewModel,
     modifier: Modifier = Modifier
 ) {
     val TAG = "LayerFilterButton"
@@ -51,6 +54,8 @@ fun LayerFilterButton(
     val isAisLayerVisible by aisViewModel.isLayerVisible.collectAsState()
     val isMetAlertsLayerVisible by metAlertsViewModel.isLayerVisible.collectAsState()
     val isForbudLayerVisible by forbudViewModel.isLayerVisible.collectAsState()
+    val windResult by gribViewModel.windData.collectAsState(initial = null)
+    val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
     val isLoading by aisViewModel.isLoading.collectAsState()
     val error by aisViewModel.error.collectAsState()
     val selectedVesselTypes by aisViewModel.selectedVesselTypes.collectAsState()
@@ -112,6 +117,7 @@ fun LayerFilterButton(
                     .padding(16.dp)
                     .width(300.dp)
             ) {
+
                 Row {
                     Icon(
                         imageVector = Icons.Default.Layers,
@@ -268,8 +274,22 @@ fun LayerFilterButton(
                         modifier = Modifier.weight(1f)
                     )
                 }
+                // Wind Layer row
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                ) {
+                    Switch(
+                        checked = isWindLayerVisible,
+                        onCheckedChange = { checked ->
+                            if (checked) gribViewModel.activateLayer() else gribViewModel.deactivateLayer()
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Vindvektorer", modifier = Modifier.weight(1f))
+                }
 
-                // error messages
+                // error messages for ais
                 error?.let { errorMessage ->
                     Text(
                         text = errorMessage,
