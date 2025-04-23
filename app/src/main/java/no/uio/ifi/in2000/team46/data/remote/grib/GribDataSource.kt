@@ -6,7 +6,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface GribDataSource {
-    @GET("?")
+    @GET("weatherapi/gribfiles/1.1/")
     suspend fun getGribFiles(
         @Query("area") area: String = "oslofjord",
         @Query("content") content: String = "weather"

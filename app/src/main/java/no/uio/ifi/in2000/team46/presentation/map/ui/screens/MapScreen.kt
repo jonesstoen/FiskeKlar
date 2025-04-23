@@ -37,6 +37,11 @@ import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 import no.uio.ifi.in2000.team46.presentation.map.ui.components.MapControls
 import no.uio.ifi.in2000.team46.presentation.map.ui.components.layers.MapLayers
 import no.uio.ifi.in2000.team46.presentation.map.ui.components.MapViewContainer
+import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.GribViewModelFactory
+import no.uio.ifi.in2000.team46.data.repository.GribRepository
+import no.uio.ifi.in2000.team46.data.remote.grib.GribRetrofitInstance
+import no.uio.ifi.in2000.team46.presentation.grib.components.WindLayer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,6 +60,7 @@ fun MapScreen(
     forbudViewModel: ForbudViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel()
 ) {
+
     val ctx = LocalContext.current
 
     // Request location permission
@@ -131,6 +137,20 @@ fun MapScreen(
                 }
             }
     }
+    val gribViewModel: GribViewModel = viewModel(
+        factory = GribViewModelFactory(
+            GribRepository(
+                GribRetrofitInstance.GribApi,
+                ctx
+            )
+        )
+    )
+    val windResult by gribViewModel.windData.collectAsState()
+
+// Start nedlasting
+    LaunchedEffect(Unit) {
+        gribViewModel.fetchWindData()
+    }
 
     // BottomSheetScaffold wraps the map + layers + controls
     BottomSheetScaffold(
@@ -170,6 +190,23 @@ fun MapScreen(
                     metAlertsViewModel = metAlertsViewModel,
                     forbudViewModel    = forbudViewModel
                 )
+            }
+            // 2.5) Wind layer
+            mapLibreMap?.let { map ->
+                when (val result = windResult) {
+                    is no.uio.ifi.in2000.team46.data.repository.Result.Success -> {
+                        WindLayer(
+                            map = map,
+                            mapView = mapView,
+                            windData = result.data,
+                            threshold = 15.0 // valgfri terskel
+                        )
+                    }
+                    is no.uio.ifi.in2000.team46.data.repository.Result.Error -> {
+                        Log.e("WindLayer", "Feil ved henting av GRIB: ${result.exception.message}")
+                    }
+                    else -> Unit
+                }
             }
 
             // 3) Controls
