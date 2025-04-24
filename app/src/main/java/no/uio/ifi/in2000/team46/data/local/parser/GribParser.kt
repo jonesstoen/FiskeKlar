@@ -4,9 +4,11 @@ import android.util.Log
 import ucar.ma2.ArrayFloat
 import ucar.ma2.Index4D
 import ucar.nc2.NetcdfFile
+import ucar.nc2.time.CalendarDateUnit
 import kotlin.math.atan2
 import kotlin.math.sqrt
 import java.io.File
+import ucar.nc2.time.Calendar
 
 class GribParser {
 
@@ -22,6 +24,8 @@ class GribParser {
             ?: throw IllegalArgumentException("Fant ikke lat")
         val lonVar = ncfile.findVariable("lon")
             ?: throw IllegalArgumentException("Fant ikke lon")
+        val timeVar = ncfile.findVariable("time")
+            ?: throw IllegalArgumentException("Fant ikke time")
 
         val uData = uVar.read() as ArrayFloat.D4
         val vData = vVar.read() as ArrayFloat.D4
@@ -55,10 +59,9 @@ class GribParser {
                 val speed = sqrt(u * u + v * v).toDouble()
                 val direction = (Math.toDegrees(atan2(u.toDouble(), v.toDouble())) + 360) % 360
 
-                // 🟢 HER kan du bytte lat/lon hvis det viser seg at de er snudd
                 vectors.add(
                     WindVector(
-                        lon = lons[iLon].toDouble(),   // ← Bytt disse hvis de er feil!
+                        lon = lons[iLon].toDouble(),
                         lat = lats[iLat].toDouble(),
                         speed = speed,
                         direction = direction
@@ -78,6 +81,22 @@ class GribParser {
         ncfile.variables.forEach { variable ->
             Log.d("GribParser", "Navn: ${variable.fullName}, Dimensions: ${variable.dimensionsString}")
         }
+        val timeVar = ncfile.findVariable("time")
+        if (timeVar != null) {
+            val timeArray = timeVar.read().reduce().storage
+            val timeUnits = timeVar.getUnitsString()
+            val calendarDateUnit = CalendarDateUnit.of(Calendar.gregorian.toString(), timeUnits)
+
+
+            val timeValue = when (timeArray) {
+                is FloatArray -> timeArray[0].toDouble()
+                is DoubleArray -> timeArray[0]
+                else -> throw IllegalArgumentException("Ukjent type for time-array: ${timeArray::class.java}")
+            }
+            val timestamp = calendarDateUnit.makeCalendarDate(timeValue).millis
+            Log.d("GribParser", "Første timestamp: $timestamp ms ($timeUnits)")
+        }
         ncfile.close()
     }
+
 }

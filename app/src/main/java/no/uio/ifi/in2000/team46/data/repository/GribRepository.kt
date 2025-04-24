@@ -56,9 +56,9 @@ class GribRepository(
         }
     }
 
-    /** Sjekker om lokal fil er eldre enn 24 timer */
+    /** Sjekker om lokal fil er eldre enn 3 timer */
     private fun isCacheExpired(): Boolean {
         val ageMs = System.currentTimeMillis() - localGribFile.lastModified()
-        return ageMs > 24 * 60 * 60 * 1000 // 24 timer
+        return ageMs > 3 * 60 * 60 * 1000 // 3 timer
     }
 }

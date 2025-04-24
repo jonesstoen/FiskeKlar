@@ -38,11 +38,11 @@ fun GribWindLayer(
 
                 // Kartlegg terskler til drawable-ikonene (Beaufort skala)
                 val iconMap = mapOf(
-                    0.2   to R.drawable.windbarp05_030_svg,
-                    1.5   to R.drawable.windbarp05_030_svg,
-                    3.3   to R.drawable.windbarp05_030_svg,
-                    5.4   to R.drawable.windbarp05_030_svg,
-                    7.9   to R.drawable.windbarp05_030_svg,
+                    0.2   to R.drawable.symbol_wind_speed_00,
+                    1.5   to R.drawable.symbol_wind_speed_15,
+                    3.3   to R.drawable.symbol_wind_speed_33,
+                    5.4   to R.drawable.symbol_wind_speed_54,
+                    7.9   to R.drawable.symbol_wind_speed_79,
                     10.7  to R.drawable.symbol_wind_speed_107,
                     13.8  to R.drawable.symbol_wind_speed_138,
                     17.1  to R.drawable.symbol_wind_speed_171,
