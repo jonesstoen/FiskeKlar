@@ -1,10 +1,12 @@
 package no.uio.ifi.in2000.team46
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
 import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
@@ -25,14 +27,14 @@ import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModelFactory
 import org.maplibre.android.MapLibre
 import org.maplibre.android.WellKnownTileServer
-
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModelFactory
-
+import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
 
 class MainActivity : ComponentActivity() {
     // Hoist all your ViewModels here so they survive navigation
     private val locationRepository by lazy { LocationRepository(this) }
+    private val weatherService by lazy { WeatherService() }
 
     private val mapViewModel: MapViewModel by viewModels {
         MapViewModelFactory(locationRepository, MetAlertsRepository())
@@ -59,6 +61,7 @@ class MainActivity : ComponentActivity() {
         ProfileViewModelFactory(UserRepository(AppDatabase.getDatabase(this).userDao()))
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // initialize MapLibre
@@ -72,15 +75,16 @@ class MainActivity : ComponentActivity() {
                 val mapView = rememberMapViewWithLifecycle()
 
                 AppNavHost(
-                    navController       = navController,
-                    mapView             = mapView,
-                    mapViewModel        = mapViewModel,
-                    aisViewModel        = aisViewModel,
-                    metAlertsViewModel  = metAlertsViewModel,
-                    forbudViewModel     = forbudViewModel,
-                    searchViewModel     = searchViewModel,
-                    fishLogViewModel    = fishLogViewModel,
-                    profileViewModel    = profileViewModel
+                    navController = navController,
+                    mapView = mapView,
+                    mapViewModel = mapViewModel,
+                    aisViewModel = aisViewModel,
+                    metAlertsViewModel = metAlertsViewModel,
+                    forbudViewModel = forbudViewModel,
+                    searchViewModel = searchViewModel,
+                    fishLogViewModel = fishLogViewModel,
+                    profileViewModel = profileViewModel,
+                    weatherService = weatherService
                 )
             }
         }

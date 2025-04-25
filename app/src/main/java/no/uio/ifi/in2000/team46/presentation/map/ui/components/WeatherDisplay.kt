@@ -34,29 +34,43 @@ fun WeatherDisplay(
     val locationName by mapViewModel.locationName.collectAsState()
     var weatherDetails by remember { mutableStateOf<no.uio.ifi.in2000.team46.domain.model.weather.WeatherDetails?>(null) }
     val selectedLocation by mapViewModel.selectedLocation.collectAsState()
+    val userLocation by mapViewModel.userLocation.collectAsState()
+    val isLocationExplicitlySelected by mapViewModel.isLocationExplicitlySelected.collectAsState()
 
     LaunchedEffect(temperature, symbolCode) {
         if (temperature != null && symbolCode != null) {
-            val lat = selectedLocation?.first ?: MapConstants.INITIAL_LAT
-            val lon = selectedLocation?.second ?: MapConstants.INITIAL_LON
-            val details = weatherService.getWeatherDetails(lat, lon)
-            weatherDetails = details
+            val location = if (isLocationExplicitlySelected && selectedLocation != null) {
+                selectedLocation
+            } else {
+                userLocation?.let { Pair(it.latitude, it.longitude) }
+            }
+            
+            location?.let { (lat, lon) ->
+                val details = weatherService.getWeatherDetails(lat, lon)
+                weatherDetails = details
+            }
         }
     }
 
     Card(
         onClick = {
             weatherDetails?.let { details ->
-                val lat = selectedLocation?.first ?: MapConstants.INITIAL_LAT
-                val lon = selectedLocation?.second ?: MapConstants.INITIAL_LON
-                val encodedLocationName = URLEncoder.encode(locationName, StandardCharsets.UTF_8.toString())
-                navController.navigate(
-                    "weather_detail/${details.temperature}/${details.feelsLike}/" +
-                    "${details.highTemp}/${details.lowTemp}/${details.symbolCode}/" +
-                    "${details.description}/${encodedLocationName}/" +
-                    "${details.windSpeed}/${details.windDirection}/" +
-                    "${lat}/${lon}"
-                )
+                val location = if (isLocationExplicitlySelected && selectedLocation != null) {
+                    selectedLocation
+                } else {
+                    userLocation?.let { Pair(it.latitude, it.longitude) }
+                }
+                
+                location?.let { (lat, lon) ->
+                    val encodedLocationName = URLEncoder.encode(locationName, StandardCharsets.UTF_8.toString())
+                    navController.navigate(
+                        "weather_detail/${details.temperature}/${details.feelsLike}/" +
+                        "${details.highTemp}/${details.lowTemp}/${details.symbolCode}/" +
+                        "${details.description}/${encodedLocationName}/" +
+                        "${details.windSpeed}/${details.windDirection}/" +
+                        "${lat}/${lon}"
+                    )
+                }
             }
         },
         modifier = modifier

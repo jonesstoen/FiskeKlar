@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team46.data.remote.weather
 
+import android.os.Build
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -9,6 +10,9 @@ import no.uio.ifi.in2000.team46.domain.model.weather.WeatherData
 import no.uio.ifi.in2000.team46.domain.model.weather.WeatherDetails
 import no.uio.ifi.in2000.team46.utils.weather.WeatherDescriptionMapper
 import android.util.Log
+import androidx.annotation.RequiresApi
+import no.uio.ifi.in2000.team46.domain.model.weather.DailyForecast
+import no.uio.ifi.in2000.team46.domain.model.weather.HourlyForecast
 
 /**
  * Service-klasse for å hente værdata fra Met API
@@ -56,38 +60,7 @@ class WeatherService {
         }
     }
 
-    suspend fun getWeatherDetails(lat: Double, lon: Double): WeatherDetails = withContext(Dispatchers.IO) {
-        try {
-            val url = URL("$BASE_URL/complete?lat=$lat&lon=$lon")
-            val connection = createConnection(url)
-
-            if (connection.responseCode == HttpURLConnection.HTTP_OK) {
-                parseWeatherDetails(connection)
-            } else {
-                createEmptyWeatherDetails()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            createEmptyWeatherDetails()
-        }
-    }
-
-    data class HourlyForecast(
-        val time: String,
-        val temperature: Double?,
-        val symbolCode: String?,
-        val windSpeed: Double?,
-        val windDirection: Double?
-    )
-
-    data class DailyForecast(
-        val date: String,
-        val hourlyForecasts: List<HourlyForecast>,
-        val maxTemp: Double?,
-        val minTemp: Double?,
-        val symbolCode: String?
-    )
-
+    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun getDetailedForecast(latitude: Double, longitude: Double): List<DailyForecast> {
         return withContext(Dispatchers.IO) {
             try {
@@ -99,10 +72,20 @@ class WeatherService {
                 val timeseries = jsonObject.getJSONObject("properties").getJSONArray("timeseries")
                 val forecasts = mutableListOf<HourlyForecast>()
                 
+                // Hent dagens dato
+                val today = java.time.LocalDate.now()
+                
                 // Samle alle timesvarsler
                 for (i in 0 until timeseries.length()) {
                     val timeseriesObj = timeseries.getJSONObject(i)
                     val time = timeseriesObj.getString("time")
+                    val forecastDate = java.time.LocalDate.parse(time.substring(0, 10))
+                    
+                    // Hopp over datoer som er før dagens dato
+                    if (forecastDate.isBefore(today)) {
+                        continue
+                    }
+                    
                     val data = timeseriesObj.getJSONObject("data")
                     val instant = data.getJSONObject("instant").getJSONObject("details")
                     
@@ -118,7 +101,7 @@ class WeatherService {
                     forecasts.add(hourlyForecast)
                 }
                 
-                // Grupper etter dato
+                // Grupper etter dato og sorter etter dato
                 val dailyForecasts = forecasts
                     .groupBy { it.time.substring(0, 10) }
                     .map { (date, hourlyForecasts) ->
@@ -130,11 +113,31 @@ class WeatherService {
                             symbolCode = hourlyForecasts.firstNotNull { it.symbolCode }
                         )
                     }
+                    .sortedBy { it.date }
+                    .take(4) // Begrens til 4 dager (i dag + 3 neste)
                 
                 dailyForecasts
             } catch (e: Exception) {
                 Log.e("WeatherService", "Error fetching detailed forecast: ${e.message}")
                 emptyList()
+            }
+        }
+    }
+
+    suspend fun getWeatherDetails(latitude: Double, longitude: Double): WeatherDetails {
+        return withContext(Dispatchers.IO) {
+            try {
+                val url = URL("$BASE_URL/complete?lat=$latitude&lon=$longitude")
+                val connection = createConnection(url)
+
+                if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+                    parseWeatherDetails(connection)
+                } else {
+                    createEmptyWeatherDetails()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                createEmptyWeatherDetails()
             }
         }
     }
@@ -202,7 +205,8 @@ class WeatherService {
             symbolCode = symbolCode,
             description = weatherDescription,
             windSpeed = windSpeed,
-            windDirection = windDirection
+            windDirection = windDirection,
+            weatherSymbol = symbolCode
         )
     }
 
@@ -214,6 +218,7 @@ class WeatherService {
         symbolCode = null,
         description = null,
         windSpeed = null,
-        windDirection = null
+        windDirection = null,
+        weatherSymbol = null
     )
 }

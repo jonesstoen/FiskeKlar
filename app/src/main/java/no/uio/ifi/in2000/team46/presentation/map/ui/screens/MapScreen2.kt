@@ -100,17 +100,19 @@ fun MapScreen2(
     // Hent temperatur og værsymbol fra mapViewModel
     val temperature by mapViewModel.temperature.collectAsState()
     val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
+    
 
     // Oppdater markørene når kartet er klart
     LaunchedEffect(mapLibreMap) {
         val map = mapLibreMap ?: return@LaunchedEffect
         map.getStyle { style ->
-            // Legg til brukerens posisjonsmarkør
-            addUserLocationIndicator(map, style, userLocation?.latitude ?: MapConstants.INITIAL_LAT, userLocation?.longitude ?: MapConstants.INITIAL_LON)
-            
-            // Legg til valgt posisjonsmarkør hvis det finnes
-            selectedLocation?.let { (lat, lon) ->
-                addMapMarker(map, style, lat, lon, ctx)
+            // Legg kun til brukerens posisjonsmarkør hvis vi har en faktisk posisjon
+            userLocation?.let { location ->
+                addUserLocationIndicator(map, style, location.latitude, location.longitude)
+                // Oppdater vær basert på brukerens posisjon ved oppstart
+                if (!mapViewModel.isLocationExplicitlySelected()) {
+                    mapViewModel.updateTemperature(location.latitude, location.longitude)
+                }
             }
         }
     }
@@ -125,7 +127,7 @@ fun MapScreen2(
                     addUserLocationIndicator(map, style, loc.latitude, loc.longitude)
                 }
                 
-                // Oppdater valgt posisjonsmarkør
+                // Oppdater valgt posisjonsmarkør KUN hvis en er valgt bevisst
                 when {
                     selectedSearchResult.value != null -> {
                         val result = selectedSearchResult.value!!
@@ -138,7 +140,7 @@ fun MapScreen2(
                             mapViewModel.updateWeatherForLocation(latitude, longitude)
                         }
                     }
-                    selectedLocation != null -> {
+                    selectedLocation != null && mapViewModel.isLocationExplicitlySelected() -> {
                         addMapMarker(map, style, selectedLocation!!.first, selectedLocation!!.second, ctx)
                     }
                 }

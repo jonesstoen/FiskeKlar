@@ -1,11 +1,14 @@
 package no.uio.ifi.in2000.team46.presentation.navigation
 
+import android.net.Uri
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -13,6 +16,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -37,20 +41,26 @@ import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.SearchViewModel
 import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
 import no.uio.ifi.in2000.team46.data.repository.UserRepository
-import no.uio.ifi.in2000.team46.presentation.ui.screens.WeatherDetailScreen
+import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.screens.WeatherDetailScreen
 import no.uio.ifi.in2000.team46.domain.model.weather.WeatherData
+import org.maplibre.android.maps.MapView
+import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
+import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.viewmodel.WeatherDetailViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    mapView: org.maplibre.android.maps.MapView,
+    mapView: MapView,
     mapViewModel: MapViewModel,
     aisViewModel: AisViewModel,
     metAlertsViewModel: MetAlertsViewModel,
     forbudViewModel: ForbudViewModel,
     searchViewModel: SearchViewModel,
     fishLogViewModel: FishingLogViewModel,
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    weatherService: WeatherService,
+    startDestination: String = "home"
 ) {
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
@@ -87,9 +97,9 @@ fun AppNavHost(
         }
     ) { innerPadding ->
         NavHost(
-            navController    = navController,
-            startDestination = "home",
-            modifier         = Modifier.padding(innerPadding)
+            navController = navController,
+            startDestination = startDestination,
+            modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") {
                 val ctx = LocalContext.current
@@ -168,7 +178,7 @@ fun AppNavHost(
             }
             //Weather detail screen that appears on map
             composable(
-                "weather_detail/{temperature}/{feelsLike}/{highTemp}/{lowTemp}/{symbolCode}/{description}/{locationName}/{windSpeed}/{windDirection}/{latitude}/{longitude}",
+                route = "weather_detail/{temperature}/{feelsLike}/{highTemp}/{lowTemp}/{symbolCode}/{description}/{locationName}/{windSpeed}/{windDirection}/{latitude}/{longitude}",
                 arguments = listOf(
                     navArgument("temperature") { type = NavType.FloatType },
                     navArgument("feelsLike") { type = NavType.FloatType },
@@ -176,9 +186,18 @@ fun AppNavHost(
                     navArgument("lowTemp") { type = NavType.FloatType },
                     navArgument("symbolCode") { type = NavType.StringType },
                     navArgument("description") { type = NavType.StringType },
-                    navArgument("locationName") { type = NavType.StringType },
-                    navArgument("windSpeed") { type = NavType.FloatType },
-                    navArgument("windDirection") { type = NavType.FloatType },
+                    navArgument("locationName") { 
+                        type = NavType.StringType
+                        nullable = true 
+                    },
+                    navArgument("windSpeed") { 
+                        type = NavType.FloatType
+                        defaultValue = 0f
+                    },
+                    navArgument("windDirection") { 
+                        type = NavType.FloatType
+                        defaultValue = 0f
+                    },
                     navArgument("latitude") { type = NavType.FloatType },
                     navArgument("longitude") { type = NavType.FloatType }
                 )
@@ -194,16 +213,19 @@ fun AppNavHost(
                 val windDirection = backStackEntry.arguments?.getFloat("windDirection")?.toDouble()
                 val latitude = backStackEntry.arguments?.getFloat("latitude")?.toDouble()
                 val longitude = backStackEntry.arguments?.getFloat("longitude")?.toDouble()
-                
-                android.util.Log.d("WeatherDebug", "Received encoded location name: $encodedLocationName")
+
                 val locationName = encodedLocationName?.let {
                     URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
                 } ?: "Nåværende posisjon"
-                android.util.Log.d("WeatherDebug", "Decoded location name: $locationName")
 
                 if (temperature != null && feelsLike != null && highTemp != null &&
                     lowTemp != null && symbolCode != null && description != null &&
                     latitude != null && longitude != null) {
+                    
+                    val viewModel = remember {
+                        WeatherDetailViewModel(weatherService)
+                    }
+                    
                     WeatherDetailScreen(
                         navController = navController,
                         weatherData = WeatherData(
@@ -218,7 +240,9 @@ fun AppNavHost(
                         lowTemp = lowTemp,
                         weatherDescription = description,
                         windSpeed = windSpeed,
-                        windDirection = windDirection
+                        windDirection = windDirection,
+                        hasWarning = false,
+                        viewModel = viewModel
                     )
                 }
             }

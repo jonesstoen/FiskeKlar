@@ -86,6 +86,9 @@ class MapViewModel(
     private val _selectedLocation = MutableStateFlow<Pair<Double, Double>?>(null)
     val selectedLocation: StateFlow<Pair<Double, Double>?> = _selectedLocation.asStateFlow()
 
+    private var _isLocationExplicitlySelected = MutableStateFlow(false)
+    val isLocationExplicitlySelected: StateFlow<Boolean> = _isLocationExplicitlySelected.asStateFlow()
+
     private val _locationName = MutableStateFlow<String>("Nåværende posisjon")
     val locationName: StateFlow<String> = _locationName.asStateFlow()
 
@@ -93,10 +96,31 @@ class MapViewModel(
     private var map: MapLibreMap? = null
 
     init {
-        // Hent varslene én gang
-        fetchMetAlerts()
-        // Start polling av posisjon + sjekk polygon
-        startLocationPolling()
+        viewModelScope.launch {
+            // Reset all states
+            _selectedLocation.value = null
+            _isLocationExplicitlySelected.value = false
+            _locationName.value = "Nåværende posisjon"
+            _temperature.value = null
+            _weatherSymbol.value = null
+            
+            // Hent posisjon og vær umiddelbart ved oppstart
+            try {
+                val initialLocation = locationRepository.getCurrentLocation()
+                initialLocation?.let { location ->
+                    _userLocation.value = location
+                    val weatherData = weatherService.getWeatherData(location.latitude, location.longitude)
+                    _temperature.value = weatherData.temperature
+                    _weatherSymbol.value = weatherData.symbolCode
+                }
+            } catch (e: Exception) {
+                Log.e("MapViewModel", "Error getting initial location and weather: ${e.message}")
+            }
+            
+            // Start polling og hent varsler etter initial oppsett
+            startLocationPolling()
+            fetchMetAlerts()
+        }
     }
 
     /** Henter varsler fra repository og filtrer ut kun \"marine\". */
@@ -127,14 +151,23 @@ class MapViewModel(
     /** Poller brukerposisjon hvert 5 sekund, oppdaterer temperatur og sjekker polygon‑alarmer. */
     private fun startLocationPolling() {
         viewModelScope.launch {
+            // Vent litt før første polling for å unngå konflikt med init
+            delay(1000)
+            
             while (isActive) {
                 val loc = locationRepository.getCurrentLocation()
                 _userLocation.value = loc
 
-                // Oppdater temperatur kun hvis ingen valgt posisjon
-                if (_selectedLocation.value == null) {
-                    loc?.let { 
-                        updateTemperature(it.latitude, it.longitude)
+                // Alltid oppdater vær basert på brukerens posisjon hvis ingen eksplisitt valgt posisjon
+                if (!_isLocationExplicitlySelected.value) {
+                    loc?.let { location ->
+                        try {
+                            val weatherData = weatherService.getWeatherData(location.latitude, location.longitude)
+                            _temperature.value = weatherData.temperature
+                            _weatherSymbol.value = weatherData.symbolCode
+                        } catch (e: Exception) {
+                            Log.e("MapViewModel", "Error updating weather: ${e.message}")
+                        }
                     }
                 }
 
@@ -192,8 +225,15 @@ class MapViewModel(
                     initialLat, initialLon,
                     zoom = MapConstants.INITIAL_ZOOM
                 )
-                addUserLocationIndicator(map, style, initialLat, initialLon)
                 VesselIconHelper.addVesselIconsToStyle(context, style)
+                
+                // Oppdater vær basert på brukerens posisjon hvis tilgjengelig
+                viewModelScope.launch {
+                    val location = locationRepository.getCurrentLocation()
+                    location?.let {
+                        updateTemperature(it.latitude, it.longitude)
+                    }
+                }
             } catch (e: Exception) {
                 Log.e("MapViewModel", "Error initializing map: ${e.message}")
             }
@@ -201,7 +241,7 @@ class MapViewModel(
     }
 
     /** Henter temperatur og symbolkode for gitt posisjon. */
-    private fun updateTemperature(lat: Double, lon: Double) {
+    fun updateTemperature(lat: Double, lon: Double) {
         viewModelScope.launch {
             try {
                 val data = weatherService.getWeatherData(lat, lon)
@@ -235,7 +275,9 @@ class MapViewModel(
             loc?.let {
                 setSelectedLocation(it.latitude, it.longitude)
                 zoomToLocation(map, it.latitude, it.longitude, map.cameraPosition.zoom)
-                addUserLocationIndicator(map, map.style!!, it.latitude, it.longitude)
+                map.getStyle { style ->
+                    addUserLocationIndicator(map, style, it.latitude, it.longitude)
+                }
             }
         }
     }
@@ -253,6 +295,7 @@ class MapViewModel(
     fun setSelectedLocation(latitude: Double, longitude: Double) {
         viewModelScope.launch {
             _selectedLocation.value = Pair(latitude, longitude)
+            _isLocationExplicitlySelected.value = true
             
             // Avbryt forrige væroppdatering hvis den fortsatt kjører
             weatherUpdateJob?.cancelAndJoin()
@@ -264,6 +307,23 @@ class MapViewModel(
                 updateLocationName(latitude, longitude)
             }
         }
+    }
+
+    fun clearSelectedLocation() {
+        viewModelScope.launch {
+            _selectedLocation.value = null
+            _isLocationExplicitlySelected.value = false
+            
+            // Oppdater vær basert på brukerens posisjon
+            _userLocation.value?.let { location ->
+                updateTemperature(location.latitude, location.longitude)
+                _locationName.value = "Nåværende posisjon"
+            }
+        }
+    }
+
+    fun isLocationExplicitlySelected(): Boolean {
+        return _isLocationExplicitlySelected.value
     }
 
     fun updateWeatherForLocation(latitude: Double, longitude: Double) {
