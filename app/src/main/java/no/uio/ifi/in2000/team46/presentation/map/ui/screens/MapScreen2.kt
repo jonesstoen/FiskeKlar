@@ -14,6 +14,7 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -37,6 +38,10 @@ import no.uio.ifi.in2000.team46.presentation.map.ui.components.layers.MapLayers
 import no.uio.ifi.in2000.team46.presentation.map.ui.components.MapViewContainer
 import androidx.navigation.NavController
 import no.uio.ifi.in2000.team46.data.remote.geocoding.Feature
+import no.uio.ifi.in2000.team46.presentation.map.utils.addMapMarker
+import no.uio.ifi.in2000.team46.presentation.map.ui.components.MapConstants
+import no.uio.ifi.in2000.team46.presentation.map.ui.components.WeatherDisplay
+import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,28 +97,35 @@ fun MapScreen2(
     val searchResults by searchViewModel.searchResults.collectAsState()
     val selectedSearchResult = remember { mutableStateOf<Feature?>(null) }
     
-    // Oppdater markøren når kartet er klart
+    // Hent temperatur og værsymbol fra mapViewModel
+    val temperature by mapViewModel.temperature.collectAsState()
+    val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
+
+    // Oppdater markørene når kartet er klart
     LaunchedEffect(mapLibreMap) {
         val map = mapLibreMap ?: return@LaunchedEffect
         map.getStyle { style ->
-            when {
-                selectedLocation != null -> {
-                    addUserLocationIndicator(map, style, selectedLocation!!.first, selectedLocation!!.second)
-                }
-                else -> {
-                    val loc = userLocation ?: return@getStyle
-                    addUserLocationIndicator(map, style, loc.latitude, loc.longitude)
-                    mapViewModel.setSelectedLocation(loc.latitude, loc.longitude)
-                }
+            // Legg til brukerens posisjonsmarkør
+            addUserLocationIndicator(map, style, userLocation?.latitude ?: MapConstants.INITIAL_LAT, userLocation?.longitude ?: MapConstants.INITIAL_LON)
+            
+            // Legg til valgt posisjonsmarkør hvis det finnes
+            selectedLocation?.let { (lat, lon) ->
+                addMapMarker(map, style, lat, lon, ctx)
             }
         }
     }
     
-    // Oppdater markøren når lokasjonen endres
-    LaunchedEffect(mapLibreMap, selectedLocation, isUserDragging, selectedSearchResult.value) {
+    // Oppdater markørene når lokasjonen endres
+    LaunchedEffect(mapLibreMap, userLocation, selectedLocation, isUserDragging, selectedSearchResult.value) {
         val map = mapLibreMap ?: return@LaunchedEffect
-        if (!isUserDragging) {  // Only update marker if user is not dragging
+        if (!isUserDragging) {  // Only update markers if user is not dragging
             map.getStyle { style ->
+                // Oppdater brukerens posisjonsmarkør
+                userLocation?.let { loc ->
+                    addUserLocationIndicator(map, style, loc.latitude, loc.longitude)
+                }
+                
+                // Oppdater valgt posisjonsmarkør
                 when {
                     selectedSearchResult.value != null -> {
                         val result = selectedSearchResult.value!!
@@ -121,13 +133,13 @@ fun MapScreen2(
                         if (coordinates.size >= 2) {
                             val longitude = coordinates[0]
                             val latitude = coordinates[1]
-                            addUserLocationIndicator(map, style, latitude, longitude)
+                            addMapMarker(map, style, latitude, longitude, ctx)
                             mapViewModel.setSelectedLocation(latitude, longitude)
                             mapViewModel.updateWeatherForLocation(latitude, longitude)
                         }
                     }
                     selectedLocation != null -> {
-                        addUserLocationIndicator(map, style, selectedLocation!!.first, selectedLocation!!.second)
+                        addMapMarker(map, style, selectedLocation!!.first, selectedLocation!!.second, ctx)
                     }
                 }
             }
@@ -197,7 +209,7 @@ fun MapScreen2(
                             // Check if there are any features at the clicked point
                             val features = map.queryRenderedFeatures(map.projection.toScreenLocation(point))
                             
-                            // Sjekk om det er noen klikkbare features (båter, varsler, etc.)
+                            // Sjekk om det er noen klikkable features (båter, varsler, etc.)
                             val hasClickableFeatures = features.any { feature ->
                                 val properties = feature.properties()
                                 val layerId = properties?.get("layerId")?.asString
@@ -213,9 +225,8 @@ fun MapScreen2(
                                 mapViewModel.setSelectedLocation(point.latitude, point.longitude)
                                 // Oppdater markøren umiddelbart
                                 map.getStyle { style ->
-                                    addUserLocationIndicator(map, style, point.latitude, point.longitude)
+                                    addMapMarker(map, style, point.latitude, point.longitude, ctx)
                                 }
-                                // Zoom til lokasjonen etter at markøren er oppdatert
                                 mapViewModel.zoomToLocation(map, point.latitude, point.longitude, map.cameraPosition.zoom)
                             }
                         }
@@ -253,7 +264,7 @@ fun MapScreen2(
                             if (coordinates.size >= 2) {
                                 val longitude = coordinates[0]
                                 val latitude = coordinates[1]
-                                addUserLocationIndicator(map, style, latitude, longitude)
+                                addMapMarker(map, style, latitude, longitude, ctx)
                                 mapViewModel.setSelectedLocation(latitude, longitude)
                                 mapViewModel.updateWeatherForLocation(latitude, longitude)
                             }
@@ -261,13 +272,14 @@ fun MapScreen2(
                     },
                     onUserLocationSelected = { location ->
                         map.getStyle { style ->
-                            addUserLocationIndicator(map, style, location.latitude, location.longitude)
+                            addMapMarker(map, style, location.latitude, location.longitude, ctx)
                             mapViewModel.setSelectedLocation(location.latitude, location.longitude)
                             mapViewModel.updateWeatherForLocation(location.latitude, location.longitude)
                         }
                     }
                 )
             }
+
         }
     }
 }

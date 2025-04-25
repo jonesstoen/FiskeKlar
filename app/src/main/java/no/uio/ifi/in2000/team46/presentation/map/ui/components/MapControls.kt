@@ -1,6 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.map.ui.components
 
-import android.content.Context
+import android.location.Location
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -8,8 +8,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.delay
 import no.uio.ifi.in2000.team46.data.remote.geocoding.Feature
 import org.maplibre.android.maps.MapLibreMap
 import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.MapViewModel
@@ -18,8 +16,6 @@ import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 
 @Composable
 fun MapControls(
@@ -33,11 +29,13 @@ fun MapControls(
     onRequestPermission: () -> Unit,
     navController: NavController,
     onSearchResultSelected: (Feature) -> Unit,
-    onUserLocationSelected: (android.location.Location) -> Unit
+    onUserLocationSelected: (Location) -> Unit
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val weatherService = remember { WeatherService() }
+    val temperature by mapViewModel.temperature.collectAsState()
+    val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
     val locationName = mapViewModel.locationName.collectAsState().value
 
     // Oppdater været når markøren beveger seg
@@ -100,40 +98,12 @@ fun MapControls(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             WeatherDisplay(
-                temperature = mapViewModel.temperature.collectAsState().value,
-                symbolCode = mapViewModel.weatherSymbol.collectAsState().value,
-                onWeatherClick = {
-                    coroutineScope.launch {
-                        val target = map.cameraPosition.target
-                        if (target != null) {
-                            // Først oppdater været og stedsnavnet
-                            mapViewModel.updateWeatherForLocation(target.latitude, target.longitude)
-                            // Vent litt for å sikre at stedsnavnet er oppdatert
-                            delay(100)
-                            val weatherDetails = weatherService.getWeatherDetails(
-                                target.latitude,
-                                target.longitude
-                            )
-                            if (weatherDetails != null && 
-                                weatherDetails.temperature != null && 
-                                weatherDetails.feelsLike != null && 
-                                weatherDetails.highTemp != null && 
-                                weatherDetails.lowTemp != null && 
-                                weatherDetails.symbolCode != null && 
-                                weatherDetails.description != null) {
-                                val currentLocationName = mapViewModel.locationName.value
-                                android.util.Log.d("WeatherDebug", "Sending location name: $currentLocationName")
-                                val encodedLocationName = URLEncoder.encode(currentLocationName, StandardCharsets.UTF_8.toString())
-                                android.util.Log.d("WeatherDebug", "Encoded location name: $encodedLocationName")
-                                navController.navigate(
-                                    "weather_detail/${weatherDetails.temperature}/${weatherDetails.feelsLike}/" +
-                                    "${weatherDetails.highTemp}/${weatherDetails.lowTemp}/${weatherDetails.symbolCode}/" +
-                                    "${weatherDetails.description}/${encodedLocationName}"
-                                )
-                            }
-                        }
-                    }
-                }
+                temperature = temperature,
+                symbolCode = weatherSymbol,
+                mapViewModel = mapViewModel,
+                navController = navController,
+                weatherService = weatherService,
+                modifier = Modifier.padding(4.dp)
             )
             zoomToLocationButton {
                 if (hasLocationPermission) {

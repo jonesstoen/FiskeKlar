@@ -32,6 +32,8 @@ import java.net.URL
 import org.json.JSONObject
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 //import mapconstants
 
 /**MapViewModel styrer forretningslogikken og tilstanden for kartet.
@@ -87,6 +89,9 @@ class MapViewModel(
     private val _locationName = MutableStateFlow<String>("Nåværende posisjon")
     val locationName: StateFlow<String> = _locationName.asStateFlow()
 
+    private var weatherUpdateJob: Job? = null
+    private var map: MapLibreMap? = null
+
     init {
         // Hent varslene én gang
         fetchMetAlerts()
@@ -126,8 +131,12 @@ class MapViewModel(
                 val loc = locationRepository.getCurrentLocation()
                 _userLocation.value = loc
 
-                // Oppdater temperatur ved ny posisjon
-                loc?.let { updateTemperature(it.latitude, it.longitude) }
+                // Oppdater temperatur kun hvis ingen valgt posisjon
+                if (_selectedLocation.value == null) {
+                    loc?.let { 
+                        updateTemperature(it.latitude, it.longitude)
+                    }
+                }
 
                 // Sjekk om vi står i et polygon‑varsel
                 checkForPolygons(loc)
@@ -175,6 +184,7 @@ class MapViewModel(
 
     /** Setter stil og initial visning når kartet er klart. */
     fun initializeMap(map: MapLibreMap, context: Context) {
+        this.map = map
         map.setStyle(styleUrl) { style ->
             try {
                 val controller = MapController(map)
@@ -206,9 +216,13 @@ class MapViewModel(
     /** Zoom til angitt posisjon, oppdaterer temperatur. */
     fun zoomToLocation(map: MapLibreMap, lat: Double, lon: Double, zoom: Double) {
         try {
-            MapController(map).zoomToLocation(lat, lon, zoom)
-            updateTemperature(lat, lon)
-            updateLocationName(lat, lon)
+            val currentZoom = map.cameraPosition.zoom
+            val targetZoom = if (currentZoom > 7.0) currentZoom else 7.0
+            val cameraPosition = CameraUpdateFactory.newLatLngZoom(
+                org.maplibre.android.geometry.LatLng(lat, lon),
+                targetZoom
+            )
+            map.animateCamera(cameraPosition, 500) // 500ms animasjonstid
         } catch (e: Exception) {
             Log.e("MapViewModel", "Error zooming: ${e.message}")
         }
@@ -219,7 +233,8 @@ class MapViewModel(
         viewModelScope.launch {
             val loc = locationRepository.getFastLocation()
             loc?.let {
-                zoomToLocation(map, it.latitude, it.longitude, MapConstants.INITIAL_ZOOM)
+                setSelectedLocation(it.latitude, it.longitude)
+                zoomToLocation(map, it.latitude, it.longitude, map.cameraPosition.zoom)
                 addUserLocationIndicator(map, map.style!!, it.latitude, it.longitude)
             }
         }
@@ -235,6 +250,22 @@ class MapViewModel(
         map.animateCamera(CameraUpdateFactory.zoomTo(z - 1))
     }
 
+    fun setSelectedLocation(latitude: Double, longitude: Double) {
+        viewModelScope.launch {
+            _selectedLocation.value = Pair(latitude, longitude)
+            
+            // Avbryt forrige væroppdatering hvis den fortsatt kjører
+            weatherUpdateJob?.cancelAndJoin()
+            
+            // Start en ny væroppdatering med forsinkelse
+            weatherUpdateJob = viewModelScope.launch {
+                delay(500) // Vent 500ms før væroppdatering
+                updateWeatherForLocation(latitude, longitude)
+                updateLocationName(latitude, longitude)
+            }
+        }
+    }
+
     fun updateWeatherForLocation(latitude: Double, longitude: Double) {
         // Valider koordinater
         if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
@@ -244,29 +275,14 @@ class MapViewModel(
 
         viewModelScope.launch {
             try {
-                Log.d("MapViewModel", "Henter værdata for koordinater: lat=$latitude, lon=$longitude")
                 val weatherData = weatherService.getWeatherData(latitude, longitude)
-                
-                if (weatherData.temperature == null || weatherData.symbolCode == null) {
-                    Log.w("MapViewModel", "Manglende værdata for koordinater: lat=$latitude, lon=$longitude")
-                    return@launch
-                }
-
-                Log.d("MapViewModel", "Oppdaterer værdata: temp=${weatherData.temperature}, symbol=${weatherData.symbolCode}")
                 _temperature.value = weatherData.temperature
                 _weatherSymbol.value = weatherData.symbolCode
-                
-                // Oppdater stedsnavn etter at været er oppdatert
-                updateLocationName(latitude, longitude)
+                _selectedLocation.value = Pair(latitude, longitude)
             } catch (e: Exception) {
-                Log.e("MapViewModel", "Feil ved henting av værdata: ${e.message}")
-                // Behold eksisterende verdier ved feil
+                Log.e("MapViewModel", "Error fetching weather: ${e.message}")
             }
         }
-    }
-
-    fun setSelectedLocation(latitude: Double, longitude: Double) {
-        _selectedLocation.value = Pair(latitude, longitude)
     }
 
     suspend fun getLocationName(latitude: Double, longitude: Double): String {
@@ -281,7 +297,7 @@ class MapViewModel(
                 
                 val address = jsonObject.optJSONObject("address")
                 if (address == null) {
-                    return@withContext "Nåværende posisjon"
+                    return@withContext "Ukjent posisjon"
                 }
                 
                 val street = address.optString("road", "")
@@ -294,11 +310,11 @@ class MapViewModel(
                     street.isNotEmpty() -> street
                     city.isNotEmpty() -> city
                     municipality.isNotEmpty() -> municipality
-                    else -> "Nåværende posisjon"
+                    else -> "Ukjent posisjon"
                 }
             }
         } catch (e: Exception) {
-            "Nåværende posisjon"
+            "Ukjent posisjon"
         }
     }
 

@@ -21,8 +21,8 @@ class GeocodingRepository {
             size = 25,
             layers = "address,street,venue,neighbourhood,locality,county,macroregion",
             focusPointWeight = 3,
-            countryCode = "NO",
             autocomplete = true,
+            //countryCode = "NO"
         )
     }
 }

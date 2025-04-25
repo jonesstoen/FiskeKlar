@@ -6,5 +6,7 @@ data class WeatherDetails(
     val highTemp: Double?,
     val lowTemp: Double?,
     val symbolCode: String?,
-    val description: String?
+    val description: String?,
+    val windSpeed: Double?,
+    val windDirection: Double?
 ) 

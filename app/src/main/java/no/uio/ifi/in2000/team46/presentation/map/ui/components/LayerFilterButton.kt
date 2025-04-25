@@ -55,7 +55,7 @@ fun LayerFilterButton(
     val error by aisViewModel.error.collectAsState()
     val selectedVesselTypes by aisViewModel.selectedVesselTypes.collectAsState()
 
-    // Animasjon for pilrotasjon
+
     //animation for arrowrotation
     val vesselTypesArrowRotation by animateFloatAsState(if (vesselTypesExpanded) 180f else 0f)
 

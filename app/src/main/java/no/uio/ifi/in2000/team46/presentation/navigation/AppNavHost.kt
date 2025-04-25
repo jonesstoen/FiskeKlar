@@ -154,44 +154,7 @@ fun AppNavHost(
             composable("weather") {
                 // TODO: implement WeatherScreen
             }
-            composable(
-                "weather_detail/{temperature}/{feelsLike}/{highTemp}/{lowTemp}/{symbolCode}/{description}/{locationName}",
-                arguments = listOf(
-                    navArgument("temperature") { type = NavType.FloatType },
-                    navArgument("feelsLike") { type = NavType.FloatType },
-                    navArgument("highTemp") { type = NavType.FloatType },
-                    navArgument("lowTemp") { type = NavType.FloatType },
-                    navArgument("symbolCode") { type = NavType.StringType },
-                    navArgument("description") { type = NavType.StringType },
-                    navArgument("locationName") { type = NavType.StringType }
-                )
-            ) { backStackEntry ->
-                val temperature = backStackEntry.arguments?.getFloat("temperature")?.toDouble()
-                val feelsLike = backStackEntry.arguments?.getFloat("feelsLike")?.toDouble()
-                val highTemp = backStackEntry.arguments?.getFloat("highTemp")?.toDouble()
-                val lowTemp = backStackEntry.arguments?.getFloat("lowTemp")?.toDouble()
-                val symbolCode = backStackEntry.arguments?.getString("symbolCode")
-                val description = backStackEntry.arguments?.getString("description")
-                val encodedLocationName = backStackEntry.arguments?.getString("locationName")
-                android.util.Log.d("WeatherDebug", "Received encoded location name: $encodedLocationName")
-                val locationName = encodedLocationName?.let {
-                    URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
-                } ?: "Nåværende posisjon"
-                android.util.Log.d("WeatherDebug", "Decoded location name: $locationName")
 
-                if (temperature != null && feelsLike != null && highTemp != null && 
-                    lowTemp != null && symbolCode != null && description != null) {
-                    WeatherDetailScreen(
-                        navController = navController,
-                        weatherData = WeatherData(temperature, symbolCode),
-                        locationName = locationName,
-                        feelsLike = feelsLike,
-                        highTemp = highTemp,
-                        lowTemp = lowTemp,
-                        weatherDescription = description
-                    )
-                }
-            }
             composable("favorites") {
                 // TODO: implement FavoritesScreen
             }
@@ -202,6 +165,62 @@ fun AppNavHost(
                     onNavigateToHome  = { navController.navigate("home") },
                     onNavigateToAlerts = { navController.navigate("alerts") }
                 )
+            }
+            //Weather detail screen that appears on map
+            composable(
+                "weather_detail/{temperature}/{feelsLike}/{highTemp}/{lowTemp}/{symbolCode}/{description}/{locationName}/{windSpeed}/{windDirection}/{latitude}/{longitude}",
+                arguments = listOf(
+                    navArgument("temperature") { type = NavType.FloatType },
+                    navArgument("feelsLike") { type = NavType.FloatType },
+                    navArgument("highTemp") { type = NavType.FloatType },
+                    navArgument("lowTemp") { type = NavType.FloatType },
+                    navArgument("symbolCode") { type = NavType.StringType },
+                    navArgument("description") { type = NavType.StringType },
+                    navArgument("locationName") { type = NavType.StringType },
+                    navArgument("windSpeed") { type = NavType.FloatType },
+                    navArgument("windDirection") { type = NavType.FloatType },
+                    navArgument("latitude") { type = NavType.FloatType },
+                    navArgument("longitude") { type = NavType.FloatType }
+                )
+            ) { backStackEntry ->
+                val temperature = backStackEntry.arguments?.getFloat("temperature")?.toDouble()
+                val feelsLike = backStackEntry.arguments?.getFloat("feelsLike")?.toDouble()
+                val highTemp = backStackEntry.arguments?.getFloat("highTemp")?.toDouble()
+                val lowTemp = backStackEntry.arguments?.getFloat("lowTemp")?.toDouble()
+                val symbolCode = backStackEntry.arguments?.getString("symbolCode")
+                val description = backStackEntry.arguments?.getString("description")
+                val encodedLocationName = backStackEntry.arguments?.getString("locationName")
+                val windSpeed = backStackEntry.arguments?.getFloat("windSpeed")?.toDouble()
+                val windDirection = backStackEntry.arguments?.getFloat("windDirection")?.toDouble()
+                val latitude = backStackEntry.arguments?.getFloat("latitude")?.toDouble()
+                val longitude = backStackEntry.arguments?.getFloat("longitude")?.toDouble()
+                
+                android.util.Log.d("WeatherDebug", "Received encoded location name: $encodedLocationName")
+                val locationName = encodedLocationName?.let {
+                    URLDecoder.decode(it, StandardCharsets.UTF_8.toString())
+                } ?: "Nåværende posisjon"
+                android.util.Log.d("WeatherDebug", "Decoded location name: $locationName")
+
+                if (temperature != null && feelsLike != null && highTemp != null &&
+                    lowTemp != null && symbolCode != null && description != null &&
+                    latitude != null && longitude != null) {
+                    WeatherDetailScreen(
+                        navController = navController,
+                        weatherData = WeatherData(
+                            temperature = temperature,
+                            symbolCode = symbolCode,
+                            latitude = latitude,
+                            longitude = longitude
+                        ),
+                        locationName = locationName,
+                        feelsLike = feelsLike,
+                        highTemp = highTemp,
+                        lowTemp = lowTemp,
+                        weatherDescription = description,
+                        windSpeed = windSpeed,
+                        windDirection = windDirection
+                    )
+                }
             }
         }
     }
