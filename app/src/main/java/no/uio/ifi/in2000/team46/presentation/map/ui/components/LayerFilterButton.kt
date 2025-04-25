@@ -37,6 +37,7 @@ import androidx.compose.ui.text.font.FontWeight
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.data.repository.Result
+import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 
 
 @Composable
@@ -45,6 +46,7 @@ fun LayerFilterButton(
     metAlertsViewModel: MetAlertsViewModel,
     forbudViewModel: ForbudViewModel,
     gribViewModel: GribViewModel,
+    currentViewModel: CurrentViewModel,
     modifier: Modifier = Modifier
 ) {
     val TAG = "LayerFilterButton"
@@ -56,6 +58,7 @@ fun LayerFilterButton(
     val isForbudLayerVisible by forbudViewModel.isLayerVisible.collectAsState()
     val windResult by gribViewModel.windData.collectAsState(initial = null)
     val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
+    val isCurrentLayerVisible by currentViewModel.isLayerVisible.collectAsState()
     val isLoading by aisViewModel.isLoading.collectAsState()
     val error by aisViewModel.error.collectAsState()
     val selectedVesselTypes by aisViewModel.selectedVesselTypes.collectAsState()
@@ -287,6 +290,19 @@ fun LayerFilterButton(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Vindvektorer", modifier = Modifier.weight(1f))
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                ) {
+                    Switch(
+                        checked = isCurrentLayerVisible,
+                        onCheckedChange = { checked ->
+                            if (checked) currentViewModel.toggleLayerVisibility() else currentViewModel.toggleLayerVisibility()
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Strømvektorer", modifier = Modifier.weight(1f))
                 }
 
                 // error messages for ais

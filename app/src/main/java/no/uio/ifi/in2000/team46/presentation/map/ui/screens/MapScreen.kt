@@ -41,6 +41,9 @@ import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModelFactory
 import no.uio.ifi.in2000.team46.data.repository.GribRepository
 import no.uio.ifi.in2000.team46.data.remote.grib.GribRetrofitInstance
+import no.uio.ifi.in2000.team46.data.repository.CurrentRepository
+import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentViewModelFactory
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,7 +61,7 @@ fun MapScreen(
         factory = MetAlertsViewModelFactory(MetAlertsRepository())
     ),
     forbudViewModel: ForbudViewModel = viewModel(),
-    searchViewModel: SearchViewModel = viewModel()
+    searchViewModel: SearchViewModel = viewModel(),
 ) {
 
     val ctx = LocalContext.current
@@ -145,6 +148,14 @@ fun MapScreen(
             )
         )
     )
+    val currentViewModel: CurrentViewModel = viewModel(
+        factory = CurrentViewModelFactory(
+            CurrentRepository(
+                api = GribRetrofitInstance.GribApi,
+                context = ctx
+            )
+        )
+    )
 
     // BottomSheetScaffold wraps the map + layers + controls
     BottomSheetScaffold(
@@ -184,7 +195,8 @@ fun MapScreen(
                     aisViewModel       = aisViewModel,
                     metAlertsViewModel = metAlertsViewModel,
                     forbudViewModel    = forbudViewModel,
-                    gribViewModel      = gribViewModel
+                    gribViewModel      = gribViewModel,
+                    currentViewModel   = currentViewModel
                 )
             }
             // 2.5) Wind layer
@@ -201,6 +213,7 @@ fun MapScreen(
                     forbudViewModel       = forbudViewModel,
                     hasLocationPermission = hasLocationPermission,
                     gribViewModel         = gribViewModel,
+                    currentViewModel = currentViewModel,
                     onRequestPermission   = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
                 )
             }

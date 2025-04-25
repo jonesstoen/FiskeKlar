@@ -8,7 +8,8 @@ import retrofit2.http.Query
 interface GribDataSource {
     @GET("weatherapi/gribfiles/1.1/")
     suspend fun getGribFiles(
+        @Query("content") content: String ,
         @Query("area") area: String = "skagerrak",
-        @Query("content") content: String = "weather"
+
     ): Response<ResponseBody>
 }

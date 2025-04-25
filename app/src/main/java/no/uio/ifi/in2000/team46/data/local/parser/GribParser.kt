@@ -12,67 +12,56 @@ import ucar.nc2.time.Calendar
 
 class GribParser {
 
-    fun parseGribFile(file: File): List<WindVector> {
-        val vectors = mutableListOf<WindVector>()
+    fun parseVectorFile(
+        file: File,
+        uComponentName: String,
+        vComponentName: String,
+        vectorType: VectorType
+    ): List<Vector> {
+        val vectors = mutableListOf<Vector>()
         val ncfile = NetcdfFile.open(file.absolutePath)
 
-        val uVar = ncfile.findVariable("u-component_of_wind_height_above_ground")
-            ?: throw IllegalArgumentException("Fant ikke u-component_of_wind_height_above_ground")
-        val vVar = ncfile.findVariable("v-component_of_wind_height_above_ground")
-            ?: throw IllegalArgumentException("Fant ikke v-component_of_wind_height_above_ground")
+        val uVar = ncfile.findVariable(uComponentName)
+            ?: throw IllegalArgumentException("Fant ikke $uComponentName")
+        val vVar = ncfile.findVariable(vComponentName)
+            ?: throw IllegalArgumentException("Fant ikke $vComponentName")
         val latVar = ncfile.findVariable("lat")
             ?: throw IllegalArgumentException("Fant ikke lat")
         val lonVar = ncfile.findVariable("lon")
             ?: throw IllegalArgumentException("Fant ikke lon")
-        val timeVar = ncfile.findVariable("time")
-            ?: throw IllegalArgumentException("Fant ikke time")
 
         val uData = uVar.read() as ArrayFloat.D4
         val vData = vVar.read() as ArrayFloat.D4
-
         val lats = latVar.read().reduce().storage as FloatArray
         val lons = lonVar.read().reduce().storage as FloatArray
 
+        val index = uData.index as Index4D
         val timeIndex = 0
         val heightIndex = 0
 
-        val latSize = lats.size
-        val lonSize = lons.size
-
-        val index = uData.index as Index4D
-
-        //  Debug: Print de første 5 koordinatene for å verifisere
-        for (testLat in 0 until minOf(5, latSize)) {
-            Log.d("GribParser", "DEBUG lat[$testLat]: ${lats[testLat]}")
-        }
-        for (testLon in 0 until minOf(5, lonSize)) {
-            Log.d("GribParser", "DEBUG lon[$testLon]: ${lons[testLon]}")
-        }
-
-        for (iLat in 0 until latSize) {
-            for (iLon in 0 until lonSize) {
+        for (iLat in 0 until lats.size) {
+            for (iLon in 0 until lons.size) {
                 index.set(timeIndex, heightIndex, iLat, iLon)
-
                 val u = uData.getFloat(index)
                 val v = vData.getFloat(index)
-
                 val speed = sqrt(u * u + v * v).toDouble()
                 val direction = (Math.toDegrees(atan2(u.toDouble(), v.toDouble())) + 360) % 360
 
-                vectors.add(
-                    WindVector(
-                        lon = lons[iLon].toDouble(),
-                        lat = lats[iLat].toDouble(),
-                        speed = speed,
-                        direction = direction
-                    )
-                )
+                // Sjekk om verdiene er gyldige
+                if (speed.isFinite() && direction.isFinite()) {
+                    val vector = when (vectorType) {
+                        VectorType.WIND -> WindVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction)
+                        VectorType.CURRENT -> CurrentVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction)
+                    }
+                    vectors.add(vector)
+                }
             }
         }
-
         ncfile.close()
         return vectors
     }
+
+
 
     /** Debug: Lister variabler i GRIB-filen */
     fun listVariablesInGrib(file: File) {

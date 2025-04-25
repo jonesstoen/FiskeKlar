@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
+import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import org.maplibre.android.maps.MapLibreMap
 import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.MapViewModel
@@ -27,6 +28,7 @@ fun MapControls(
     aisViewModel: AisViewModel,
     forbudViewModel: ForbudViewModel,
     gribViewModel: GribViewModel,
+    currentViewModel: CurrentViewModel,
     hasLocationPermission: Boolean,
     onRequestPermission: () -> Unit
 ) {
@@ -73,7 +75,8 @@ fun MapControls(
                 aisViewModel       = aisViewModel,
                 metAlertsViewModel = metAlertsViewModel,
                 forbudViewModel    = forbudViewModel,
-                gribViewModel = gribViewModel
+                gribViewModel = gribViewModel,
+                currentViewModel =  currentViewModel,
             )
         }
 

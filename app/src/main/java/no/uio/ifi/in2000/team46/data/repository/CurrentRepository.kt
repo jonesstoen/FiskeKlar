@@ -1,65 +1,61 @@
 package no.uio.ifi.in2000.team46.data.repository
 
-
 import android.content.Context
+import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import no.uio.ifi.in2000.team46.data.local.parser.CurrentVector
 import no.uio.ifi.in2000.team46.data.local.parser.GribParser
 import no.uio.ifi.in2000.team46.data.local.parser.VectorType
-import no.uio.ifi.in2000.team46.data.remote.grib.GribDataSource
 import no.uio.ifi.in2000.team46.data.local.parser.WindVector
+import no.uio.ifi.in2000.team46.data.remote.grib.GribDataSource
 import java.io.File
 import java.io.IOException
 
-
-
-class GribRepository(
-    private val api: GribDataSource,
-    private val context: Context
-) {
-    private val localGribFile = File(context.filesDir, "gribfile_weather_oslofjord.grib")
+class CurrentRepository(private val api: GribDataSource,
+                        private val context: Context) {
+    private val localGribFile = File(context.filesDir, "gribfile_current_oslofjord.grib")
     private val parser = GribParser()
 
-    /**
-     * Last ned GRIB-fil (hvis nødvendig) og parse til vind-data.
-     * @param forceRefresh true = tving ny nedlasting
-     */
-    suspend fun getWindData(forceRefresh: Boolean = false): Result<List<WindVector>> {
+    suspend fun getCurrentData(forceRefresh: Boolean = false): Result<List<CurrentVector>> {
         return withContext(Dispatchers.IO) {
             try {
                 // Sjekk cache først
                 if (!localGribFile.exists() || isCacheExpired() || forceRefresh) {
-                    downloadGribFile()
+                    downloadGribFile(content = "current")
                 }
                 //list variablene
                 parser.listVariablesInGrib(localGribFile)
 
-                // Parse GRIB-filen til data (vindvektorer)
-                val windVectors = parser.parseVectorFile(
+
+                val currentVectors = parser.parseVectorFile(
                     localGribFile,
-                    "u-component_of_wind_height_above_ground",
-                    "v-component_of_wind_height_above_ground",
-                    VectorType.WIND
-                ).filterIsInstance<WindVector>()
-                Result.Success(windVectors)
+                    "u-component_of_current_depth_below_sea",
+                    "v-component_of_current_depth_below_sea",
+                    VectorType.CURRENT
+                ).filterIsInstance<CurrentVector>()
+                Result.Success(currentVectors)
             } catch (e: Exception) {
                 Result.Error(e)
             }
         }
     }
 
-    /** Last ned GRIB-filen fra API og lagre lokalt */
-    private suspend fun downloadGribFile() {
-        val response = api.getGribFiles(content = "weather")
+    private suspend fun downloadGribFile(content: String): File {
+        // Bruk samme logikk som i GribRepository, men content = "current"
+        val response = api.getGribFiles(content = "current")
         if (response.isSuccessful && response.body() != null) {
             response.body()!!.byteStream().use { input ->
                 localGribFile.outputStream().use { output ->
                     input.copyTo(output)
                 }
             }
+            Log.d("CurrentRepository", "Trying to download GRIB file with content=current")
+            return localGribFile
         } else {
             throw IOException("Failed to download GRIB file: ${response.code()}")
         }
+
     }
 
     /** Sjekker om lokal fil er eldre enn 3 timer */

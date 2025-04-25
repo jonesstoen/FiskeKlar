@@ -58,7 +58,7 @@ fun GribWindLayer(
                     val iconName = mapView.context.resources.getResourceEntryName(resId)
                     if (style.getImage(iconName) == null) {
                         val bitmap = BitmapFactory.decodeResource(mapView.context.resources, resId)
-                        style.addImage(iconName, bitmap, true)
+                        style.addImage(iconName, bitmap)
                         Log.d("GribWindLayer", "La til ikon: $iconName")
                     }
                 }
@@ -91,17 +91,17 @@ fun GribWindLayer(
                     style.addLayer(
                         SymbolLayer(layerId, sourceId).withProperties(
                             iconImage(Expression.get("icon")),
-                            iconAllowOverlap(false),
-                            iconIgnorePlacement(false),
+                            iconAllowOverlap(true),
+                            iconIgnorePlacement(true),
                             iconRotate(Expression.get("direction")),
                             iconSize(
                                 Expression.interpolate(
                                     Expression.linear(), Expression.zoom(),
-                                    Expression.stop(0.0, 0.05),    // Lav zoom = tiny piler
-                                    Expression.stop(8.0, 0.1),     // Litt større
-                                    Expression.stop(12.0, 0.18),   // Mer tydelig forskjell
-                                    Expression.stop(16.0, 0.28),   // Ved høy zoom, klart større, men ikke for store
-                                    Expression.stop(20.0, 0.4)     // Maks zoom
+                                    Expression.stop(0.0, 0.10),
+                                    Expression.stop(8.0, 0.20),
+                                    Expression.stop(12.0, 0.30),
+                                    Expression.stop(16.0, 0.40),
+                                    Expression.stop(20.0, 0.50)
                                 )
 
                             )
