@@ -17,21 +17,21 @@ import java.time.LocalTime
 class FishingLogViewModel(
     private val fishLogRepo: FishLogRepository,
     private val fishTypeRepo: FishTypeRepository
-) : ViewModel() {
+) : ViewModel(), FishingLogUiContract {
 
 
     //all fishing logs prepopulated in the database
-    val entries: StateFlow<List<FishingLog>> = fishLogRepo
+    override val entries: StateFlow<List<FishingLog>> = fishLogRepo
         .getAllEntries()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
 
     //all fish types prepopulated in the database
-    val fishTypes: StateFlow<List<FishType>> = fishTypeRepo
+    override val fishTypes: StateFlow<List<FishType>> = fishTypeRepo
         .allTypes
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    fun addEntry(
+    override fun addEntry(
         date: LocalDate,
         time: LocalTime,
         location: String,
@@ -54,7 +54,7 @@ class FishingLogViewModel(
         }
     }
 
-    fun removeEntry(entry: FishingLog) {
+    override fun removeEntry(entry: FishingLog) {
         viewModelScope.launch {
             fishLogRepo.removeEntry(entry)
         }
