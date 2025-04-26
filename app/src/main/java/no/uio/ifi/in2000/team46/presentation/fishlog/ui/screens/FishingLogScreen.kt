@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -39,17 +38,19 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
-import no.uio.ifi.in2000.team46.presentation.fishlog.ui.viewmodel.FishingLogViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.LocalTime
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.items
+import no.uio.ifi.in2000.team46.presentation.fishlog.ui.viewmodel.FishingLogUiContract
 import java.util.Locale
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FishingLogScreen(
-    viewModel: FishingLogViewModel,
+    viewModel: FishingLogUiContract,
     onNavigate: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
