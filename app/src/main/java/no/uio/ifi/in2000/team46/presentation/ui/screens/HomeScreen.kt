@@ -2,6 +2,9 @@ package no.uio.ifi.in2000.team46.presentation.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -22,12 +25,12 @@ import java.time.LocalTime
 
 // Fargepalett
 // color palette from https://coolors.co/1b4965-5fa8d3-9dc88d-bee9e8-cae9ff
-private val Navy = Color(0xFF1B4965)
-private val LightBlue = Color(0xFF5FA8D3)
-private val Sage = Color(0xFF9DC88D)
-private val LightSage = Color(0xFFBEE9E8)
-val Background = Color(0xFFCAE9FF)
-private val CardGreen = Color(0xFFB5C9B7)
+//private val Navy = Color(0xFF1B4965)
+//private val LightBlue = Color(0xFF5FA8D3)
+//private val Sage = Color(0xFF9DC88D)
+//private val LightSage = Color(0xFFBEE9E8)
+//val Background = Color(0xFFCAE9FF)
+//private val CardGreen = Color(0xFFB5C9B7)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,7 +57,7 @@ fun HomeScreen(
     }
 
     Scaffold(
-        containerColor = Background,
+        containerColor = MaterialTheme.colorScheme.background,
 
     ) { paddingValues ->
         Column(
@@ -81,50 +84,24 @@ fun HomeScreen(
             Text(
                 text = "$greeting!",
                 style = MaterialTheme.typography.headlineSmall,
-                color = Navy
+                color = MaterialTheme.colorScheme.primary
             )
 
             // Grid of quickactions
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+            LazyVerticalGrid(
+                columns           = GridCells.Fixed(2),
+                verticalArrangement   = Arrangement.spacedBy(16.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                modifier          = Modifier
+                    .padding(16.dp)
+                    .fillMaxHeight()
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    QuickAccessCard(
-                        icon = Icons.Default.Map,
-                        text = "Kart",
-                        onClick = onNavigateToMap,
-                        modifier = Modifier.weight(1f)
-                    )
-                    QuickAccessCard(
-                        icon = Icons.Default.List,
-                        text = "Fiskelogg",
-                        onClick = onNavigateToFishLog,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    QuickAccessCard(
-                        icon = Icons.Default.WbSunny,
-                        text = "Værvarsel",
-                        onClick = onNavigateToWeather,
-                        modifier = Modifier.weight(1f)
-                    )
-                    QuickAccessCard(
-                        icon = Icons.Default.Favorite,
-                        text = "Favoritter",
-                        onClick = onNavigateToFavorites,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                item { QuickAccessCard(Icons.Default.Map,       "Kart",      onNavigateToMap) }
+                item { QuickAccessCard(Icons.Default.List,      "Fiskelogg", onNavigateToFishLog) }
+                item { QuickAccessCard(Icons.Default.WbSunny,   "Værvarsel", onNavigateToWeather) }
+                item { QuickAccessCard(Icons.Default.Favorite,  "Favoritter",onNavigateToFavorites) }
             }
+
         }
     }
 }
@@ -141,8 +118,10 @@ private fun QuickAccessCard(
         onClick = onClick,
         modifier = modifier
             .height(190.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = CardGreen
+            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+            contentColor   = MaterialTheme.colorScheme.onSecondaryContainer
         )
     ) {
         Column(
@@ -156,14 +135,14 @@ private fun QuickAccessCard(
                 imageVector = icon,
                 contentDescription = text,
                 modifier = Modifier.size(40.dp),
-                tint = Navy
+                tint = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = text,
                 style = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = Navy
+                color = MaterialTheme.colorScheme.primary
             )
         }
     }
