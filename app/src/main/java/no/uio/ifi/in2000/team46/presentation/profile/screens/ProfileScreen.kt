@@ -1,4 +1,5 @@
 package no.uio.ifi.in2000.team46.presentation.profile.screens
+/*
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
@@ -18,12 +19,13 @@ import no.uio.ifi.in2000.team46.presentation.profile.component.ProfileContent
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import java.io.File
 import androidx.compose.ui.platform.LocalContext
+import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileUiContract
 import no.uio.ifi.in2000.team46.presentation.ui.screens.Background
 
 
 @Composable
 fun ProfileScreen(
-    viewModel: ProfileViewModel,
+    viewModel: ProfileUiContract,
     onNavigateToHome: () -> Unit,
     onNavigateToAlerts: () -> Unit
 ) {
@@ -138,6 +140,6 @@ fun UserInputForm(
     }) {
         Text("Lagre endringer")
     }
-}
+}*/
 
 
