@@ -38,6 +38,7 @@ import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.data.repository.Result
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
 
 
 @Composable
@@ -47,6 +48,7 @@ fun LayerFilterButton(
     forbudViewModel: ForbudViewModel,
     gribViewModel: GribViewModel,
     currentViewModel: CurrentViewModel,
+    driftViewModel: DriftViewModel,
     modifier: Modifier = Modifier
 ) {
     val TAG = "LayerFilterButton"
@@ -56,6 +58,7 @@ fun LayerFilterButton(
     val isAisLayerVisible by aisViewModel.isLayerVisible.collectAsState()
     val isMetAlertsLayerVisible by metAlertsViewModel.isLayerVisible.collectAsState()
     val isForbudLayerVisible by forbudViewModel.isLayerVisible.collectAsState()
+    val isDriftLayerVisible by driftViewModel.isLayerVisible.collectAsState()
     val windResult by gribViewModel.windData.collectAsState(initial = null)
     val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
     val isCurrentLayerVisible by currentViewModel.isLayerVisible.collectAsState()
@@ -303,6 +306,20 @@ fun LayerFilterButton(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Strømvektorer", modifier = Modifier.weight(1f))
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                ) {
+                    Switch(
+                        modifier = Modifier.scale(0.7f),
+                        checked = isDriftLayerVisible,
+                        onCheckedChange = {
+                            driftViewModel.toggleLayerVisibility()
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Driftvektorer (vind + strøm)", modifier = Modifier.weight(1f))
                 }
 
                 // error messages for ais

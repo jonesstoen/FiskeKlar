@@ -43,7 +43,10 @@ import no.uio.ifi.in2000.team46.data.repository.GribRepository
 import no.uio.ifi.in2000.team46.data.remote.grib.GribRetrofitInstance
 import no.uio.ifi.in2000.team46.data.repository.CurrentRepository
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.grib.components.DriftVectorInfoBox
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -156,6 +159,12 @@ fun MapScreen(
             )
         )
     )
+    val driftViewModel: DriftViewModel = viewModel(
+        factory = DriftViewModelFactory(
+            GribRepository(GribRetrofitInstance.GribApi, ctx),
+            CurrentRepository(GribRetrofitInstance.GribApi, ctx)
+        )
+    )
 
     // BottomSheetScaffold wraps the map + layers + controls
     BottomSheetScaffold(
@@ -196,7 +205,8 @@ fun MapScreen(
                     metAlertsViewModel = metAlertsViewModel,
                     forbudViewModel    = forbudViewModel,
                     gribViewModel      = gribViewModel,
-                    currentViewModel   = currentViewModel
+                    currentViewModel   = currentViewModel,
+                    driftViewModel = driftViewModel
                 )
             }
             // 2.5) Wind layer
@@ -213,10 +223,15 @@ fun MapScreen(
                     forbudViewModel       = forbudViewModel,
                     hasLocationPermission = hasLocationPermission,
                     gribViewModel         = gribViewModel,
+                    driftViewModel = driftViewModel,
                     currentViewModel = currentViewModel,
                     onRequestPermission   = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
                 )
             }
+            DriftVectorInfoBox(
+                driftViewModel,
+
+            )
         }
     }
 }
