@@ -3,17 +3,9 @@ package no.uio.ifi.in2000.team46.presentation.fishlog.ui.screens
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -38,34 +30,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
+import no.uio.ifi.in2000.team46.presentation.fishlog.ui.viewmodel.FishingLogViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.LocalTime
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.items
-import no.uio.ifi.in2000.team46.presentation.fishlog.ui.viewmodel.FishingLogUiContract
 import java.util.Locale
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FishingLogScreen(
-    viewModel: FishingLogUiContract,
-    onNavigate: (String) -> Unit,
+    viewModel: FishingLogViewModel,
+    navigateTo: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val entries by viewModel.entries.collectAsState(initial = emptyList())
+    val fishingEntries by viewModel.entries.collectAsState(initial = emptyList())
 
     Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Fiskelogg") }
-            )
-        },
-
+        topBar = { TopAppBar(title = { Text("Fiskelogg") }) },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { onNavigate("addFishingEntry") },
+                onClick = { navigateTo("addFishingEntry") },
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
                 text = { Text("Legg til fangst") },
                 containerColor = MaterialTheme.colorScheme.primary,
@@ -73,61 +57,60 @@ fun FishingLogScreen(
             )
         }
     ) { paddingValues ->
-        if (entries.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        "Ingen fangster enda",
-                        style = MaterialTheme.typography.titleLarge,
-                        textAlign = TextAlign.Center
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "Trykk på + knappen for å legge til din første fangst",
-                        style = MaterialTheme.typography.bodyMedium,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
+        if (fishingEntries.isEmpty()) {
+            DisplayEmptyState(paddingValues)
         } else {
-            LazyColumn(
-                modifier = modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(entries.sortedByDescending { it.date }) { entry ->
-                    FishingEntryCard(
-                        entry = entry,
-                        onDelete = { viewModel.removeEntry(entry) },
-                        onClick = { onNavigate("fishingLogDetail/${entry.id}") }
-                    )
-                }
-            }
+            DisplayFishingLogList(fishingEntries, navigateTo, paddingValues, viewModel)
+        }
+    }
+}
+
+@Composable
+fun DisplayEmptyState(paddingValues: PaddingValues) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text("Ingen fangster enda", style = MaterialTheme.typography.titleLarge, textAlign = TextAlign.Center)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Trykk på + knappen for å legge til din første fangst", style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center)
+        }
+    }
+}
+
+@Composable
+fun DisplayFishingLogList(fishingEntries: List<FishingLog>, navigateTo: (String) -> Unit, paddingValues: PaddingValues, viewModel: FishingLogViewModel) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(fishingEntries.sortedByDescending { it.date }) { entry ->
+            DisplayFishingEntryCard(entry, onDelete = { viewModel.removeEntry(entry) }, onClick = { navigateTo("fishingLogDetail/${entry.id}") })
         }
     }
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun FishingEntryCard(
-    entry: FishingLog,
+fun DisplayFishingEntryCard(
+    fishingLogEntry: FishingLog,
     onDelete: () -> Unit,
     onClick: () -> Unit
 ) {
-    val dateFmt = DateTimeFormatter.ofPattern("d. MMMM yyyy", Locale("no"))
-    val timeFmt = DateTimeFormatter.ofPattern("HH:mm")
-    val dateText = LocalDate.parse(entry.date).format(dateFmt)
-    val timeText = LocalTime.parse(entry.time).format(timeFmt)
+    val dateTimeFormatter = DateTimeFormatter.ofPattern("d. MMMM yyyy", Locale("no"))
+    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+    val formattedDate = LocalDate.parse(fishingLogEntry.date).format(dateTimeFormatter)
+    val formattedTime = LocalTime.parse(fishingLogEntry.time).format(timeFormatter)
+
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -137,40 +120,22 @@ fun FishingEntryCard(
         elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
     ) {
         Row(
-            modifier = Modifier
-                .padding(12.dp),
+            modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // thumbnail  for entry
-            entry.imageUri?.let { uri ->
+            fishingLogEntry.imageUri?.let { imageUri ->
                 AsyncImage(
-                    model = uri,
+                    model = imageUri,
                     contentDescription = "Fangstbilde",
                     modifier = Modifier
                         .size(48.dp)
                         .clip(RoundedCornerShape(8.dp))
                 )
-                Spacer(Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(8.dp))
             }
 
-            // date time fishtype and weight
-            Column(
-                modifier = Modifier
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                Text(
-                    text = "$dateText  •  $timeText",
-                    style = MaterialTheme.typography.titleSmall
-                )
-                Text(
-                    text = "${entry.fishType.ifBlank { "Ukjent fisk" }} — " +
-                            "${"%.1f".format(entry.weight)} kg",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            DisplayFishingEntryDetails(fishingLogEntry, formattedDate, formattedTime)
 
-            // delete button
             IconButton(onClick = onDelete) {
                 Icon(Icons.Default.Delete, contentDescription = "Slett")
             }
@@ -178,5 +143,17 @@ fun FishingEntryCard(
     }
 }
 
-
-
+@Composable
+fun RowScope.DisplayFishingEntryDetails(fishingLogEntry: FishingLog, formattedDate: String, formattedTime: String) {
+    Column(
+        modifier = Modifier.weight(1f),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(text = "$formattedDate  •  $formattedTime", style = MaterialTheme.typography.titleSmall)
+        Text(
+            text = "${fishingLogEntry.fishType.ifBlank { "Ukjent fisk" }} — " +
+                    "${"%.1f".format(fishingLogEntry.weight)} kg",
+            style = MaterialTheme.typography.bodyMedium
+        )
+    }
+}
