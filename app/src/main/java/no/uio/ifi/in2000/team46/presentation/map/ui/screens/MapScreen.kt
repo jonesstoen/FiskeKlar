@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import kotlinx.coroutines.flow.distinctUntilChanged
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
@@ -41,13 +42,15 @@ import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModelFactory
 import no.uio.ifi.in2000.team46.data.repository.GribRepository
 import no.uio.ifi.in2000.team46.data.remote.grib.GribRetrofitInstance
-import no.uio.ifi.in2000.team46.data.repository.CurrentRepository
-import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
-import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
-import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModelFactory
-import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentViewModelFactory
-import no.uio.ifi.in2000.team46.presentation.grib.components.DriftVectorInfoBox
+import org.maplibre.android.annotations.MarkerOptions
+import org.maplibre.android.annotations.PolygonOptions
+import org.maplibre.android.camera.CameraUpdateFactory
+import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.geometry.LatLngBounds
 
+// =====================
+// MAP SCREEN
+// =====================
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,11 +68,12 @@ fun MapScreen(
     ),
     forbudViewModel: ForbudViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel(),
+    navBackStackEntry: NavBackStackEntry,
+    initialLocation: Pair<Double, Double>? = null,
+    areaPoints: List<Pair<Double, Double>>? = null
 ) {
-
+    // ----------- State og permissions -----------
     val ctx = LocalContext.current
-
-    // Request location permission
     var hasLocationPermission by remember { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -78,15 +82,10 @@ fun MapScreen(
         permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
-    // Snackbar host
+    // ----------- Snackbar og bottom sheet state -----------
     val snackbarHostState = remember { SnackbarHostState() }
-    // Expand/hide bottom sheet on MetAlert selection
-    val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()
-    val bottomSheetState by mapViewModel.bottomSheetState.collectAsState()
-
-    // Bottom sheet state
     val sheetState = rememberStandardBottomSheetState(
-        initialValue = bottomSheetState,
+        initialValue = SheetValue.Hidden,
         skipHiddenState = false
     )
     val scaffoldState = rememberBottomSheetScaffoldState(
@@ -94,10 +93,10 @@ fun MapScreen(
         snackbarHostState = snackbarHostState
     )
 
-    // Hold reference to MapLibreMap
+    // ----------- MapLibreMap referanse -----------
     var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
 
-    // Update user‐location indicator whenever location changes
+    // ----------- Brukerposisjon og indikator -----------
     val userLocation by mapViewModel.userLocation.collectAsState()
     LaunchedEffect(mapLibreMap, userLocation) {
         val map = mapLibreMap ?: return@LaunchedEffect
@@ -107,7 +106,35 @@ fun MapScreen(
         }
     }
 
-    // Show snackbar events from ViewModel
+    // ----------- Håndter initialLocation og areaPoints -----------
+    LaunchedEffect(mapLibreMap, areaPoints, initialLocation) {
+        mapLibreMap?.let { map ->
+            map.clear()
+            if (areaPoints != null && areaPoints.isNotEmpty()) {
+                val polygonOptions = PolygonOptions()
+                    .addAll(areaPoints.map { LatLng(it.first, it.second) })
+                    .fillColor(0x5500BCD4)
+                    .strokeColor(android.graphics.Color.BLUE)
+                map.addPolygon(polygonOptions)
+                val bounds = LatLngBounds.Builder()
+                areaPoints.forEach { bounds.include(LatLng(it.first, it.second)) }
+                map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50))
+            } else if (initialLocation != null) {
+                val (lat, lng) = initialLocation
+                map.addMarker(MarkerOptions().position(LatLng(lat, lng)).title("Favorittpunkt"))
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 14.0))
+            }
+        }
+    }
+
+    // ----------- Rydd opp markører ved skjermbytte -----------
+    DisposableEffect(Unit) {
+        onDispose {
+            mapLibreMap?.clear()
+        }
+    }
+
+    // ----------- Snackbar fra ViewModel -----------
     LaunchedEffect(mapViewModel.uiEvents) {
         mapViewModel.uiEvents.collect { event ->
             if (event is MapUiEvent.ShowAlertSnackbar) {
@@ -116,33 +143,7 @@ fun MapScreen(
         }
     }
 
-
-
-
-
-    // Expand/hide bottom sheet when MetAlert is selected
-    LaunchedEffect(selectedFeature) {
-        if (selectedFeature != null) {
-            scaffoldState.bottomSheetState.expand()
-        } else {
-            scaffoldState.bottomSheetState.hide()
-        }
-    }
-
-    // Observe bottom sheet state and reset MetAlert when it's fully hidden
-    LaunchedEffect(scaffoldState.bottomSheetState) {
-        snapshotFlow { scaffoldState.bottomSheetState.currentValue }
-            .distinctUntilChanged()
-            .collect { state ->
-                Log.d("MapScreen", "Bottom sheet state: $state")
-
-                // Reset MetAlert only when the bottom sheet is fully hidden
-                if (state != SheetValue.Expanded) {
-                    metAlertsViewModel.selectFeature(null)  // Reset the selected MetAlert
-                    Log.d("MapScreen", "Selected alert cleared because bottom sheet is Hidden.")
-                }
-            }
-    }
+    // ----------- GribViewModel for værdata -----------
     val gribViewModel: GribViewModel = viewModel(
         factory = GribViewModelFactory(
             GribRepository(
@@ -151,25 +152,20 @@ fun MapScreen(
             )
         )
     )
-    val currentViewModel: CurrentViewModel = viewModel(
-        factory = CurrentViewModelFactory(
-            CurrentRepository(
-                api = GribRetrofitInstance.GribApi,
-                context = ctx
-            )
-        )
-    )
-    val driftViewModel: DriftViewModel = viewModel(
-        factory = DriftViewModelFactory(
-            GribRepository(GribRetrofitInstance.GribApi, ctx),
-            CurrentRepository(GribRetrofitInstance.GribApi, ctx)
-        )
-    )
 
-    // BottomSheetScaffold wraps the map + layers + controls
+    // ----------- MetAlerts bottom sheet -----------
+    val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()
+    LaunchedEffect(selectedFeature) {
+        if (selectedFeature != null) {
+            sheetState.expand()
+        } else {
+            sheetState.hide()
+        }
+    }
+
+    // ----------- UI: BottomSheetScaffold med kart, lag og kontroller -----------
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetPeekHeight = 0.dp,
         sheetContent = {
             selectedFeature?.let { feature ->
                 MetAlertsBottomSheetContent(
@@ -178,14 +174,14 @@ fun MapScreen(
                 )
             }
         },
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        sheetPeekHeight = 0.dp
     ) { sheetPadding ->
         Box(
             Modifier
                 .fillMaxSize()
                 .padding(sheetPadding)
         ) {
-            // 1) Map container
+            // 1) Kartcontainer
             MapViewContainer(
                 mapView  = mapView,
                 styleUrl = mapViewModel.styleUrl,
@@ -195,8 +191,7 @@ fun MapScreen(
                     mapViewModel.initializeMap(map, ctx)
                 }
             )
-
-            // 2) Layers
+            // 2) Lag
             mapLibreMap?.let { map ->
                 MapLayers(
                     map        = map,
@@ -204,15 +199,10 @@ fun MapScreen(
                     aisViewModel       = aisViewModel,
                     metAlertsViewModel = metAlertsViewModel,
                     forbudViewModel    = forbudViewModel,
-                    gribViewModel      = gribViewModel,
-                    currentViewModel   = currentViewModel,
-                    driftViewModel = driftViewModel
+                    gribViewModel      = gribViewModel
                 )
             }
-            // 2.5) Wind layer
-
-
-            // 3) Controls
+            // 3) Kontroller
             mapLibreMap?.let { map ->
                 MapControls(
                     map                   = map,
@@ -223,15 +213,9 @@ fun MapScreen(
                     forbudViewModel       = forbudViewModel,
                     hasLocationPermission = hasLocationPermission,
                     gribViewModel         = gribViewModel,
-                    driftViewModel = driftViewModel,
-                    currentViewModel = currentViewModel,
                     onRequestPermission   = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
                 )
             }
-            DriftVectorInfoBox(
-                driftViewModel,
-
-            )
         }
     }
 }

@@ -58,7 +58,7 @@ class MapViewModel(
     private val initialLon: Double = MapConstants.INITIAL_LON
 
     // ----- StateFlows for UI‑binding -----
-    private val _userLocation = MutableStateFlow<Location?>(null)
+    val _userLocation = MutableStateFlow<Location?>(null)
     val userLocation: StateFlow<Location?> = _userLocation
 
     private val _temperature = MutableStateFlow<Double?>(null)
