@@ -36,7 +36,7 @@ fun GribWindLayer(
                 val sourceId = "wind_source"
                 val layerId = "wind_layer"
 
-                // Kartlegg terskler til drawable-ikonene (Beaufort skala)
+                //mapping the treshold values to the  drawable-icons (Beaufort scale)
                 val iconMap = mapOf(
                     0.2   to R.drawable.symbol_wind_speed_00,
                     1.5   to R.drawable.symbol_wind_speed_15,
@@ -53,7 +53,7 @@ fun GribWindLayer(
                     Double.MAX_VALUE to R.drawable.symbol_wind_speed_max
                 )
 
-                // Legg til alle ikonene
+                // add icons
                 iconMap.forEach { (_, resId) ->
                     val iconName = mapView.context.resources.getResourceEntryName(resId)
                     if (style.getImage(iconName) == null) {

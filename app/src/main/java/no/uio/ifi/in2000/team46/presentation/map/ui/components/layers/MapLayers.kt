@@ -34,7 +34,7 @@ fun MapLayers(
         map           = map,
         mapView       = mapView
     )
-    GribCurrentLayer( // ⬅️ Ny!
+    GribCurrentLayer(
         currentViewModel = currentViewModel,
         map              = map,
         mapView          = mapView

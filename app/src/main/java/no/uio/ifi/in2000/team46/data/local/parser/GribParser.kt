@@ -47,7 +47,7 @@ class GribParser {
                 val speed = sqrt(u * u + v * v).toDouble()
                 val direction = (Math.toDegrees(atan2(u.toDouble(), v.toDouble())) + 360) % 360
 
-                // Sjekk om verdiene er gyldige
+                // check if the variables are correctly defined
                 if (speed.isFinite() && direction.isFinite()) {
                     val vector = when (vectorType) {
                         VectorType.WIND -> WindVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction)
@@ -63,7 +63,7 @@ class GribParser {
 
 
 
-    /** Debug: Lister variabler i GRIB-filen */
+    // Debug: lists the variables in the file
     fun listVariablesInGrib(file: File) {
         val ncfile = NetcdfFile.open(file.absolutePath)
         Log.d("GribParser", "=== Variabler i GRIB-filen ===")
