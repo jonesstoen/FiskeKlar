@@ -19,6 +19,8 @@ import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import java.io.File
 import androidx.compose.ui.platform.LocalContext
 import no.uio.ifi.in2000.team46.presentation.ui.screens.Background
+import android.net.Uri
+
 
 
 @Composable
@@ -31,112 +33,135 @@ fun ProfileScreen(
     var isEditing by remember { mutableStateOf(false) }
 
     Scaffold(
-        bottomBar = {
-
-        },
-        containerColor = Background
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (user == null || isEditing) {
                 UserInputForm(
-                    nameDefault = user?.name ?: "",
-                    usernameDefault = user?.username ?: "",
-                    onSave = { name, username, imageUri ->
-                        viewModel.saveUser(name, username, imageUri)
-                        isEditing = false
-                    }
-                )
-            }  else {
+                    modifier         = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp),
+                    nameDefault      = user?.name ?: "",
+                    usernameDefault  = user?.username ?: "",
+                    imageUriDefault  = user?.profileImageUri
+                ) { name, username, imageUri ->
+                    viewModel.saveUser(name, username, imageUri)
+                    isEditing = false
+                }
+            } else {
                 ProfileContent(
-                    user = user!!,
-                    onClearUser = { viewModel.clearUser() },
-                    onEditUser = { isEditing = true } // 👈 Dette trigger visning av skjema
+                    modifier    = Modifier
+                        .fillMaxSize(),
+
+                    user        = user!!,
+                    onClearUser = {
+                        viewModel.clearUser()
+                        isEditing = true
+                    },
+                    onEditUser  = { isEditing = true }
                 )
-        }
+            }
         }
     }
 }
 
 @Composable
 fun UserInputForm(
+    modifier: Modifier = Modifier,
     nameDefault: String = "",
     usernameDefault: String = "",
     imageUriDefault: String? = null,
-    onSave: (String, String, String?) -> Unit
+    onSave: (name: String, username: String, imageUri: String?) -> Unit
 ) {
     var name by remember { mutableStateOf(nameDefault) }
     var username by remember { mutableStateOf(usernameDefault) }
-    //for taking pictures
     val context = LocalContext.current
-    var imageUri by remember { mutableStateOf(imageUriDefault?.let { android.net.Uri.parse(it) }) }
+
+    var imageUri by remember {
+        mutableStateOf(imageUriDefault?.let { Uri.parse(it) })
+    }
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (!success) imageUri = null
     }
 
-    Text("Rediger profil", style = MaterialTheme.typography.titleLarge)
-    Spacer(modifier = Modifier.height(16.dp))
-
-    OutlinedTextField(
-        value = name,
-        onValueChange = { name = it },
-        label = { Text("Navn") },
-        modifier = Modifier.fillMaxWidth()
-    )
-
-    Spacer(modifier = Modifier.height(12.dp))
-
-    OutlinedTextField(
-        value = username,
-        onValueChange = { username = it },
-        label = { Text("Kallenavn") },
-        modifier = Modifier.fillMaxWidth()
-    )
-
-    Spacer(modifier = Modifier.height(24.dp))
-    Button(
-        onClick = {
-            val tmpFile = File.createTempFile("profile_", ".jpg", context.cacheDir).apply {
-                createNewFile()
-                deleteOnExit()
-            }
-            val tmpUri = FileProvider.getUriForFile(
-                context,
-                "${context.packageName}.provider",
-                tmpFile
-            )
-            imageUri = tmpUri
-            takePictureLauncher.launch(tmpUri)
-        },
-        modifier = Modifier.fillMaxWidth()
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Ta profilbilde")
-    }
+        Text("Rediger profil", style = MaterialTheme.typography.titleLarge)
+        Spacer(Modifier.height(16.dp))
 
-    imageUri?.let {
-        Spacer(modifier = Modifier.height(12.dp))
-        AsyncImage(
-            model = it,
-            contentDescription = "Profilbilde",
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(180.dp)
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Navn") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
         )
-    }
 
-    Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(12.dp))
 
-    Button(onClick = {
-        onSave(name, username, imageUri?.toString())
-    }) {
-        Text("Lagre endringer")
+        OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Kallenavn") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+
+            )
+
+        Spacer(Modifier.height(24.dp))
+
+        Button(
+            onClick = {
+                // Opprett midlertidig fil og ta bilde
+                val tmpFile = File.createTempFile("profile_", ".jpg", context.cacheDir).apply {
+                    createNewFile()
+                    deleteOnExit()
+                }
+                val tmpUri = FileProvider.getUriForFile(
+                    context,
+                    "${context.packageName}.provider",
+                    tmpFile
+                )
+                imageUri = tmpUri
+                takePictureLauncher.launch(tmpUri)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Ta profilbilde")
+        }
+
+        imageUri?.let {
+            Spacer(Modifier.height(12.dp))
+            AsyncImage(
+                model = it,
+                contentDescription = "Profilbilde",
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)
+            )
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Button(
+            onClick = {
+                onSave(name.trim(), username.trim(), imageUri?.toString())
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Lagre endringer")
+        }
     }
 }
 

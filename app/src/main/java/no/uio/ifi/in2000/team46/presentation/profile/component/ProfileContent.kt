@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.profile.component
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,130 +24,171 @@ import no.uio.ifi.in2000.team46.R
 import no.uio.ifi.in2000.team46.data.local.database.entities.User
 import no.uio.ifi.in2000.team46.presentation.ui.screens.Background
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileContent(
+    modifier: Modifier = Modifier,
     user: User,
     onClearUser: () -> Unit,
-    onEditUser: () -> Unit = {} // placeholder for edit user action
+    onEditUser: () -> Unit
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Min profil") },
-                actions = {
-                    IconButton(onClick = { onEditUser() }) {
-                        Icon(Icons.Default.Edit, contentDescription = "Rediger profil")
+    LazyColumn(
+        modifier            = modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // 1) Header: tittel + knapper
+        item {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment   = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text  = "Min profil",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Row {
+                    IconButton(onClick = onEditUser) {
+                        Icon(
+                            Icons.Default.Edit,
+                            contentDescription = "Rediger profil",
+                            tint = MaterialTheme.colorScheme.onBackground
+                        )
                     }
                     IconButton(onClick = { showDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Slett profil", tint = Color.Red)
+                        Icon(
+                            Icons.Default.Delete,
+                            contentDescription = "Slett profil",
+                            tint = MaterialTheme.colorScheme.error
+                        )
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Background
+                }
+            }
+        }
+
+        // 2) Profilbilde + info
+        item {
+            if (user.profileImageUri != null) {
+                AsyncImage(
+                    model             = user.profileImageUri,
+                    contentDescription= "Profilbilde",
+                    modifier = Modifier
+                        .size(100.dp)
+                        .clip(CircleShape)
+
                 )
+            } else {
+                Icon(
+                    Icons.Default.AccountCircle,
+                    contentDescription = "Profilbilde",
+                    modifier = Modifier
+                        .size(100.dp)
+                        //FIXME: FIX THIS AFTER THEME IS IMPLEMENTED IN THE APP
+                        // .border( ),
+                )
+            }
 
+            Spacer(Modifier.height(8.dp))
+
+            Text(user.name,     style = MaterialTheme.typography.titleLarge)
+            Text(user.username, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                "Medlem siden ${user.memberSince}",
+                style = MaterialTheme.typography.bodySmall
             )
-        },
-        containerColor = Background
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            item {
-                if (user.profileImageUri != null) {
-                    AsyncImage(
-                        model = user.profileImageUri,
-                        contentDescription = "Profilbilde",
-                        modifier = Modifier
-                            .size(100.dp)
-                            .aspectRatio(1f)
-                            .clip(CircleShape),
+        }
+
+        // 3) Fiskestatistikk
+        item {
+            Card(
+                modifier  = Modifier.fillMaxWidth(),
+                shape     = MaterialTheme.shapes.medium,
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors    = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor   = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(
+                        "Fiskestatistikk",
+                        style = MaterialTheme.typography.titleMedium
                     )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "Profilbilde",
-                        modifier = Modifier.size(100.dp),
-                        tint = Color(0xFF2A475E)
-                    )
-                }
+                    Spacer(Modifier.height(12.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        StatItem("28", "Antall fisketurer",
+                            IconType.Vector(Icons.Default.Schedule),
 
-                Spacer(modifier = Modifier.height(8.dp))
+                        )
+                        StatItem("Nesodden", "Favorittområde",
+                            IconType.Vector(Icons.Default.Place),
 
-                Text(user.name, style = MaterialTheme.typography.titleLarge)
-                Text(user.username, style = MaterialTheme.typography.bodyMedium)
-                Text("Medlem siden ${user.memberSince}", style = MaterialTheme.typography.bodySmall)
+                        )
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        StatItem("Torsk", "Flest fanget fisk",
+                            IconType.Resource(painterResource(id = R.drawable.fish)),
 
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+                        )
+                        StatItem("134", "Timer på sjøen",
+                            IconType.Vector(Icons.Default.Timer),
 
-            item {
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Fiskestatistikk", style = MaterialTheme.typography.titleMedium)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            StatItem("28", "Antall fisketurer", IconType.Vector(Icons.Default.Schedule))
-                            StatItem("Nesodden", "Favorittområde", IconType.Vector(Icons.Default.Place))
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            StatItem(
-                                "Torsk",
-                                "Flest fanget fisk",
-                                IconType.Resource(painterResource(id = R.drawable.fish))
-                            )
-                            StatItem("134", "Timer på sjøen", IconType.Vector(Icons.Default.Schedule))
-                        }
+                        )
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
+        }
 
-            item {
-                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(12.dp)) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Mine enheter", style = MaterialTheme.typography.titleMedium)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Havørna", style = MaterialTheme.typography.bodyLarge)
-                        Text("LJ2023  |  AIS-ID: 123456789", style = MaterialTheme.typography.bodyMedium)
-                    }
+        // 4) Mine enheter
+        item {
+            Card(
+                modifier  = Modifier.fillMaxWidth(),
+                shape     = MaterialTheme.shapes.medium,
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                colors    = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor   = MaterialTheme.colorScheme.onTertiaryContainer
+                )
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Mine enheter", style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(12.dp))
+                    Text("Havørna",    style = MaterialTheme.typography.bodyLarge)
+                    Text("LJ2023  |  AIS-ID: 123456789",
+                        style = MaterialTheme.typography.bodyMedium)
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
+        }
 
-            item {
-                SettingsItem("Endre passord", Icons.Default.Lock)
-                SettingsItem("Varslingsinnstillinger", Icons.Default.Notifications)
-            }
+        // 5) Innstillinger
+        item {
+            SettingsItem("Endre passord", Icons.Default.Lock)
+            SettingsItem("Varslingsinnstillinger", Icons.Default.Notifications)
         }
     }
 
+    // Slett dialog
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Slett profil") },
-            text = { Text("Er du sikker på at du vil slette profilen din? Dette kan ikke angres.") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showDialog = false
-                        onClearUser()
-                    }
-                ) {
-                    Text("Ja, slett", color = Color.Red)
+            title            = { Text("Slett profil") },
+            text             = { Text("Er du sikker? Dette kan ikke angres.") },
+            confirmButton    = {
+                TextButton(onClick = {
+                    showDialog = false
+                    onClearUser()
+                }) {
+                    Text("Ja, slett",
+                        color = MaterialTheme.colorScheme.error)
                 }
             },
-            dismissButton = {
+            dismissButton    = {
                 TextButton(onClick = { showDialog = false }) {
                     Text("Avbryt")
                 }
