@@ -42,6 +42,11 @@ import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModelFactory
 import no.uio.ifi.in2000.team46.data.repository.GribRepository
 import no.uio.ifi.in2000.team46.data.remote.grib.GribRetrofitInstance
+import no.uio.ifi.in2000.team46.data.repository.CurrentRepository
+import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentViewModelFactory
 import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.annotations.PolygonOptions
 import org.maplibre.android.camera.CameraUpdateFactory
@@ -152,6 +157,20 @@ fun MapScreen(
             )
         )
     )
+    val currentViewModel: CurrentViewModel = viewModel(
+        factory = CurrentViewModelFactory(
+            CurrentRepository(
+                api = GribRetrofitInstance.GribApi,
+                context = ctx
+            )
+        )
+    )
+    val driftViewModel: DriftViewModel = viewModel(
+        factory = DriftViewModelFactory(
+            GribRepository(GribRetrofitInstance.GribApi, ctx),
+            CurrentRepository(GribRetrofitInstance.GribApi, ctx)
+        )
+    )
 
     // ----------- MetAlerts bottom sheet -----------
     val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()
@@ -199,7 +218,9 @@ fun MapScreen(
                     aisViewModel       = aisViewModel,
                     metAlertsViewModel = metAlertsViewModel,
                     forbudViewModel    = forbudViewModel,
-                    gribViewModel      = gribViewModel
+                    gribViewModel      = gribViewModel,
+                    currentViewModel   = currentViewModel,
+                    driftViewModel     = driftViewModel,
                 )
             }
             // 3) Kontroller
@@ -213,6 +234,8 @@ fun MapScreen(
                     forbudViewModel       = forbudViewModel,
                     hasLocationPermission = hasLocationPermission,
                     gribViewModel         = gribViewModel,
+                    driftViewModel = driftViewModel,
+                    currentViewModel = currentViewModel,
                     onRequestPermission   = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
                 )
             }

@@ -42,7 +42,7 @@ fun DriftLayer(
 
                 if (style.getImage(iconId) == null) {
                     val arrowBitmap = BitmapFactory.decodeResource(
-                        mapView.context.resources, R.drawable.drift_arrow_icon// Lag gjerne egen ikon for drift
+                        mapView.context.resources, R.drawable.drift_arrow_icon
                     )
                     style.addImage(iconId, arrowBitmap, false)
                 }
