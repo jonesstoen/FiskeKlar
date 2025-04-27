@@ -15,7 +15,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -46,6 +48,9 @@ import no.uio.ifi.in2000.team46.domain.model.weather.WeatherData
 import org.maplibre.android.maps.MapView
 import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
 import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.viewmodel.WeatherDetailViewModel
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.setValue
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -161,8 +166,50 @@ fun AppNavHost(
             composable("alerts") {
                 // TODO: implement AlertsScreen
             }
+            
             composable("weather") {
-                // TODO: implement WeatherScreen
+                val viewModel = remember { WeatherDetailViewModel(weatherService) }
+                val userLocation by mapViewModel.userLocation.collectAsState()
+                var weatherData by remember { mutableStateOf<WeatherData?>(null) }
+                var weatherDetails by remember { mutableStateOf<no.uio.ifi.in2000.team46.domain.model.weather.WeatherDetails?>(null) }
+
+                LaunchedEffect(userLocation) {
+                    userLocation?.let { location ->
+                        try {
+                            weatherDetails = weatherService.getWeatherDetails(location.latitude, location.longitude)
+                            weatherDetails?.let { details ->
+                                weatherData = WeatherData(
+                                    temperature = details.temperature,
+                                    symbolCode = details.symbolCode ?: "",
+                                    latitude = location.latitude,
+                                    longitude = location.longitude
+                                )
+                            }
+                        } catch (e: Exception) {
+                            // Håndter feil her hvis nødvendig
+                        }
+                    }
+                }
+
+                if (weatherData != null && weatherDetails != null) {
+                    WeatherDetailScreen(
+                        navController = navController,
+                        weatherData = weatherData!!,
+                        locationName = "Min posisjon",
+                        feelsLike = weatherDetails!!.feelsLike ?: 0.0,
+                        highTemp = weatherDetails!!.highTemp ?: 0.0,
+                        lowTemp = weatherDetails!!.lowTemp ?: 0.0,
+                        weatherDescription = weatherDetails!!.description ?: "",
+                        windSpeed = weatherDetails!!.windSpeed,
+                        windDirection = weatherDetails!!.windDirection,
+                        viewModel = viewModel,
+                        searchViewModel = searchViewModel,
+                        weatherService = weatherService,
+                        isFromHomeScreen = true
+                    )
+                } else {
+                    CircularProgressIndicator()
+                }
             }
 
             composable("favorites") {

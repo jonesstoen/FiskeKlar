@@ -9,6 +9,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,17 +26,32 @@ import no.uio.ifi.in2000.team46.R
 import no.uio.ifi.in2000.team46.domain.model.weather.WeatherData
 import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
 import no.uio.ifi.in2000.team46.domain.model.weather.SixHourBlock
+import no.uio.ifi.in2000.team46.domain.model.weather.DailyForecast
+import no.uio.ifi.in2000.team46.domain.model.weather.HourlyForecast
+import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.SearchViewModel
+import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.viewmodel.WeatherDetailViewModel
+import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.viewmodel.TimeRange
+import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.viewmodel.WeatherDetailEvent
 import no.uio.ifi.in2000.team46.presentation.ui.screens.Background
-import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.viewmodel.*
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import android.util.Log
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalFocusManager
+import org.maplibre.android.maps.MapLibreMap
+import no.uio.ifi.in2000.team46.data.remote.geocoding.Feature
+import no.uio.ifi.in2000.team46.presentation.map.utils.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.utils.DateTimeFormatter
+import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.viewmodel.WeatherDetailViewModel.Companion.createSixHourBlocks
 import no.uio.ifi.in2000.team46.utils.weather.WeatherIconMapper
 import kotlin.math.roundToInt
-
-sealed interface WeatherDetailEvent {
-    data class OnTimeRangeSelected(val range: Int) : WeatherDetailEvent
-    data class OnDayClicked(val date: String) : WeatherDetailEvent
-    data object OnBackClicked : WeatherDetailEvent
-}
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,14 +67,29 @@ fun WeatherDetailScreen(
     windSpeed: Double? = null,
     windDirection: Double? = null,
     hasWarning: Boolean = false,
-    viewModel: WeatherDetailViewModel
+    viewModel: WeatherDetailViewModel,
+    searchViewModel: SearchViewModel? = null,
+    weatherService: WeatherService? = null,
+    isFromHomeScreen: Boolean = false
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var selectedTimeRange by remember { mutableStateOf(TimeRange.Now) }
+    var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
+    
+    val mapView = rememberMapViewWithLifecycle()
+    
+    LaunchedEffect(mapView) {
+        mapView.getMapAsync { map ->
+            mapLibreMap = map
+        }
+    }
     
     LaunchedEffect(weatherData) {
         if (weatherData.latitude != null && weatherData.longitude != null) {
-            viewModel.loadForecast(weatherData.latitude, weatherData.longitude)
+            viewModel.updateLocation(
+                latitude = weatherData.latitude,
+                longitude = weatherData.longitude,
+                locationName = locationName
+            )
         }
     }
 
@@ -65,10 +97,30 @@ fun WeatherDetailScreen(
         containerColor = Background,
         topBar = {
             TopAppBar(
-                title = { Text(locationName) },
+                title = {
+                    Text(
+                        text = uiState.locationName.ifEmpty { locationName },
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Gå tilbake")
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Tilbake"
+                        )
+                    }
+                },
+                actions = {
+                    if (isFromHomeScreen && searchViewModel != null) {
+                        IconButton(
+                            onClick = { viewModel.onEvent(WeatherDetailEvent.OnSearchExpandedChanged) }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = "Søk"
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -78,10 +130,9 @@ fun WeatherDetailScreen(
         },
         bottomBar = {
             TimeRangeSelector(
-                selectedTimeRange = selectedTimeRange,
-                onTimeRangeSelected = { 
-                    selectedTimeRange = it
-                    viewModel.onEvent(WeatherDetailEvent.OnTimeRangeSelected(it.ordinal))
+                selectedTimeRange = uiState.selectedTimeRange,
+                onTimeRangeSelected = { range -> 
+                    viewModel.onEvent(WeatherDetailEvent.OnTimeRangeSelected(range.ordinal))
                 }
             )
         }
@@ -90,23 +141,62 @@ fun WeatherDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .background(Background)
         ) {
-            when (selectedTimeRange) {
-                TimeRange.Now -> CurrentWeather(
-                    weatherData = weatherData,
-                    feelsLike = feelsLike,
-                    highTemp = highTemp,
-                    lowTemp = lowTemp,
-                    weatherDescription = weatherDescription,
-                    windSpeed = windSpeed,
-                    windDirection = windDirection
+            if (isFromHomeScreen && searchViewModel != null && uiState.isSearchExpanded) {
+                val searchResults by searchViewModel.searchResults.collectAsState()
+                val isSearching by searchViewModel.isSearching.collectAsState()
+                val showingHistory by searchViewModel.showingHistory.collectAsState()
+                
+                SearchBox(
+                    map = mapLibreMap,
+                    searchResults = searchResults,
+                    onSearch = { query -> 
+                        searchViewModel.search(query)
+                        viewModel.onEvent(WeatherDetailEvent.OnSearchQueryChanged(query))
+                    },
+                    onResultSelected = { feature ->
+                        val coordinates = feature.geometry.coordinates
+                        viewModel.onEvent(WeatherDetailEvent.OnLocationSelected(
+                            latitude = coordinates[1],
+                            longitude = coordinates[0],
+                            locationName = feature.properties.name
+                        ))
+                    },
+                    isSearching = isSearching,
+                    showingHistory = showingHistory
                 )
-                TimeRange.ThreeDays -> {
-                    if (uiState.isLoading) {
-                        CircularProgressIndicator()
-                    } else {
+            }
+
+            if (uiState.isLoading) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            } else if (uiState.error != null) {
+                Text(
+                    text = uiState.error!!,
+                    modifier = Modifier.padding(16.dp),
+                    color = MaterialTheme.colorScheme.error
+                )
+            } else {
+                when (uiState.selectedTimeRange) {
+                    TimeRange.Now -> {
+                        CurrentWeather(
+                            temperature = uiState.weatherData?.temperature ?: weatherData.temperature ?: 0.0,
+                            feelsLike = uiState.feelsLike,
+                            highTemp = uiState.highTemp,
+                            lowTemp = uiState.lowTemp,
+                            symbolCode = uiState.weatherData?.symbolCode ?: weatherData.symbolCode ?: "",
+                            description = uiState.weatherDescription.ifEmpty { weatherDescription },
+                            windSpeed = uiState.windSpeed ?: windSpeed ?: 0.0,
+                            windDirection = uiState.windDirection ?: windDirection ?: 0.0,
+                            isLarge = true
+                        )
+                    }
+                    TimeRange.ThreeDays -> {
                         ForecastView(
                             forecasts = uiState.forecasts,
                             expandedDates = uiState.expandedDates,
@@ -124,7 +214,7 @@ fun WeatherDetailScreen(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun ForecastView(
-    forecasts: List<WeatherService.DailyForecast>,
+    forecasts: List<DailyForecast>,
     expandedDates: Set<String>,
     onDayClick: (String) -> Unit
 ) {
@@ -132,7 +222,7 @@ private fun ForecastView(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(forecasts) { forecast ->
+        items(items = forecasts, key = { it.date }) { forecast ->
             DayForecast(
                 forecast = forecast,
                 isExpanded = forecast.date in expandedDates,
@@ -145,7 +235,7 @@ private fun ForecastView(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun DayForecast(
-    forecast: WeatherService.DailyForecast,
+    forecast: DailyForecast,
     isExpanded: Boolean,
     onDayClick: () -> Unit
 ) {
@@ -185,14 +275,14 @@ private fun DayForecast(
 }
 
 @Composable
-private fun SixHourBlocks(forecasts: List<WeatherService.HourlyForecast>) {
+private fun SixHourBlocks(forecasts: List<HourlyForecast>) {
     val blocks = createSixHourBlocks(forecasts)
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         blocks.forEach { block ->
-            SixHourBlock(block)
+            SixHourBlock(block = block)
         }
     }
 }
@@ -248,7 +338,7 @@ private fun SixHourBlock(
 }
 
 @Composable
-private fun HourlyForecast(forecasts: List<WeatherService.HourlyForecast>) {
+private fun HourlyForecast(forecasts: List<HourlyForecast>) {
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -286,7 +376,7 @@ private fun DayHeader(
 
 @Composable
 private fun HourlyWeatherRow(
-    forecast: WeatherService.HourlyForecast
+    forecast: HourlyForecast
 ) {
     Row(
         modifier = Modifier
@@ -365,25 +455,25 @@ private fun TimeRangeSelector(
     Surface(
         color = Background,
         modifier = Modifier.fillMaxWidth()
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-                .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly
+        ) {
             TimeRange.entries.forEach { timeRange ->
-            FilledTonalButton(
-                onClick = { onTimeRangeSelected(timeRange) },
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = if (selectedTimeRange == timeRange) 
-                            MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.surface
-                ),
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 4.dp)
-            ) {
+                FilledTonalButton(
+                    onClick = { onTimeRangeSelected(timeRange) },
+                    colors = ButtonDefaults.filledTonalButtonColors(
+                        containerColor = if (selectedTimeRange == timeRange) 
+                                MaterialTheme.colorScheme.primary
+                        else MaterialTheme.colorScheme.surface
+                    ),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 4.dp)
+                ) {
                     Text(
                         text = timeRange.title,
                         color = if (selectedTimeRange == timeRange)
@@ -399,13 +489,15 @@ private fun TimeRangeSelector(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun CurrentWeather(
-    weatherData: WeatherData,
+    temperature: Double,
     feelsLike: Double,
     highTemp: Double,
     lowTemp: Double,
-    weatherDescription: String,
-    windSpeed: Double?,
-    windDirection: Double?
+    symbolCode: String,
+    description: String,
+    windSpeed: Double,
+    windDirection: Double,
+    isLarge: Boolean
 ) {
     Column(
         modifier = Modifier
@@ -421,39 +513,37 @@ private fun CurrentWeather(
                 temperature = feelsLike,
                 modifier = Modifier.align(Alignment.CenterStart)
             )
-        Text(
-            text = "${weatherData.temperature?.roundToInt()}°",
+            Text(
+                text = "${temperature.roundToInt()}°",
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontSize = MaterialTheme.typography.displayLarge.fontSize * 1.5
                 ),
                 modifier = Modifier.align(Alignment.Center)
-        )
+            )
         }
         
         Spacer(modifier = Modifier.height(16.dp))
         
         WeatherIcon(
-            symbolCode = weatherData.symbolCode,
-            description = weatherDescription,
+            symbolCode = symbolCode,
+            description = description,
             modifier = Modifier.size(120.dp)
         )
         
         Spacer(modifier = Modifier.height(16.dp))
         
         Text(
-            text = weatherDescription,
+            text = description,
             style = MaterialTheme.typography.titleLarge
         )
         
         Spacer(modifier = Modifier.height(24.dp))
         
-        if (windSpeed != null && windDirection != null) {
         WindInfo(
             windSpeed = windSpeed,
-                windDirection = windDirection,
-                isLarge = true
+            windDirection = windDirection,
+            isLarge = isLarge
         )
-        }
         
         Spacer(modifier = Modifier.height(24.dp))
         
@@ -475,11 +565,11 @@ private fun CurrentWeather(
 
 @Composable
 private fun WeatherIcon(
-    symbolCode: String?,
+    symbolCode: String,
     description: String,
     modifier: Modifier = Modifier
 ) {
-    val iconRes = WeatherIconMapper.getWeatherIcon(symbolCode ?: "")
+    val iconRes = WeatherIconMapper.getWeatherIcon(symbolCode)
     iconRes?.let {
         Icon(
             painter = painterResource(id = it),
@@ -538,8 +628,167 @@ private fun ExpandButton(
     }
 }
 
-enum class TimeRange(val title: String) {
-    Now("Nå"),
-    ThreeDays("3 dager")
+@Composable
+fun SearchBox(
+    map: MapLibreMap?,
+    searchResults: List<Feature>,
+    onSearch: (String) -> Unit,
+    onResultSelected: (Feature) -> Unit,
+    isSearching: Boolean,
+    showingHistory: Boolean
+) {
+    var searchText by remember { mutableStateOf("") }
+    var isSearchBoxFocused by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
+        Surface(
+            shadowElevation = 8.dp,
+            shape = if (isSearchBoxFocused && (searchResults.isNotEmpty() || showingHistory)) 
+                RoundedCornerShape(
+                    topStart = 24.dp,
+                    topEnd = 24.dp,
+                    bottomStart = 0.dp,
+                    bottomEnd = 0.dp
+                ) 
+            else RoundedCornerShape(24.dp),
+            color = Color.White
+        ) {
+            OutlinedTextField(
+                value = searchText,
+                onValueChange = { 
+                    searchText = it
+                    onSearch(it)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { isSearchBoxFocused = it.isFocused },
+                placeholder = { Text("Søk etter sted...") },
+                leadingIcon = { 
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Søk",
+                        tint = Color.Gray
+                    )
+                },
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    focusedIndicatorColor = Color.Transparent,
+                    unfocusedIndicatorColor = Color.Transparent
+                )
+            )
+        }
+
+        AnimatedVisibility(
+            visible = isSearchBoxFocused && (searchResults.isNotEmpty() || showingHistory),
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shadowElevation = 8.dp,
+                shape = RoundedCornerShape(
+                    topStart = 0.dp,
+                    topEnd = 0.dp,
+                    bottomStart = 24.dp,
+                    bottomEnd = 24.dp
+                ),
+                color = Color.White
+            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 300.dp)
+                ) {
+                    if (showingHistory && searchText.isEmpty()) {
+                        item {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = "Nylige søk",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+                        }
+                    }
+
+                    items(searchResults) { feature ->
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onResultSelected(feature)
+                                    searchText = ""
+                                    focusManager.clearFocus()
+                                }
+                                .padding(vertical = 2.dp),
+                            color = Color.White
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.LocationOn,
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .padding(end = 16.dp, top = 2.dp)
+                                        .size(20.dp),
+                                    tint = Color.DarkGray
+                                )
+
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
+                                    Text(
+                                        text = feature.properties.name,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = Color.Black
+                                    )
+
+                                    val location = buildString {
+                                        feature.properties.locality?.let { locality ->
+                                            append(locality)
+                                        }
+                                        feature.properties.region?.let { region ->
+                                            if (isNotEmpty()) append(", ")
+                                            append(region)
+                                        }
+                                    }
+
+                                    if (location.isNotEmpty()) {
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = location,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = Color.Gray
+                                        )
+                                    }
+                                }
+                            }
+
+                            HorizontalDivider(
+                                modifier = Modifier.padding(start = 52.dp),
+                                thickness = 0.5.dp,
+                                color = Color(0xFFE0E0E0)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
