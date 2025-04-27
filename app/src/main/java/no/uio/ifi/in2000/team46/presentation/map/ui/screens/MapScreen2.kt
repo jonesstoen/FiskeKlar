@@ -208,31 +208,39 @@ fun MapScreen2(
                     // Add click listener for the map
                     map.addOnMapClickListener { point ->
                         if (!isUserDragging) {
-                            // Check if there are any features at the clicked point
-                            val features = map.queryRenderedFeatures(map.projection.toScreenLocation(point))
+                            // Konverter klikk-koordinater til skjermkoordinater
+                            val screenPoint = map.projection.toScreenLocation(point)
                             
-                            // Sjekk om det er noen klikkable features (båter, varsler, etc.)
-                            val hasClickableFeatures = features.any { feature ->
-                                val properties = feature.properties()
-                                val layerId = properties?.get("layerId")?.asString
-                                layerId == "ais-vessels" || 
-                                layerId == "met-alerts" || 
-                                layerId == "forbud" ||
-                                layerId?.startsWith("ais-vessel-") == true
-                            }
+                            // Sjekk features på klikk-posisjonen for hvert lag separat
+                            val aisFeatures = map.queryRenderedFeatures(screenPoint, "ais-vessels-layer")
+                            val metAlertFeatures = map.queryRenderedFeatures(screenPoint, "metalerts-layer")
+                            val forbudFeatures = map.queryRenderedFeatures(screenPoint, "forbud-layer")
                             
-                            if (!hasClickableFeatures) {
-                                // Only move marker if no clickable features were clicked
-                                selectedSearchResult.value = null  // Nullstill søkeresultatet
-                                mapViewModel.setSelectedLocation(point.latitude, point.longitude)
-                                // Oppdater markøren umiddelbart
-                                map.getStyle { style ->
-                                    addMapMarker(map, style, point.latitude, point.longitude, ctx)
+                            when {
+                                // Hvis vi klikket på en AIS-feature, ikke flytt markøren
+                                aisFeatures.isNotEmpty() -> false
+                                
+                                // Hvis vi klikket på et farevarsel, ikke flytt markøren
+                                metAlertFeatures.isNotEmpty() -> false
+                                
+                                // Hvis vi klikket på et forbudsområde, ikke flytt markøren
+                                forbudFeatures.isNotEmpty() -> false
+                                
+                                // Hvis vi ikke klikket på noe spesielt, flytt markøren
+                                else -> {
+                                    selectedSearchResult.value = null  // Nullstill søkeresultatet
+                                    mapViewModel.setSelectedLocation(point.latitude, point.longitude)
+                                    // Oppdater markøren umiddelbart
+                                    map.getStyle { style ->
+                                        addMapMarker(map, style, point.latitude, point.longitude, ctx)
+                                    }
+                                    mapViewModel.zoomToLocation(map, point.latitude, point.longitude, map.cameraPosition.zoom)
+                                    true
                                 }
-                                mapViewModel.zoomToLocation(map, point.latitude, point.longitude, map.cameraPosition.zoom)
                             }
+                        } else {
+                            false
                         }
-                        true
                     }
                 }
             )
