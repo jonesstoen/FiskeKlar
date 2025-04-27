@@ -13,6 +13,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -185,15 +186,24 @@ fun MapScreen(
     // ----------- UI: BottomSheetScaffold med kart, lag og kontroller -----------
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-        sheetContent = {
+
+        // Hoved‐underlag for hele Scaffold (selve “screen‐bakgrunnen”)
+        containerColor = MaterialTheme.colorScheme.background,
+        contentColor   = MaterialTheme.colorScheme.onBackground,
+
+        // Arkets bakgrunn og tekst‐ikon‐farge
+        sheetContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+        sheetContentColor   = MaterialTheme.colorScheme.onSurfaceVariant,
+
+        sheetPeekHeight = 0.dp,
+        sheetContent   = {
             selectedFeature?.let { feature ->
                 MetAlertsBottomSheetContent(
                     feature = feature,
                     onClose = { metAlertsViewModel.selectFeature(null) }
                 )
             }
-        },
-        sheetPeekHeight = 0.dp
+        }
     ) { sheetPadding ->
         Box(
             Modifier

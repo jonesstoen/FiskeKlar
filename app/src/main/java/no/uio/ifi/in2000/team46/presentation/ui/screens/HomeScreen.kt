@@ -54,7 +54,7 @@ fun HomeScreen(
     }
 
     Scaffold(
-        containerColor = Background,
+        containerColor = MaterialTheme.colorScheme.background,
 
     ) { paddingValues ->
         Column(
@@ -80,8 +80,8 @@ fun HomeScreen(
             // Greeting shown to the user
             Text(
                 text = "$greeting!",
-                style = MaterialTheme.typography.headlineSmall,
-                color = Navy
+                style = MaterialTheme.typography.headlineSmall,      // hent fra AppTypography
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             // Grid of quickactions
@@ -142,7 +142,8 @@ private fun QuickAccessCard(
         modifier = modifier
             .height(190.dp),
         colors = CardDefaults.cardColors(
-            containerColor = CardGreen
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor   = MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
         Column(
@@ -156,14 +157,13 @@ private fun QuickAccessCard(
                 imageVector = icon,
                 contentDescription = text,
                 modifier = Modifier.size(40.dp),
-                tint = Navy
+
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodyLarge,
+                style     = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = Navy
             )
         }
     }

@@ -88,6 +88,7 @@ dependencies {
     // For grib
     implementation(libs.cdmcore)
     implementation(libs.grib)
+    implementation(libs.androidx.ui.text.google.fonts)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
