@@ -75,7 +75,7 @@ class WeatherService {
                 // Hent dagens dato
                 val today = java.time.LocalDate.now()
                 
-                // Samle alle timesvarsler
+                // Samle alle timesvarsler for de neste 3 dagene
                 for (i in 0 until timeseries.length()) {
                     val timeseriesObj = timeseries.getJSONObject(i)
                     val time = timeseriesObj.getString("time")
@@ -86,15 +86,29 @@ class WeatherService {
                         continue
                     }
                     
+                    // Stopp etter 3 dager
+                    if (forecastDate.isAfter(today.plusDays(2))) {
+                        break
+                    }
+                    
                     val data = timeseriesObj.getJSONObject("data")
                     val instant = data.getJSONObject("instant").getJSONObject("details")
+                    
+                    // Prøv å hente symbolCode fra next_1_hours, hvis ikke tilgjengelig, prøv next_6_hours, og til slutt next_12_hours
+                    val symbolCode = data.optJSONObject("next_1_hours")
+                        ?.getJSONObject("summary")
+                        ?.optString("symbol_code")
+                        ?: data.optJSONObject("next_6_hours")
+                            ?.getJSONObject("summary")
+                            ?.optString("symbol_code")
+                        ?: data.optJSONObject("next_12_hours")
+                            ?.getJSONObject("summary")
+                            ?.optString("symbol_code")
                     
                     val hourlyForecast = HourlyForecast(
                         time = time,
                         temperature = instant.optDouble("air_temperature"),
-                        symbolCode = data.optJSONObject("next_1_hours")
-                            ?.getJSONObject("summary")
-                            ?.getString("symbol_code"),
+                        symbolCode = symbolCode,
                         windSpeed = instant.optDouble("wind_speed"),
                         windDirection = instant.optDouble("wind_from_direction")
                     )
@@ -107,14 +121,14 @@ class WeatherService {
                     .map { (date, hourlyForecasts) ->
                         DailyForecast(
                             date = date,
-                            hourlyForecasts = hourlyForecasts,
+                            hourlyForecasts = hourlyForecasts.sortedBy { it.time },
                             maxTemp = hourlyForecasts.mapNotNull { it.temperature }.maxOrNull(),
                             minTemp = hourlyForecasts.mapNotNull { it.temperature }.minOrNull(),
                             symbolCode = hourlyForecasts.firstNotNull { it.symbolCode }
                         )
                     }
                     .sortedBy { it.date }
-                    .take(4) // Begrens til 4 dager (i dag + 3 neste)
+                    .take(3) // Begrens til 3 dager
                 
                 dailyForecasts
             } catch (e: Exception) {

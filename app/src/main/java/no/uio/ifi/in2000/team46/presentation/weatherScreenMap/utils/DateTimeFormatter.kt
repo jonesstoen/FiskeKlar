@@ -49,7 +49,23 @@ object DateTimeFormatter {
         return try {
             val instant = Instant.parse(timeString)
             val localDateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-            String.format("%02d:%02d", localDateTime.hour, localDateTime.minute)
+            val hour = localDateTime.hour
+            
+            // Sjekk om dette er den tredje dagen og om det er en av de spesielle tidspunktene
+            val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+            val forecastDate = localDateTime.date
+            val daysFromToday = forecastDate.toEpochDays() - today.toEpochDays()
+            
+            if (daysFromToday == 2) {  // Dette er den tredje dagen
+                when (hour) {
+                    8 -> "08-14"
+                    14 -> "14-20"
+                    20 -> "20-00"
+                    else -> String.format("%02d:%02d", hour, localDateTime.minute)
+                }
+            } else {
+                String.format("%02d:%02d", hour, localDateTime.minute)
+            }
         } catch (e: Exception) {
             timeString // Returner original streng hvis parsing feiler
         }
