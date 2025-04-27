@@ -28,7 +28,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FishingLogScreen(
@@ -99,14 +99,14 @@ fun FishingLogScreen(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @Composable
 fun FishingEntryCard(
     entry: FishingLog,
     onDelete: () -> Unit,
     onClick: () -> Unit
 ) {
-    // Forslag 2: memoiser formatter-objektene
+
     val dateFormatter = remember {
         DateTimeFormatter.ofPattern("d. MMMM yyyy", Locale("no"))
     }
@@ -114,7 +114,7 @@ fun FishingEntryCard(
         DateTimeFormatter.ofPattern("HH:mm")
     }
 
-    // Parser og formaterer dato/tid
+
     val dateText = LocalDate.parse(entry.date).format(dateFormatter)
     val timeText = LocalTime.parse(entry.time).format(timeFormatter)
 
