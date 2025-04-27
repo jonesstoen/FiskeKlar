@@ -15,16 +15,16 @@ import java.time.LocalDate
 
 class ProfileViewModel(
     private val userRepository: UserRepository
-) : ViewModel() {
+) : ViewModel(),ProfileUiContract {
 
-    val user: StateFlow<User?> = userRepository.getCurrentUser()
+    override val user: StateFlow<User?> = userRepository.getCurrentUser()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(),
             initialValue = null
         )
 
-    fun saveUser(name: String, username: String, imageUri: String?) {
+    override fun saveUser(name: String, username: String, imageUri: String?) {
         viewModelScope.launch {
             val memberSince = generateMemberSince()
             userRepository.saveUser(
@@ -39,7 +39,7 @@ class ProfileViewModel(
         }
     }
 
-    fun clearUser() {
+    override fun clearUser() {
         viewModelScope.launch {
             userRepository.clearUser()
         }
