@@ -6,11 +6,15 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "fishing_log")
 data class FishingLog(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val date: String,
-    val time : String,
     val location: String,
     val fishType: String,
     val weight: Double,
-    val notes : String? = null,
-    val imageUri: String? = null
+    val date: String,
+    val time: String,
+    val latitude: Double,
+    val longitude: Double,
+    val notes: String? = null,
+    val imageUri: String? = null,
+    val count: Int = 1 // default = 1
+
 )

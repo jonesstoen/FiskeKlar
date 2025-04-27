@@ -19,14 +19,10 @@ class FishingLogViewModel(
     private val fishTypeRepo: FishTypeRepository
 ) : ViewModel() {
 
-
-    //all fishing logs prepopulated in the database
     val entries: StateFlow<List<FishingLog>> = fishLogRepo
-        .getAllEntries()
+        .getAllLogsFlow()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-
-    //all fish types prepopulated in the database
     val fishTypes: StateFlow<List<FishType>> = fishTypeRepo
         .allTypes
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -37,8 +33,10 @@ class FishingLogViewModel(
         location: String,
         fishType: String,
         weight: Double,
-        notes: String,
-        imageUri: String?
+        notes: String?,
+        imageUri: String?,
+        latitude: Double,
+        longitude: Double
     ) {
         viewModelScope.launch {
             val entry = FishingLog(
@@ -48,19 +46,27 @@ class FishingLogViewModel(
                 fishType = fishType,
                 weight = weight,
                 notes = notes,
-                imageUri = imageUri
+                imageUri = imageUri,
+                latitude = latitude,
+                longitude = longitude
             )
-            fishLogRepo.addEntry(entry)
+            fishLogRepo.insert(entry)
         }
     }
 
     fun removeEntry(entry: FishingLog) {
         viewModelScope.launch {
-            fishLogRepo.removeEntry(entry)
+            fishLogRepo.delete(entry)
         }
     }
 
-    // factory for creating the ViewModel
+    fun deleteAllLogs() {
+        viewModelScope.launch {
+            fishLogRepo.deleteAllLogs()
+        }
+    }
+
+
     class FishLogViewModelFactory(
         private val fishLogRepo: FishLogRepository,
         private val fishTypeRepo: FishTypeRepository

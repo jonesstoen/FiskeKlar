@@ -44,8 +44,17 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.LocalTime
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
 import java.util.Locale
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FishingLogScreen(
@@ -54,13 +63,42 @@ fun FishingLogScreen(
     modifier: Modifier = Modifier
 ) {
     val entries by viewModel.entries.collectAsState(initial = emptyList())
+    var showDeleteDialog by remember { mutableStateOf(false) }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Bekreft sletting") },
+            text = { Text("Vil du slette alle fangster?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    viewModel.deleteAllLogs()
+                    showDeleteDialog = false
+                }) {
+                    Text("Slett")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Avbryt")
+                }
+            }
+        )
+    }
+
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Fiskelogg") }
+                title = { Text("Fiskelogg") },
+                actions = {
+                    IconButton(onClick = { showDeleteDialog = true }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Slett alle", tint = Color.Red)
+                    }
+                }
             )
         },
+
 
         floatingActionButton = {
             ExtendedFloatingActionButton(

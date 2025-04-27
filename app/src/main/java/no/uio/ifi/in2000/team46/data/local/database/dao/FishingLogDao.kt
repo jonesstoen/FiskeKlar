@@ -9,12 +9,21 @@ import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
 
 @Dao
 interface FishingLogDao {
-    @Insert
-    suspend fun insertLog(log: FishingLog)
+    @Query("SELECT * FROM fishing_log")
+    suspend fun getAllLogs(): List<FishingLog>
 
     @Query("SELECT * FROM fishing_log")
     fun getAllLogsFlow(): Flow<List<FishingLog>>
 
+    @Query("SELECT * FROM fishing_log WHERE location = :location")
+    fun getLogsByLocationFlow(location: String): Flow<List<FishingLog>>
+
+    @Insert
+    suspend fun insert(fishingLog: FishingLog)
+
     @Delete
-    suspend fun deleteLog(log: FishingLog)
+    suspend fun delete(fishingLog: FishingLog)
+
+    @Query("DELETE FROM fishing_log")
+    suspend fun deleteAllLogs()
 }
