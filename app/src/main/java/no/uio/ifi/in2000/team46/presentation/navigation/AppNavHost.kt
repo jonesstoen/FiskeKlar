@@ -71,7 +71,7 @@ fun AppNavHost(
         db.favoriteLocationDao(),
         db.fishingLogDao(),
         db.processedSuggestionDao(),
-        db.savedSuggestionDao() // 👈 LEGG TIL DENNE
+        db.savedSuggestionDao()
     )
 
 
