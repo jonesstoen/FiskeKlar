@@ -37,7 +37,11 @@ import androidx.compose.ui.text.font.FontWeight
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
+
 
 
 @Composable
@@ -48,6 +52,7 @@ fun LayerFilterButton(
     gribViewModel: GribViewModel,
     currentViewModel: CurrentViewModel,
     driftViewModel: DriftViewModel,
+    precipitationViewModel: PrecipitationViewModel,
     modifier: Modifier = Modifier
 ) {
     val TAG = "LayerFilterButton"
@@ -61,6 +66,7 @@ fun LayerFilterButton(
     val windResult by gribViewModel.windData.collectAsState(initial = null)
     val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
     val isCurrentLayerVisible by currentViewModel.isLayerVisible.collectAsState()
+    val isPrecipitationLayerVisible by precipitationViewModel.isLayerVisible.collectAsState()
     val isLoading by aisViewModel.isLoading.collectAsState()
     val error by aisViewModel.error.collectAsState()
     val selectedVesselTypes by aisViewModel.selectedVesselTypes.collectAsState()
@@ -319,6 +325,21 @@ fun LayerFilterButton(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Driftvektorer (vind + strøm)", modifier = Modifier.weight(1f))
+                }
+
+                // Precipitation Layer row
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+                ) {
+                    Switch(
+                        checked = isPrecipitationLayerVisible,
+                        onCheckedChange = { precipitationViewModel.toggleLayer() },
+                        modifier = Modifier.scale(0.7f)
+                    )
+
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Nedbør", modifier = Modifier.weight(1f))
                 }
 
                 // error messages for ais

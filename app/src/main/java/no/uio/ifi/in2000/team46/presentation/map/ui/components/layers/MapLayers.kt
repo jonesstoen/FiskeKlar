@@ -17,6 +17,7 @@ import no.uio.ifi.in2000.team46.presentation.map.ui.components.MetAlertsLayerCom
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import no.uio.ifi.in2000.team46.data.repository.Result
+import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModel
 
 @Composable
 fun MapLayers(
@@ -27,7 +28,8 @@ fun MapLayers(
     forbudViewModel: ForbudViewModel,
     gribViewModel: GribViewModel,
     currentViewModel: CurrentViewModel,
-    driftViewModel: DriftViewModel
+    driftViewModel: DriftViewModel,
+    precipitationViewModel: PrecipitationViewModel
 ) {
     MetAlertsLayerComponent(metAlertsViewModel, mapView)
     AisLayer(mapView, aisViewModel)
@@ -42,6 +44,7 @@ fun MapLayers(
         map              = map,
         mapView          = mapView
     )
+
     DriftLayer(
         driftViewModel = driftViewModel,
         map = map,

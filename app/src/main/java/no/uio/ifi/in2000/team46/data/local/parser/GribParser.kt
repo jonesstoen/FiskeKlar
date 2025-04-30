@@ -61,6 +61,50 @@ class GribParser {
         return vectors
     }
 
+    // for å parse nedbør
+    fun parsePrecipitationFile(
+        file: File,
+        precVarName: String = "Total_precipitation_height_above_ground",
+        timeIndex: Int = 0,
+        levelIndex: Int = 0
+    ): List<PrecipitationPoint> {
+        val ncfile = NetcdfFile.open(file.absolutePath)
+        val precVar = ncfile.findVariable(precVarName)
+            ?: throw IllegalArgumentException("Fant ikke $precVarName")
+        val latVar = ncfile.findVariable("lat")
+            ?: throw IllegalArgumentException("Fant ikke lat")
+        val lonVar = ncfile.findVariable("lon")
+            ?: throw IllegalArgumentException("Fant ikke lon")
+
+        // Optional: log units so you know whether to convert
+        Log.d("GribParser", "Precip units = ${precVar.getUnitsString()}")
+
+        @Suppress("UNCHECKED_CAST")
+        val precData = precVar.read() as ArrayFloat.D4
+        val lats = (latVar.read().reduce().storage as FloatArray)
+        val lons = (lonVar.read().reduce().storage as FloatArray)
+        val idx = precData.index as Index4D
+
+        val points = mutableListOf<PrecipitationPoint>()
+        for (iLat in lats.indices) {
+            for (iLon in lons.indices) {
+                idx.set(timeIndex, levelIndex, iLat, iLon)
+                val raw = precData.getFloat(idx).toDouble()
+                if (raw.isFinite()) {
+                    // if units are “m”, convert to mm:
+                    val inMm = raw * 1000.0
+                    points += PrecipitationPoint(
+                        lon = lons[iLon].toDouble(),
+                        lat = lats[iLat].toDouble(),
+                        precipitation = inMm
+                    )
+                }
+            }
+        }
+
+        ncfile.close()
+        return points
+    }
 
 
     // Debug: lists the variables in the file
@@ -87,5 +131,4 @@ class GribParser {
         }
         ncfile.close()
     }
-
 }

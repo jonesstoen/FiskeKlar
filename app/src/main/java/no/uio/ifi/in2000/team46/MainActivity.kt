@@ -94,6 +94,7 @@ class MainActivity : ComponentActivity() {
                     searchViewModel     = searchViewModel,
                     fishLogViewModel    = fishLogViewModel,
                     profileViewModel    = profileViewModel
+
                 )
             }
         }

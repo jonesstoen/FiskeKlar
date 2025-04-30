@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModel
 import org.maplibre.android.maps.MapLibreMap
 import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.SearchViewModel
@@ -32,6 +33,7 @@ fun MapControls(
     gribViewModel: GribViewModel,
     currentViewModel: CurrentViewModel,
     driftViewModel: DriftViewModel,
+    precipitationViewModel: PrecipitationViewModel,
     hasLocationPermission: Boolean,
     onRequestPermission: () -> Unit
 ) {
@@ -80,7 +82,9 @@ fun MapControls(
                 forbudViewModel    = forbudViewModel,
                 gribViewModel = gribViewModel,
                 currentViewModel =  currentViewModel,
-                driftViewModel = driftViewModel
+                driftViewModel = driftViewModel,
+                precipitationViewModel = precipitationViewModel,
+
             )
 
         }
