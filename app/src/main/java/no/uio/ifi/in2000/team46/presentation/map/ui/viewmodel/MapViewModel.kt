@@ -119,7 +119,7 @@ class MapViewModel(
             
             // Start polling og hent varsler etter initial oppsett
             startLocationPolling()
-            fetchMetAlerts()
+        fetchMetAlerts()
         }
     }
 

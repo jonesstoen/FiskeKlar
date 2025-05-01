@@ -194,7 +194,7 @@ fun WeatherDetailScreen(
                             windSpeed = uiState.windSpeed ?: windSpeed ?: 0.0,
                             windDirection = uiState.windDirection ?: windDirection ?: 0.0,
                             isLarge = true
-                        )
+                )
                     }
                     TimeRange.ThreeDays -> {
                         ForecastView(
@@ -406,8 +406,8 @@ private fun HourlyWeatherRow(
                 style = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f),
                 textAlign = TextAlign.End
-            )
-        }
+                )
+            }
 
         if (forecast.windSpeed != null && forecast.windDirection != null) {
             WindInfo(
@@ -455,25 +455,25 @@ private fun TimeRangeSelector(
     Surface(
         color = Background,
         modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
                 .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
             TimeRange.entries.forEach { timeRange ->
-                FilledTonalButton(
-                    onClick = { onTimeRangeSelected(timeRange) },
-                    colors = ButtonDefaults.filledTonalButtonColors(
-                        containerColor = if (selectedTimeRange == timeRange) 
+            FilledTonalButton(
+                onClick = { onTimeRangeSelected(timeRange) },
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = if (selectedTimeRange == timeRange) 
                                 MaterialTheme.colorScheme.primary
-                        else MaterialTheme.colorScheme.surface
-                    ),
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 4.dp)
-                ) {
+                    else MaterialTheme.colorScheme.surface
+                ),
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 4.dp)
+            ) {
                     Text(
                         text = timeRange.title,
                         color = if (selectedTimeRange == timeRange)
@@ -513,13 +513,13 @@ private fun CurrentWeather(
                 temperature = feelsLike,
                 modifier = Modifier.align(Alignment.CenterStart)
             )
-            Text(
+        Text(
                 text = "${temperature.roundToInt()}°",
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontSize = MaterialTheme.typography.displayLarge.fontSize * 1.5
                 ),
                 modifier = Modifier.align(Alignment.Center)
-            )
+        )
         }
         
         Spacer(modifier = Modifier.height(16.dp))
@@ -734,10 +734,10 @@ fun SearchBox(
                                 }
                                 .padding(vertical = 2.dp),
                             color = Color.White
-                        ) {
-                            Row(
+) {
+    Row(
                                 modifier = Modifier
-                                    .fillMaxWidth()
+            .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 12.dp)
                             ) {
                                 Icon(
@@ -752,7 +752,7 @@ fun SearchBox(
                                 Column(
                                     modifier = Modifier.weight(1f)
                                 ) {
-                                    Text(
+        Text(
                                         text = feature.properties.name,
                                         style = MaterialTheme.typography.titleMedium,
                                         color = Color.Black
@@ -770,9 +770,9 @@ fun SearchBox(
 
                                     if (location.isNotEmpty()) {
                                         Spacer(modifier = Modifier.height(2.dp))
-                                        Text(
+        Text(
                                             text = location,
-                                            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium,
                                             color = Color.Gray
                                         )
                                     }
@@ -785,8 +785,8 @@ fun SearchBox(
                                 color = Color(0xFFE0E0E0)
                             )
                         }
-                    }
-                }
+        }
+    }
             }
         }
     }

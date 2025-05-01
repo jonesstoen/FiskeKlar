@@ -14,7 +14,6 @@ import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.BottomSheetScaffold
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -39,9 +38,6 @@ import no.uio.ifi.in2000.team46.presentation.map.ui.components.MapViewContainer
 import androidx.navigation.NavController
 import no.uio.ifi.in2000.team46.data.remote.geocoding.Feature
 import no.uio.ifi.in2000.team46.presentation.map.utils.addMapMarker
-import no.uio.ifi.in2000.team46.presentation.map.ui.components.MapConstants
-import no.uio.ifi.in2000.team46.presentation.map.ui.components.WeatherDisplay
-import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

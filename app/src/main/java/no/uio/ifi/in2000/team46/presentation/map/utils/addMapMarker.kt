@@ -64,7 +64,7 @@ private fun initializeMarker(style: Style, context: Context) {
         val layer = SymbolLayer(MARKER_LAYER_ID, MARKER_SOURCE_ID)
             .withProperties(
                 PropertyFactory.iconImage(MARKER_ICON_ID),
-                PropertyFactory.iconSize(0.025f),
+                PropertyFactory.iconSize(0.05f),
                 PropertyFactory.iconAnchor(Property.ICON_ANCHOR_BOTTOM),
                 PropertyFactory.iconAllowOverlap(true),
                 PropertyFactory.iconIgnorePlacement(true),
@@ -95,7 +95,7 @@ private fun Drawable.toBitmap(): Bitmap? {
     if (this is BitmapDrawable) {
         return bitmap
     }
-    
+
     val scale = 0.4f
     val width = (intrinsicWidth * scale).toInt()
     val height = (intrinsicHeight * scale).toInt()
