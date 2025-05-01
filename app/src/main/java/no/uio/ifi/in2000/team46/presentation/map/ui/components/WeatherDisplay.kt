@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import no.uio.ifi.in2000.team46.utils.weather.WeatherIconMapper
 import no.uio.ifi.in2000.team46.utils.weather.WeatherDescriptionMapper

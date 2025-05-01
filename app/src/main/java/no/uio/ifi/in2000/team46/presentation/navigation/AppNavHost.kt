@@ -152,7 +152,7 @@ fun AppNavHost(
                     metAlertsViewModel = metAlertsViewModel,
                     forbudViewModel = forbudViewModel,
                     searchViewModel = searchViewModel,
-                    navBackStackEntry = backStack,
+                    navController = navController
                 )
             }
 
@@ -173,7 +173,7 @@ fun AppNavHost(
                     metAlertsViewModel = metAlertsViewModel,
                     forbudViewModel = forbudViewModel,
                     searchViewModel = searchViewModel,
-                    navBackStackEntry = backStack,
+                    navController = navController,
                     initialLocation = if (lat != null && lng != null) Pair(lat, lng) else null
                 )
             }
@@ -357,7 +357,7 @@ fun AppNavHost(
                     metAlertsViewModel = metAlertsViewModel,
                     forbudViewModel = forbudViewModel,
                     searchViewModel = searchViewModel,
-                    navBackStackEntry = backStack,
+                   navController= navController,
                     areaPoints = areaPoints
                 )
             }

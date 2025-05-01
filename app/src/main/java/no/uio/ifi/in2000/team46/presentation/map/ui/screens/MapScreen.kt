@@ -18,6 +18,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavHostController
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import no.uio.ifi.in2000.team46.presentation.map.utils.addUserLocationIndicator
@@ -72,7 +75,7 @@ fun MapScreen(
     ),
     forbudViewModel: ForbudViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel(),
-    navBackStackEntry: NavBackStackEntry,
+    navController: NavHostController,
     initialLocation: Pair<Double, Double>? = null,
     areaPoints: List<Pair<Double, Double>>? = null
 ) {
@@ -161,10 +164,6 @@ fun MapScreen(
             }
         }
     }
-
-
-
-
 
     // ----------- Håndter initialLocation og areaPoints -----------
     LaunchedEffect(mapLibreMap, areaPoints, initialLocation) {
@@ -338,12 +337,12 @@ fun MapScreen(
                     metAlertsViewModel = metAlertsViewModel,
                     aisViewModel = aisViewModel,
                     forbudViewModel = forbudViewModel,
-                    hasLocationPermission = hasLocationPermission,
                     gribViewModel = gribViewModel,
-                    driftViewModel = driftViewModel,
                     currentViewModel = currentViewModel,
+                    driftViewModel = driftViewModel,
+                    hasLocationPermission = hasLocationPermission,
                     onRequestPermission = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
-                    navController = navBackStackEntry,
+                    navController = navController,
                     onSearchResultSelected = { feature ->
                         selectedSearchResult.value = feature
                         map.getStyle { style ->

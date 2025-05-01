@@ -7,7 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavController
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
@@ -34,7 +34,7 @@ fun MapControls(
     driftViewModel: DriftViewModel,
     hasLocationPermission: Boolean,
     onRequestPermission: () -> Unit,
-    navController: NavBackStackEntry,
+    navController: NavController,
     onSearchResultSelected: (Feature) -> Unit,
     onUserLocationSelected: (Location) -> Unit
 ) {
