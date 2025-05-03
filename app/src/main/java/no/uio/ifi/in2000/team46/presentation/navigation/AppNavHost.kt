@@ -1,15 +1,11 @@
 package no.uio.ifi.in2000.team46.presentation.navigation
 
-import android.os.Bundle
-import android.net.Uri
-import android.os.Build
-import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -21,7 +17,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -48,7 +43,6 @@ import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
 import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
 import no.uio.ifi.in2000.team46.data.repository.FavoriteRepository
 import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
-import no.uio.ifi.in2000.team46.data.repository.FishTypeRepository
 import no.uio.ifi.in2000.team46.presentation.favorites.screen.FavoriteDetailScreen
 import no.uio.ifi.in2000.team46.presentation.favorites.screen.FavoritesScreen
 import no.uio.ifi.in2000.team46.presentation.favorites.viewmodel.FavoritesViewModel
@@ -60,14 +54,17 @@ import no.uio.ifi.in2000.team46.domain.model.weather.WeatherData
 import org.maplibre.android.maps.MapView
 import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.viewmodel.WeatherDetailViewModel
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.setValue
+import no.uio.ifi.in2000.team46.presentation.ui.screens.SosScreen
+import androidx.compose.ui.graphics.Color
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavHost(
     navController: NavHostController,
-    mapView: org.maplibre.android.maps.MapView,
+    mapView: MapView,
     mapViewModel: MapViewModel,
     aisViewModel: AisViewModel,
     metAlertsViewModel: MetAlertsViewModel,
@@ -99,17 +96,30 @@ fun AppNavHost(
                 listOf(
                     "home" to Icons.Default.Home,
                     "map" to Icons.Default.Map,
+                    "sos" to Icons.Default.Warning,
                     "profile" to Icons.Default.Person
                 ).forEach { (route, icon) ->
                     val title = when(route) {
                         "home" -> "Hjem"
                         "map" -> "Kart"
+                        "sos" -> "SOS"
                         "profile" -> "Min Side"
                         else -> route
                     }
                     NavigationBarItem(
-                        icon = { Icon(icon, contentDescription = route) },
-                        label = { Text(title) },
+                        icon = {
+                            Icon(
+                                icon,
+                                contentDescription = route,
+                                tint = if (route == "sos") Color(0xFFD32F2F) else LocalContentColor.current
+                            )
+                        },
+                        label = {
+                            Text(
+                                title,
+                                color = if (route == "sos") Color(0xFFD32F2F) else LocalContentColor.current
+                            )
+                        },
                         selected = currentRoute == route,
                         onClick = {
                             navController.navigate(route) {
@@ -322,7 +332,7 @@ fun AppNavHost(
                             popUpTo("favorites") { inclusive = true }
                         }
                     },
-                    defaultName = nameArg // 👈 du må også sende denne inn i AddFavoriteScreen
+                    defaultName = nameArg
                 )
             }
 
@@ -460,6 +470,42 @@ fun AppNavHost(
                         viewModel = viewModel
                     )
                 }
+            }
+
+            composable("sos") {
+                SosScreen(onBack = { navController.popBackStack() }, navController = navController)
+            }
+
+            composable(
+                "mapWithVessel?userLat={userLat}&userLon={userLon}&vesselLat={vesselLat}&vesselLon={vesselLon}&vesselName={vesselName}&shipType={shipType}",
+                arguments = listOf(
+                    navArgument("userLat") { type = NavType.StringType },
+                    navArgument("userLon") { type = NavType.StringType },
+                    navArgument("vesselLat") { type = NavType.StringType },
+                    navArgument("vesselLon") { type = NavType.StringType },
+                    navArgument("vesselName") { type = NavType.StringType },
+                    navArgument("shipType") { type = NavType.IntType }
+                )
+            ) { backStackEntry ->
+                val userLat = backStackEntry.arguments?.getString("userLat")?.toDoubleOrNull()
+                val userLon = backStackEntry.arguments?.getString("userLon")?.toDoubleOrNull()
+                val vesselLat = backStackEntry.arguments?.getString("vesselLat")?.toDoubleOrNull()
+                val vesselLon = backStackEntry.arguments?.getString("vesselLon")?.toDoubleOrNull()
+                val vesselName = backStackEntry.arguments?.getString("vesselName") ?: ""
+                val shipType = backStackEntry.arguments?.getInt("shipType")
+
+                MapScreen(
+                    mapView = mapView,
+                    mapViewModel = mapViewModel,
+                    aisViewModel = aisViewModel,
+                    metAlertsViewModel = metAlertsViewModel,
+                    forbudViewModel = forbudViewModel,
+                    searchViewModel = searchViewModel,
+                    navController = navController,
+                    highlightVessel = if (userLat != null && userLon != null && vesselLat != null && vesselLon != null && shipType != null)
+                        HighlightVesselData(userLat, userLon, vesselLat, vesselLon, vesselName, shipType)
+                    else null
+                )
             }
         }
     }
