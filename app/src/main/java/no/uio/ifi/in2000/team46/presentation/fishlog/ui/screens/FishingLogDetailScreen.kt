@@ -134,18 +134,31 @@ fun FishingLogDetailScreen(
                     }
 
                     //fishtype and weight
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.fish),
-                            contentDescription = "Fish Icon",
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(Modifier.width(8.dp))
-                        Text(entry.fishType.ifBlank { "Ukjent fisketype" }, style = MaterialTheme.typography.bodyLarge)
-                        Spacer(Modifier.width(16.dp))
-                        Icon(Icons.Default.Scale, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text("${"%.1f".format(entry.weight)} kg", style = MaterialTheme.typography.bodyLarge)
+                    val ingenFangst = entry.fishType.isBlank() && entry.weight == 0.0
+                    if (ingenFangst) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.fish),
+                                contentDescription = "Fish Icon",
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text("Ingen fangst", style = MaterialTheme.typography.bodyLarge)
+                        }
+                    } else {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.fish),
+                                contentDescription = "Fish Icon",
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(entry.fishType.ifBlank { "Ukjent fisketype" }, style = MaterialTheme.typography.bodyLarge)
+                            Spacer(Modifier.width(16.dp))
+                            Icon(Icons.Default.Scale, contentDescription = null)
+                            Spacer(Modifier.width(8.dp))
+                            Text("${"%.1f".format(entry.weight)} kg", style = MaterialTheme.typography.bodyLarge)
+                        }
                     }
 
                     // notes section

@@ -201,8 +201,8 @@ fun FishingEntryCard(
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(
-                    text = "${entry.fishType.ifBlank { "Ukjent fisk" }} — " +
-                            "${"%.1f".format(entry.weight)} kg",
+                    text = if (entry.fishType.isBlank() && entry.weight == 0.0) "Ingen fangst"
+                        else "${entry.fishType.ifBlank { "Ukjent fisk" }} — ${"%.1f".format(entry.weight)} kg",
                     style = MaterialTheme.typography.bodyMedium
                 )
             }

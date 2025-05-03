@@ -66,7 +66,6 @@ fun FishTypeDropdown(
                 .heightIn(max = 200.dp)                   // max height , scrollable
                 .clip(RoundedCornerShape(12.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .shadow(4.dp, RoundedCornerShape(12.dp))
         ) {
             fishTypes.forEach { type ->
                 DropdownMenuItem(
