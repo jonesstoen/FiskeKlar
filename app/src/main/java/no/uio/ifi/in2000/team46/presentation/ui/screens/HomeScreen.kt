@@ -172,12 +172,12 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // App logo and name
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = 8.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.app_logo),
@@ -206,13 +206,13 @@ fun HomeScreen(
                         icon = Icons.Default.Map,
                         text = "Kart",
                         onClick = onNavigateToMap,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
                         icon = Icons.Default.List,
                         text = "Fiskelogg",
                         onClick = onNavigateToFishLog,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                 }
 
@@ -224,13 +224,13 @@ fun HomeScreen(
                         icon = Icons.Default.WbSunny,
                         text = "Værvarsel",
                         onClick = onNavigateToWeather,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
                         icon = Icons.Default.Favorite,
                         text = "Favoritter",
                         onClick = onNavigateToFavorites,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                 }
             }
