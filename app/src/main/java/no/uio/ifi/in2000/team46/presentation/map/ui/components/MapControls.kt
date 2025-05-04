@@ -20,6 +20,7 @@ import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 
 import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
+import no.uio.ifi.in2000.team46.presentation.grib.WaveViewModel
 
 @Composable
 fun MapControls(
@@ -32,6 +33,7 @@ fun MapControls(
     gribViewModel: GribViewModel,
     currentViewModel: CurrentViewModel,
     driftViewModel: DriftViewModel,
+    waveViewModel: WaveViewModel,
     hasLocationPermission: Boolean,
     onRequestPermission: () -> Unit,
     navController: NavController,
@@ -96,7 +98,8 @@ fun MapControls(
                 forbudViewModel    = forbudViewModel,
                 gribViewModel = gribViewModel,
                 currentViewModel =  currentViewModel,
-                driftViewModel = driftViewModel
+                driftViewModel = driftViewModel,
+                waveViewModel = waveViewModel,
             )
 
         }

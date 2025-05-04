@@ -39,6 +39,7 @@ import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.WaveViewModel
 
 @Composable
 fun LayerFilterButton(
@@ -48,6 +49,7 @@ fun LayerFilterButton(
     gribViewModel: GribViewModel,
     currentViewModel: CurrentViewModel,
     driftViewModel: DriftViewModel,
+    waveViewModel: WaveViewModel,
     modifier: Modifier = Modifier
 ) {
     val TAG = "LayerFilterButton"
@@ -60,6 +62,8 @@ fun LayerFilterButton(
     val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
     val isCurrentLayerVisible by currentViewModel.isLayerVisible.collectAsState()
     val isDriftLayerVisible by driftViewModel.isLayerVisible.collectAsState()
+    val isWaveLayerVisible by waveViewModel.isLayerVisible.collectAsState()
+    val isWaveLoading by waveViewModel.isRasterLoading.collectAsState(initial = false)
     val isLoading by aisViewModel.isLoading.collectAsState()
     val error by aisViewModel.error.collectAsState()
     val selectedVesselTypes by aisViewModel.selectedVesselTypes.collectAsState()
@@ -226,6 +230,22 @@ fun LayerFilterButton(
                         label = "Driftvektorer (vind + strøm)",
                         checked = isDriftLayerVisible,
                         onCheckedChange = { driftViewModel.toggleLayerVisibility() }
+                    )
+                    LayerToggleRow(
+                        label = "Bølgeheatmap",
+                        checked = isWaveLayerVisible,
+                        onCheckedChange = { waveViewModel.toggleLayer() },
+                        trailing = {
+                            // Hvis laget er synlig *og* vi laster data → vis spinner
+                            if (isWaveLayerVisible && isWaveLoading) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .padding(start = 8.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            }
+                        }
                     )
 
                     // Error
