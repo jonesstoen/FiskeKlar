@@ -66,6 +66,7 @@ fun DriftLayer(
                     style.addLayer(
                         SymbolLayer(layerId, sourceId).withProperties(
                             iconImage(iconId),
+                            iconRotationAlignment("map"),
                             iconRotate(Expression.get("direction")),
                             iconAllowOverlap(true),
                             iconSize(
