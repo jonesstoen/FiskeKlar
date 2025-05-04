@@ -18,9 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavBackStackEntry
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavHostController
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
@@ -55,6 +52,11 @@ import org.maplibre.android.annotations.PolygonOptions
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
+import org.maplibre.android.annotations.PolylineOptions
+import androidx.compose.runtime.LaunchedEffect
+import no.uio.ifi.in2000.team46.presentation.navigation.HighlightVesselData
+import org.maplibre.android.annotations.IconFactory
+import no.uio.ifi.in2000.team46.domain.model.ais.VesselIcons
 
 // =====================
 // MAP SCREEN
@@ -78,7 +80,8 @@ fun MapScreen(
     searchViewModel: SearchViewModel = viewModel(),
     navController: NavHostController,
     initialLocation: Pair<Double, Double>? = null,
-    areaPoints: List<Pair<Double, Double>>? = null
+    areaPoints: List<Pair<Double, Double>>? = null,
+    highlightVessel: HighlightVesselData? = null
 ) {
     // ----------- State og permissions -----------
     val ctx = LocalContext.current
@@ -234,6 +237,52 @@ fun MapScreen(
             sheetState.expand()
         } else {
             sheetState.hide()
+        }
+    }
+
+    // Tegn strek og marker hvis highlightVessel er satt
+    LaunchedEffect(mapLibreMap, highlightVessel) {
+        val map = mapLibreMap ?: return@LaunchedEffect
+        if (highlightVessel != null) {
+            map.clear()
+            // Viktig: Initialiser AIS-ikoner før bruk!
+            VesselIcons.initializeIcons(ctx)
+            // Tegn vanlig rød linje mellom bruker og båt
+            map.addPolyline(
+                PolylineOptions()
+                    .add(
+                        LatLng(highlightVessel.userLat, highlightVessel.userLon),
+                        LatLng(highlightVessel.vesselLat, highlightVessel.vesselLon)
+                    )
+                    .color(android.graphics.Color.RED)
+                    .width(6f)
+            )
+
+            // Marker båtposisjon med AIS-ikon og navn
+            val vesselIconType = VesselIcons.getVesselStyle(highlightVessel.shipType).iconType
+            val bitmap = VesselIcons.getIcons()[vesselIconType]
+            val iconFactory = IconFactory.getInstance(ctx)
+            if (bitmap != null) {
+                map.addMarker(
+                    MarkerOptions()
+                        .position(LatLng(highlightVessel.vesselLat, highlightVessel.vesselLon))
+                        .title(highlightVessel.vesselName)
+                        .icon(iconFactory.fromBitmap(bitmap))
+                )
+            } else {
+                map.addMarker(
+                    MarkerOptions()
+                        .position(LatLng(highlightVessel.vesselLat, highlightVessel.vesselLon))
+                        .title(highlightVessel.vesselName)
+                )
+            }
+
+            // Zoom til området mellom bruker og båt
+            val bounds = LatLngBounds.Builder()
+                .include(LatLng(highlightVessel.userLat, highlightVessel.userLon))
+                .include(LatLng(highlightVessel.vesselLat, highlightVessel.vesselLon))
+                .build()
+            map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150))
         }
     }
 
