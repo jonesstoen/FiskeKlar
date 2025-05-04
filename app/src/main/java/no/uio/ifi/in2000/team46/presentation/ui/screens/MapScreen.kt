@@ -177,7 +177,21 @@ fun MapScreen(
                     WeatherDisplay(
                         temperature = temperature,
                         symbolCode = weatherSymbol,
-                        modifier = Modifier.padding(4.dp)
+                        modifier = Modifier.padding(4.dp),
+                        onWeatherClick = {
+                            // Hent detaljert værinformasjon og naviger til værdetalj-skjermen
+                            coroutineScope.launch {
+                                val weatherDetails = weatherService.getWeatherDetails(
+                                    mapViewModel.currentLocation.value.latitude,
+                                    mapViewModel.currentLocation.value.longitude
+                                )
+                                navController.navigate(
+                                    "weather_detail/${weatherDetails.temperature}/${weatherDetails.feelsLike}/" +
+                                    "${weatherDetails.highTemp}/${weatherDetails.lowTemp}/${weatherDetails.symbolCode}/" +
+                                    "${weatherDetails.description}"
+                                )
+                            }
+                        }
                     )
                 }
 

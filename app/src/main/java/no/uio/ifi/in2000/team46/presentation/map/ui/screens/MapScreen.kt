@@ -1,14 +1,12 @@
 package no.uio.ifi.in2000.team46.presentation.map.ui.screens
 
 import android.Manifest
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
@@ -21,7 +19,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavBackStackEntry
-import kotlinx.coroutines.flow.distinctUntilChanged
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.NavHostController
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import no.uio.ifi.in2000.team46.presentation.map.utils.addUserLocationIndicator
@@ -39,6 +39,8 @@ import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 import no.uio.ifi.in2000.team46.presentation.map.ui.components.MapControls
 import no.uio.ifi.in2000.team46.presentation.map.ui.components.layers.MapLayers
 import no.uio.ifi.in2000.team46.presentation.map.ui.components.MapViewContainer
+import no.uio.ifi.in2000.team46.data.remote.geocoding.Feature
+import no.uio.ifi.in2000.team46.presentation.map.utils.addMapMarker
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModelFactory
 import no.uio.ifi.in2000.team46.data.repository.GribRepository
@@ -74,12 +76,14 @@ fun MapScreen(
     ),
     forbudViewModel: ForbudViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel(),
-    navBackStackEntry: NavBackStackEntry,
+    navController: NavHostController,
     initialLocation: Pair<Double, Double>? = null,
     areaPoints: List<Pair<Double, Double>>? = null
 ) {
     // ----------- State og permissions -----------
     val ctx = LocalContext.current
+
+    // Request location permission
     var hasLocationPermission by remember { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -90,6 +94,8 @@ fun MapScreen(
 
     // ----------- Snackbar og bottom sheet state -----------
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Bottom sheet state — allow Hidden initial value by disabling skipHiddenState
     val sheetState = rememberStandardBottomSheetState(
         initialValue = SheetValue.Hidden,
         skipHiddenState = false
@@ -102,13 +108,61 @@ fun MapScreen(
     // ----------- MapLibreMap referanse -----------
     var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
 
+    // Track whether user is currently dragging the map
+    var isUserDragging by remember { mutableStateOf(false) }
+
     // ----------- Brukerposisjon og indikator -----------
     val userLocation by mapViewModel.userLocation.collectAsState()
+    val selectedLocation by mapViewModel.selectedLocation.collectAsState()
+    val searchResults by searchViewModel.searchResults.collectAsState()
+    val selectedSearchResult = remember { mutableStateOf<Feature?>(null) }
+
+    // Hent temperatur og værsymbol fra mapViewModel
+    val temperature by mapViewModel.temperature.collectAsState()
+    val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
+
+    // Oppdater markørene når kartet er klart
     LaunchedEffect(mapLibreMap, userLocation) {
         val map = mapLibreMap ?: return@LaunchedEffect
-        val loc = userLocation  ?: return@LaunchedEffect
+        val loc = userLocation ?: return@LaunchedEffect
         map.getStyle { style ->
             addUserLocationIndicator(map, style, loc.latitude, loc.longitude)
+
+            // Oppdater vær basert på brukerens posisjon ved oppstart
+            if (!mapViewModel.isLocationExplicitlySelected()) {
+                mapViewModel.updateTemperature(loc.latitude, loc.longitude)
+            }
+        }
+    }
+
+    // Oppdater markørene når lokasjonen endres
+    LaunchedEffect(mapLibreMap, userLocation, selectedLocation, isUserDragging, selectedSearchResult.value) {
+        val map = mapLibreMap ?: return@LaunchedEffect
+        if (!isUserDragging) {  // Only update markers if user is not dragging
+            map.getStyle { style ->
+                // Oppdater brukerens posisjonsmarkør
+                userLocation?.let { loc ->
+                    addUserLocationIndicator(map, style, loc.latitude, loc.longitude)
+                }
+
+                // Oppdater valgt posisjonsmarkør KUN hvis en er valgt bevisst
+                when {
+                    selectedSearchResult.value != null -> {
+                        val result = selectedSearchResult.value!!
+                        val coordinates = result.geometry.coordinates
+                        if (coordinates.size >= 2) {
+                            val longitude = coordinates[0]
+                            val latitude = coordinates[1]
+                            addMapMarker(map, style, latitude, longitude, ctx)
+                            mapViewModel.setSelectedLocation(latitude, longitude)
+                            mapViewModel.updateWeatherForLocation(latitude, longitude)
+                        }
+                    }
+                    selectedLocation != null && mapViewModel.isLocationExplicitlySelected() -> {
+                        addMapMarker(map, style, selectedLocation!!.first, selectedLocation!!.second, ctx)
+                    }
+                }
+            }
         }
     }
 
@@ -218,6 +272,57 @@ fun MapScreen(
                 onMapReady = { map, _ ->
                     mapLibreMap = map
                     mapViewModel.initializeMap(map, ctx)
+
+                    // Add listeners to detect when user is dragging the map
+                    map.addOnCameraMoveStartedListener { reason ->
+                        if (reason == org.maplibre.android.maps.MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE) {
+                            isUserDragging = true
+                        }
+                        true
+                    }
+
+                    map.addOnCameraIdleListener {
+                        isUserDragging = false
+                        true
+                    }
+
+                    // Add click listener for the map
+                    map.addOnMapClickListener { point ->
+                        if (!isUserDragging) {
+                            // Konverter klikk-koordinater til skjermkoordinater
+                            val screenPoint = map.projection.toScreenLocation(point)
+
+                            // Sjekk features på klikk-posisjonen for hvert lag separat
+                            val aisFeatures = map.queryRenderedFeatures(screenPoint, "ais-vessels-layer")
+                            val metAlertFeatures = map.queryRenderedFeatures(screenPoint, "metalerts-layer")
+                            val forbudFeatures = map.queryRenderedFeatures(screenPoint, "forbud-layer")
+
+                            when {
+                                // Hvis vi klikket på en AIS-feature, ikke flytt markøren
+                                aisFeatures.isNotEmpty() -> false
+
+                                // Hvis vi klikket på et farevarsel, ikke flytt markøren
+                                metAlertFeatures.isNotEmpty() -> false
+
+                                // Hvis vi klikket på et forbudsområde, ikke flytt markøren
+                                forbudFeatures.isNotEmpty() -> false
+
+                                // Hvis vi ikke klikket på noe spesielt, flytt markøren
+                                else -> {
+                                    selectedSearchResult.value = null  // Nullstill søkeresultatet
+                                    mapViewModel.setSelectedLocation(point.latitude, point.longitude)
+                                    // Oppdater markøren umiddelbart
+                                    map.getStyle { style ->
+                                        addMapMarker(map, style, point.latitude, point.longitude, ctx)
+                                    }
+                                    mapViewModel.zoomToLocation(map, point.latitude, point.longitude, map.cameraPosition.zoom)
+                                    true
+                                }
+                            }
+                        } else {
+                            false
+                        }
+                    }
                 }
             )
             // 2) Lag
@@ -236,19 +341,41 @@ fun MapScreen(
             // 3) Kontroller
             mapLibreMap?.let { map ->
                 MapControls(
-                    map                   = map,
-                    mapViewModel          = mapViewModel,
-                    searchViewModel       = searchViewModel,
-                    metAlertsViewModel    = metAlertsViewModel,
-                    aisViewModel          = aisViewModel,
-                    forbudViewModel       = forbudViewModel,
-                    hasLocationPermission = hasLocationPermission,
-                    gribViewModel         = gribViewModel,
-                    driftViewModel = driftViewModel,
+                    map = map,
+                    mapViewModel = mapViewModel,
+                    searchViewModel = searchViewModel,
+                    metAlertsViewModel = metAlertsViewModel,
+                    aisViewModel = aisViewModel,
+                    forbudViewModel = forbudViewModel,
+                    gribViewModel = gribViewModel,
                     currentViewModel = currentViewModel,
-                    onRequestPermission   = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }
+                    driftViewModel = driftViewModel,
+                    hasLocationPermission = hasLocationPermission,
+                    onRequestPermission = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+                    navController = navController,
+                    onSearchResultSelected = { feature ->
+                        selectedSearchResult.value = feature
+                        map.getStyle { style ->
+                            val coordinates = feature.geometry.coordinates
+                            if (coordinates.size >= 2) {
+                                val longitude = coordinates[0]
+                                val latitude = coordinates[1]
+                                addMapMarker(map, style, latitude, longitude, ctx)
+                                mapViewModel.setSelectedLocation(latitude, longitude)
+                                mapViewModel.updateWeatherForLocation(latitude, longitude)
+                            }
+                        }
+                    },
+                    onUserLocationSelected = { location ->
+                        map.getStyle { style ->
+                            addMapMarker(map, style, location.latitude, location.longitude, ctx)
+                            mapViewModel.setSelectedLocation(location.latitude, location.longitude)
+                            mapViewModel.updateWeatherForLocation(location.latitude, location.longitude)
+                        }
+                    }
                 )
             }
+
         }
     }
 }
