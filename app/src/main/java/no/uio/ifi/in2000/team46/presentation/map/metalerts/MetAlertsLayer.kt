@@ -30,7 +30,7 @@ fun MetAlertsLayerComponent(
     val metAlertsResponse by metAlertsViewModel.metAlertsResponse.collectAsState()
     LaunchedEffect(isVisible) {
         if (isVisible) {
-            Toast.makeText(context, "Trykk på et av varselområdene for mer info.", Toast.LENGTH_LONG).show()
+            Toast.makeText(context, "Trykk på et av områdene \n for mer info.", Toast.LENGTH_SHORT).show()
         }
     }
 
