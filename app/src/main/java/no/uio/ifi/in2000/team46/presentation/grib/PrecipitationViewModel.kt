@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.grib
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -14,6 +15,13 @@ class PrecipitationViewModel(
     private val repo: GribRepository
 ) : ViewModel() {
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
+    companion object {
+        private const val TAG = "PrecipitationVM"
+    }
+
     private val _data = MutableStateFlow<RepoResult<List<PrecipitationPoint>>?>(null)
     val data: StateFlow<RepoResult<List<PrecipitationPoint>>?> = _data
 
@@ -26,7 +34,32 @@ class PrecipitationViewModel(
     }
 
     private fun fetch() = viewModelScope.launch {
-        _data.value = repo.getPrecipitationData()
+        // Fetch precipitation data from repository
+        _isLoading.value = true
+        val result = repo.getPrecipitationData()
+
+        // Log full result
+        Log.d(TAG, "Raw fetch result: $result")
+
+        when (result) {
+            is RepoResult.Success -> {
+                val list = result.data
+                Log.d(TAG, "Precipitation points count: ${list.size}")
+                if (list.isNotEmpty()) {
+                    // Log first few points for inspection
+                    val sample = list.take(5).joinToString(separator = "; ") { point ->
+                        "(lat=${point.lat}, lon=${point.lon}): ${"%.2f".format(point.precipitation)}mm"
+                    }
+                    Log.d(TAG, "Sample points: $sample")
+                }
+                _data.value = result
+            }
+            is RepoResult.Error -> {
+                Log.e(TAG, "Error fetching precipitation data", result.exception)
+                _data.value = result
+            }
+        }
+        _isLoading.value = false
     }
 }
 

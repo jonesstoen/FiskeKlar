@@ -434,7 +434,8 @@ fun MapScreen(
                     gribViewModel      = gribViewModel,
                     currentViewModel   = currentViewModel,
                     driftViewModel     = driftViewModel,
-                    waveViewModel      = waveViewModel
+                    waveViewModel      = waveViewModel,
+                    precipitationViewModel = precipitationViewModel
                 )
             }
             if (isWaveVisible && waveResult is Result.Success) {

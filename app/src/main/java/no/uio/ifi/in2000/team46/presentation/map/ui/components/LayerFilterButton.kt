@@ -255,8 +255,19 @@ fun LayerFilterButton(
                     LayerToggleRow(
                         label = "Nedbør",
                         checked = isPrecipitationVisible,
-                        onCheckedChange = { precipitationViewModel.toggleLayerVisibility() }
+                        onCheckedChange = { precipitationViewModel.toggleLayerVisibility() },
+                        trailing = {
+                            if (isPrecipitationVisible && precipitationViewModel.isLoading.collectAsState().value) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .padding(start = 8.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            }
+                        }
                     )
+
 
                     // Error
                     error?.let { message ->

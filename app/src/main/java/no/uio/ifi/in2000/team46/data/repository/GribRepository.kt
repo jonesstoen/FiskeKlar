@@ -18,7 +18,7 @@ class GribRepository(
     private val api: GribDataSource,
     private val context: Context
 ) {
-    private val localGribFile = File(context.filesDir, "gribfile_weather_oslofjord.grib")
+    private val localGribFile = File(context.filesDir, "gribfile_weather_west_norway.grib")
     private val parser = GribParser()
 
     /**
