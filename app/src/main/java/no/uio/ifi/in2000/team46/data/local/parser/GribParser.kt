@@ -60,6 +60,53 @@ class GribParser {
         ncfile.close()
         return vectors
     }
+    fun parseWaveFile(file: File): List<WaveVector> {
+        val ncfile = NetcdfFile.open(file.absolutePath)
+
+        // bruk de faktiske navnene fra Logcat
+        val swhName = "Significant_height_of_combined_wind_waves_and_swell_height_above_ground"
+        val dirName = "VAR88-0-140-230_height_above_ground"
+
+        val swhVar = ncfile.findVariable(swhName)
+            ?: error("Fant ikke $swhName i GRIB-filen")
+        val mwdVar = ncfile.findVariable(dirName)
+            ?: error("Fant ikke $dirName i GRIB-filen")
+        val latVar = ncfile.findVariable("lat") ?: error("Fant ikke lat")
+        val lonVar = ncfile.findVariable("lon") ?: error("Fant ikke lon")
+
+        val swhData = swhVar.read() as ArrayFloat.D4
+        val mwdData = mwdVar.read() as ArrayFloat.D4
+        val lats    = latVar.read().reduce().storage as FloatArray
+        val lons    = lonVar.read().reduce().storage as FloatArray
+
+        val idx = swhData.index as Index4D
+        val timeIndex  = 0
+        val levelIndex = 0
+
+        val waves = mutableListOf<WaveVector>()
+        for (iLat in lats.indices) {
+            for (iLon in lons.indices) {
+                idx.set(timeIndex, levelIndex, iLat, iLon)
+                val height = swhData.getFloat(idx).toDouble()
+                val fromDir = mwdData.getFloat(idx).toDouble()
+                // meteorologisk konvensjon: retningen bølgene kommer fra
+                val toDir = (fromDir + 180) % 360
+
+                if (height.isFinite() && toDir.isFinite()) {
+                    waves += WaveVector(
+                        lon       = lons[iLon].toDouble(),
+                        lat       = lats[iLat].toDouble(),
+                        height    = height,
+                        direction = toDir
+                    )
+                }
+            }
+        }
+        ncfile.close()
+        return waves
+    }
+
+
 
 
 

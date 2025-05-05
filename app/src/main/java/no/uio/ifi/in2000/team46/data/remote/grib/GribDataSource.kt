@@ -9,7 +9,7 @@ interface GribDataSource {
     @GET("weatherapi/gribfiles/1.1/")
     suspend fun getGribFiles(
         @Query("content") content: String ,
-        @Query("area") area: String = "skagerrak",
+        @Query("area") area: String = "west_norway",
 
     ): Response<ResponseBody>
 }
