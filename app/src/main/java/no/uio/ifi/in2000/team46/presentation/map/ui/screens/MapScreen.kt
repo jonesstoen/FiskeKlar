@@ -46,6 +46,8 @@ import no.uio.ifi.in2000.team46.data.repository.CurrentRepository
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentViewModelFactory
 import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.annotations.PolygonOptions
@@ -230,6 +232,12 @@ fun MapScreen(
         )
     )
 
+    val precipitationViewModel: PrecipitationViewModel = viewModel(
+        factory = PrecipitationViewModelFactory(
+            GribRepository(GribRetrofitInstance.GribApi, ctx)
+        )
+    )
+
     // ----------- MetAlerts bottom sheet -----------
     val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()
     LaunchedEffect(selectedFeature) {
@@ -385,6 +393,7 @@ fun MapScreen(
                     gribViewModel      = gribViewModel,
                     currentViewModel   = currentViewModel,
                     driftViewModel     = driftViewModel,
+                    precipitationViewModel = precipitationViewModel,
                 )
             }
             // 3) Kontroller
@@ -399,6 +408,7 @@ fun MapScreen(
                     gribViewModel = gribViewModel,
                     currentViewModel = currentViewModel,
                     driftViewModel = driftViewModel,
+                    precipitationViewModel = precipitationViewModel,
                     hasLocationPermission = hasLocationPermission,
                     onRequestPermission = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
                     navController = navController,

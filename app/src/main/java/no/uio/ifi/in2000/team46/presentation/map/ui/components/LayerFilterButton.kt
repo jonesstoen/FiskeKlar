@@ -39,6 +39,7 @@ import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModel
 
 @Composable
 fun LayerFilterButton(
@@ -48,6 +49,7 @@ fun LayerFilterButton(
     gribViewModel: GribViewModel,
     currentViewModel: CurrentViewModel,
     driftViewModel: DriftViewModel,
+    precipitationViewModel: PrecipitationViewModel,
     modifier: Modifier = Modifier
 ) {
     val TAG = "LayerFilterButton"
@@ -60,6 +62,7 @@ fun LayerFilterButton(
     val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
     val isCurrentLayerVisible by currentViewModel.isLayerVisible.collectAsState()
     val isDriftLayerVisible by driftViewModel.isLayerVisible.collectAsState()
+    val isPrecipitationVisible by precipitationViewModel.isLayerVisible.collectAsState()
     val isLoading by aisViewModel.isLoading.collectAsState()
     val error by aisViewModel.error.collectAsState()
     val selectedVesselTypes by aisViewModel.selectedVesselTypes.collectAsState()
@@ -226,6 +229,13 @@ fun LayerFilterButton(
                         label = "Driftvektorer (vind + strøm)",
                         checked = isDriftLayerVisible,
                         onCheckedChange = { driftViewModel.toggleLayerVisibility() }
+                    )
+
+                    // Rain
+                    LayerToggleRow(
+                        label = "Nedbør",
+                        checked = isPrecipitationVisible,
+                        onCheckedChange = { precipitationViewModel.toggleLayerVisibility() }
                     )
 
                     // Error

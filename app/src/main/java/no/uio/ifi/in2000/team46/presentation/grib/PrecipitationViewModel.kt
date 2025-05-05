@@ -20,7 +20,7 @@ class PrecipitationViewModel(
     private val _isLayerVisible = MutableStateFlow(false)
     val isLayerVisible: StateFlow<Boolean> = _isLayerVisible
 
-    fun toggleLayer() {
+    fun toggleLayerVisibility() {
         _isLayerVisible.value = !_isLayerVisible.value
         if (_isLayerVisible.value) fetch()
     }
