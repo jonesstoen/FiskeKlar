@@ -1,6 +1,5 @@
 package no.uio.ifi.in2000.team46.presentation.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

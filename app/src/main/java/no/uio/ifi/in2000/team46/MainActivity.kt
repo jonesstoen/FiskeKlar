@@ -20,18 +20,18 @@ import no.uio.ifi.in2000.team46.presentation.map.utils.rememberMapViewWithLifecy
 import no.uio.ifi.in2000.team46.presentation.navigation.AppNavHost
 import no.uio.ifi.in2000.team46.presentation.ui.theme.TEAM46Theme
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
-import no.uio.ifi.in2000.team46.presentation.fishlog.ui.viewmodel.FishingLogViewModel
+import no.uio.ifi.in2000.team46.presentation.fishlog.viewmodel.FishingLogViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
-import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.MapViewModel
-import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.MapViewModelFactory
-import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.SearchViewModel
+import no.uio.ifi.in2000.team46.presentation.map.viewmodel.MapViewModel
+import no.uio.ifi.in2000.team46.presentation.map.viewmodel.MapViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.map.viewmodel.SearchViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModelFactory
 import org.maplibre.android.MapLibre
 import org.maplibre.android.WellKnownTileServer
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModelFactory
-import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
+import no.uio.ifi.in2000.team46.data.remote.api.WeatherService
 
 class MainActivity : ComponentActivity() {
     // Hoist all your ViewModels here so they survive navigation

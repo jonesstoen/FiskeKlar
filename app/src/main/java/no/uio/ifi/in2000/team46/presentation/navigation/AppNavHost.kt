@@ -24,41 +24,42 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
-import no.uio.ifi.in2000.team46.presentation.map.ui.screens.MapScreen
+import no.uio.ifi.in2000.team46.presentation.map.screens.MapScreen
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
-import no.uio.ifi.in2000.team46.presentation.ui.screens.HomeScreen
-import no.uio.ifi.in2000.team46.presentation.fishlog.ui.screens.AddFishingEntryScreen
-import no.uio.ifi.in2000.team46.presentation.fishlog.ui.screens.FishingLogDetailScreen
-import no.uio.ifi.in2000.team46.presentation.fishlog.ui.screens.FishingLogScreen
+import no.uio.ifi.in2000.team46.presentation.home.screens.HomeScreen
+import no.uio.ifi.in2000.team46.presentation.fishlog.screens.AddFishingEntryScreen
+import no.uio.ifi.in2000.team46.presentation.fishlog.screens.FishingLogDetailScreen
+import no.uio.ifi.in2000.team46.presentation.fishlog.screens.FishingLogScreen
 import no.uio.ifi.in2000.team46.presentation.profile.screens.ProfileScreen
-import no.uio.ifi.in2000.team46.presentation.fishlog.ui.viewmodel.FishingLogViewModel
+import no.uio.ifi.in2000.team46.presentation.fishlog.viewmodel.FishingLogViewModel
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
-import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.MapViewModel
+import no.uio.ifi.in2000.team46.presentation.map.viewmodel.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
-import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.SearchViewModel
+import no.uio.ifi.in2000.team46.presentation.map.viewmodel.SearchViewModel
 import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
-import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
+import no.uio.ifi.in2000.team46.data.remote.api.WeatherService
 import no.uio.ifi.in2000.team46.data.repository.FavoriteRepository
 import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
 import no.uio.ifi.in2000.team46.presentation.favorites.screen.FavoriteDetailScreen
 import no.uio.ifi.in2000.team46.presentation.favorites.screen.FavoritesScreen
 import no.uio.ifi.in2000.team46.presentation.favorites.viewmodel.FavoritesViewModel
-import no.uio.ifi.in2000.team46.presentation.map.ui.screens.MapPickerScreen
+import no.uio.ifi.in2000.team46.presentation.map.screens.MapPickerScreen
 import no.uio.ifi.in2000.team46.presentation.favorites.screen.AddFavoriteScreen
 import no.uio.ifi.in2000.team46.data.repository.UserRepository
-import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.screens.WeatherDetailScreen
-import no.uio.ifi.in2000.team46.domain.model.weather.WeatherData
+import no.uio.ifi.in2000.team46.presentation.weather.screens.WeatherDetailScreen
+import no.uio.ifi.in2000.team46.domain.weather.WeatherData
 import org.maplibre.android.maps.MapView
-import no.uio.ifi.in2000.team46.presentation.weatherScreenMap.viewmodel.WeatherDetailViewModel
+import no.uio.ifi.in2000.team46.presentation.weather.viewmodel.WeatherDetailViewModel
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.setValue
-import no.uio.ifi.in2000.team46.presentation.ui.screens.SosScreen
+import no.uio.ifi.in2000.team46.presentation.sos.screens.SosScreen
 import androidx.compose.ui.graphics.Color
+import no.uio.ifi.in2000.team46.domain.weather.WeatherDetails
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -241,7 +242,7 @@ fun AppNavHost(
                 val viewModel = remember { WeatherDetailViewModel(weatherService) }
                 val userLocation by mapViewModel.userLocation.collectAsState()
                 var weatherData by remember { mutableStateOf<WeatherData?>(null) }
-                var weatherDetails by remember { mutableStateOf<no.uio.ifi.in2000.team46.domain.model.weather.WeatherDetails?>(null) }
+                var weatherDetails by remember { mutableStateOf<WeatherDetails?>(null) }
 
                 LaunchedEffect(userLocation) {
                     userLocation?.let { location ->

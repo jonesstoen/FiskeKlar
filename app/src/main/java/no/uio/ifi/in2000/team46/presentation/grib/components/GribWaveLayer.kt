@@ -2,22 +2,15 @@ package no.uio.ifi.in2000.team46.presentation.grib.components
 
 import android.util.Log
 import androidx.compose.runtime.*
-import no.uio.ifi.in2000.team46.data.local.parser.WaveVector
+import no.uio.ifi.in2000.team46.domain.grib.WaveVector
 import no.uio.ifi.in2000.team46.data.repository.Result
-import no.uio.ifi.in2000.team46.presentation.grib.WaveViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModel
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.style.expressions.Expression.get
 import org.maplibre.android.style.expressions.Expression.interpolate
 import org.maplibre.android.style.expressions.Expression.linear
 import org.maplibre.android.style.expressions.Expression.literal
-import org.maplibre.android.style.expressions.Expression.rgba
-import org.maplibre.android.style.layers.HeatmapLayer
-import org.maplibre.android.style.layers.PropertyFactory.heatmapColor
-import org.maplibre.android.style.layers.PropertyFactory.heatmapIntensity
-import org.maplibre.android.style.layers.PropertyFactory.heatmapOpacity
-import org.maplibre.android.style.layers.PropertyFactory.heatmapRadius
-import org.maplibre.android.style.layers.PropertyFactory.heatmapWeight
 import org.maplibre.android.style.sources.GeoJsonSource
 import org.maplibre.android.style.expressions.Expression.zoom
 import org.maplibre.android.style.layers.CircleLayer
@@ -27,7 +20,6 @@ import org.maplibre.android.style.layers.PropertyFactory.circleRadius
 
 import com.google.gson.JsonObject
 import org.maplibre.android.style.expressions.Expression.color
-import org.maplibre.android.style.expressions.Expression.product
 import org.maplibre.android.style.expressions.Expression.step
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection

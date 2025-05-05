@@ -4,11 +4,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.DriftViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text

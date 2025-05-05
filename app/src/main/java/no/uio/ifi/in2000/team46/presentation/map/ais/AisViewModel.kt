@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.data.repository.AisRepository
-import no.uio.ifi.in2000.team46.domain.model.ais.AisVesselPosition
-import no.uio.ifi.in2000.team46.domain.model.ais.VesselTypes
+import no.uio.ifi.in2000.team46.domain.ais.AisVesselPosition
+import no.uio.ifi.in2000.team46.domain.ais.VesselTypes
 import no.uio.ifi.in2000.team46.data.repository.Result
 
 

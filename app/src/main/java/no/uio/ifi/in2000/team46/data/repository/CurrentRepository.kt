@@ -4,11 +4,10 @@ import android.content.Context
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import no.uio.ifi.in2000.team46.data.local.parser.CurrentVector
+import no.uio.ifi.in2000.team46.domain.grib.CurrentVector
 import no.uio.ifi.in2000.team46.data.local.parser.GribParser
-import no.uio.ifi.in2000.team46.data.local.parser.VectorType
-import no.uio.ifi.in2000.team46.data.local.parser.WindVector
-import no.uio.ifi.in2000.team46.data.remote.grib.GribDataSource
+import no.uio.ifi.in2000.team46.domain.grib.VectorType
+import no.uio.ifi.in2000.team46.data.remote.datasource.GribDataSource
 import java.io.File
 import java.io.IOException
 

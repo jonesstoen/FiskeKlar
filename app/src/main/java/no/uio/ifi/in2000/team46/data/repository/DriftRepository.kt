@@ -1,7 +1,7 @@
 package no.uio.ifi.in2000.team46.data.repository
 
-import no.uio.ifi.in2000.team46.data.local.parser.DriftVector
-import no.uio.ifi.in2000.team46.data.local.parser.calculateDriftVectors
+import no.uio.ifi.in2000.team46.domain.grib.DriftVector
+import no.uio.ifi.in2000.team46.domain.usecase.drift.calculateDriftVectors
 
 class DriftRepository(
     private val gribRepository: GribRepository,

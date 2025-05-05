@@ -1,8 +1,7 @@
 package no.uio.ifi.in2000.team46.data.repository
 
-import no.uio.ifi.in2000.team46.data.remote.ais.BarentsWatchRetrofitInstance
-import no.uio.ifi.in2000.team46.data.remote.forbud.BarentsWatchForbudService
-import no.uio.ifi.in2000.team46.data.remote.forbud.ForbudDataSource
+import no.uio.ifi.in2000.team46.data.remote.api.BarentsWatchRetrofitInstance
+import no.uio.ifi.in2000.team46.data.remote.api.BarentsWatchForbudService
 
 class FishHealthRepository {
 

@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import no.uio.ifi.in2000.team46.domain.model.metalerts.Feature
+import no.uio.ifi.in2000.team46.domain.metalerts.Feature
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 

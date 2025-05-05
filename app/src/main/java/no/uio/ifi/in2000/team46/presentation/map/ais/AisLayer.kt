@@ -13,9 +13,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team46.domain.model.ais.AisVesselPosition
-import no.uio.ifi.in2000.team46.domain.model.ais.VesselIcons
-import no.uio.ifi.in2000.team46.domain.model.ais.VesselTypes
+import no.uio.ifi.in2000.team46.domain.ais.AisVesselPosition
+import no.uio.ifi.in2000.team46.domain.ais.VesselIcons
+import no.uio.ifi.in2000.team46.domain.ais.VesselTypes
 import org.json.JSONArray
 import org.json.JSONObject
 import org.maplibre.android.geometry.LatLngBounds

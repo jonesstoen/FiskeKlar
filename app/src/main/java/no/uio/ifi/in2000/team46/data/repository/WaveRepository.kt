@@ -4,8 +4,8 @@ import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.uio.ifi.in2000.team46.data.local.parser.GribParser
-import no.uio.ifi.in2000.team46.data.local.parser.WaveVector
-import no.uio.ifi.in2000.team46.data.remote.grib.GribDataSource
+import no.uio.ifi.in2000.team46.domain.grib.WaveVector
+import no.uio.ifi.in2000.team46.data.remote.datasource.GribDataSource
 import java.io.File
 import java.io.IOException
 

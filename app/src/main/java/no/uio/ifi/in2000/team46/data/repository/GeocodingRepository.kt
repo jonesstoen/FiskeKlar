@@ -1,8 +1,8 @@
 package no.uio.ifi.in2000.team46.data.repository
 
-import no.uio.ifi.in2000.team46.data.remote.geocoding.GeocodingApi
-import no.uio.ifi.in2000.team46.data.remote.geocoding.GeocodingResponse
-import no.uio.ifi.in2000.team46.data.remote.geocoding.GeocodingRetrofitInstance
+import no.uio.ifi.in2000.team46.data.remote.datasource.GeocodingApi
+import no.uio.ifi.in2000.team46.data.remote.api.GeocodingResponse
+import no.uio.ifi.in2000.team46.data.remote.api.GeocodingRetrofitInstance
 
 class GeocodingRepository {
     private val api: GeocodingApi = GeocodingRetrofitInstance.geocodingApi

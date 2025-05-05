@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
-import no.uio.ifi.in2000.team46.domain.model.metalerts.MetAlertsResponse
+import no.uio.ifi.in2000.team46.domain.metalerts.MetAlertsResponse
 import no.uio.ifi.in2000.team46.data.repository.Result
-import no.uio.ifi.in2000.team46.domain.model.metalerts.Feature
+import no.uio.ifi.in2000.team46.domain.metalerts.Feature
 
 
 class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewModel() {

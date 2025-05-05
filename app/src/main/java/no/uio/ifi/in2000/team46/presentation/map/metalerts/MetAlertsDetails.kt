@@ -9,11 +9,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.tooling.preview.Preview
-import no.uio.ifi.in2000.team46.domain.model.metalerts.Feature
-import no.uio.ifi.in2000.team46.domain.model.metalerts.Geometry
-import no.uio.ifi.in2000.team46.domain.model.metalerts.MetAlertsResponse
-import no.uio.ifi.in2000.team46.domain.model.metalerts.Properties
-import no.uio.ifi.in2000.team46.domain.model.metalerts.WhenInfo
+import no.uio.ifi.in2000.team46.domain.metalerts.Feature
+import no.uio.ifi.in2000.team46.domain.metalerts.Geometry
+import no.uio.ifi.in2000.team46.domain.metalerts.MetAlertsResponse
+import no.uio.ifi.in2000.team46.domain.metalerts.Properties
+import no.uio.ifi.in2000.team46.domain.metalerts.WhenInfo
 
 
 @Composable

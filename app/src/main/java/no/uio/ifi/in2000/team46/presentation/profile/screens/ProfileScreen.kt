@@ -18,7 +18,6 @@ import no.uio.ifi.in2000.team46.presentation.profile.component.ProfileContent
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import java.io.File
 import androidx.compose.ui.platform.LocalContext
-import no.uio.ifi.in2000.team46.presentation.ui.screens.Background
 import android.net.Uri
 
 

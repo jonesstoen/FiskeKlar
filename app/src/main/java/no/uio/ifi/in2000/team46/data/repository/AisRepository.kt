@@ -2,9 +2,9 @@ package no.uio.ifi.in2000.team46.data.repository
 
 
 import android.util.Log
-import no.uio.ifi.in2000.team46.data.remote.ais.BarentsWatchAuthService
-import no.uio.ifi.in2000.team46.data.remote.ais.BarentsWatchRetrofitInstance
-import no.uio.ifi.in2000.team46.domain.model.ais.AisVesselPosition
+import no.uio.ifi.in2000.team46.data.remote.api.BarentsWatchAuthService
+import no.uio.ifi.in2000.team46.data.remote.api.BarentsWatchRetrofitInstance
+import no.uio.ifi.in2000.team46.domain.ais.AisVesselPosition
 import retrofit2.HttpException
 
 class AisRepository {

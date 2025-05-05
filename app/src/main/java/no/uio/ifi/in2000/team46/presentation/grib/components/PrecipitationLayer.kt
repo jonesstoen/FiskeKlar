@@ -1,24 +1,18 @@
 package no.uio.ifi.in2000.team46.presentation.grib.components
 
-import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.compose.runtime.*
-import no.uio.ifi.in2000.team46.data.local.parser.WindVector
 import no.uio.ifi.in2000.team46.data.repository.Result
-import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.maps.MapView
 import org.maplibre.android.style.expressions.Expression
 import org.maplibre.android.style.layers.PropertyFactory.*
 import org.maplibre.android.style.sources.GeoJsonSource
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
-import no.uio.ifi.in2000.team46.data.local.parser.PrecipitationPoint
-import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModel
+import no.uio.ifi.in2000.team46.domain.grib.PrecipitationPoint
+import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModel
 import org.maplibre.android.style.layers.CircleLayer
-import org.maplibre.android.style.layers.HeatmapLayer
-import org.maplibre.android.style.layers.SymbolLayer
+
 @Composable
 fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
     val isVisible     by vm.isLayerVisible.collectAsState()

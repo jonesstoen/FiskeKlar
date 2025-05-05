@@ -1,14 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.grib.components
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.PorterDuff
-import android.graphics.PorterDuffColorFilter
-import android.util.Log
 import androidx.compose.runtime.*
-import no.uio.ifi.in2000.team46.data.local.parser.WindVector
 import no.uio.ifi.in2000.team46.data.repository.Result
 
 import org.maplibre.android.maps.MapLibreMap
@@ -20,8 +12,8 @@ import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
 import no.uio.ifi.in2000.team46.R
-import no.uio.ifi.in2000.team46.data.local.parser.CurrentVector
-import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
+import no.uio.ifi.in2000.team46.domain.grib.CurrentVector
+import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.CurrentViewModel
 import org.maplibre.android.style.layers.SymbolLayer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

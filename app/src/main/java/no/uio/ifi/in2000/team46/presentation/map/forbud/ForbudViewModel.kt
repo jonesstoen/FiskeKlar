@@ -9,8 +9,8 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team46.data.remote.forbud.BarentsWatchForbudService
-import no.uio.ifi.in2000.team46.data.remote.ais.BarentsWatchRetrofitInstance
+import no.uio.ifi.in2000.team46.data.remote.api.BarentsWatchForbudService
+import no.uio.ifi.in2000.team46.data.remote.api.BarentsWatchRetrofitInstance
 import org.json.JSONArray
 import org.json.JSONObject
 

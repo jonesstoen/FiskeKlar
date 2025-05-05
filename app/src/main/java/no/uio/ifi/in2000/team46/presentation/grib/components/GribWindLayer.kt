@@ -3,9 +3,9 @@ package no.uio.ifi.in2000.team46.presentation.grib.components
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.runtime.*
-import no.uio.ifi.in2000.team46.data.local.parser.WindVector
+import no.uio.ifi.in2000.team46.domain.grib.WindVector
 import no.uio.ifi.in2000.team46.data.repository.Result
-import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.GribViewModel
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.style.expressions.Expression
@@ -15,7 +15,6 @@ import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
 import no.uio.ifi.in2000.team46.R
-import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.layers.SymbolLayer
 
 @Composable

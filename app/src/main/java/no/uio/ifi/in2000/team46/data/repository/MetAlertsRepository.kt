@@ -2,14 +2,13 @@ package no.uio.ifi.in2000.team46.data.repository
 
 
 
-import no.uio.ifi.in2000.team46.data.remote.metalerts.MetAlertsDatasource
-import no.uio.ifi.in2000.team46.data.remote.metalerts.RetrofitInstance
-import no.uio.ifi.in2000.team46.domain.model.metalerts.MetAlertsResponse
-import retrofit2.HttpException
+import no.uio.ifi.in2000.team46.data.remote.datasource.MetAlertsDatasource
+import no.uio.ifi.in2000.team46.data.remote.api.MetAlertsRetrofitInstance
+import no.uio.ifi.in2000.team46.domain.metalerts.MetAlertsResponse
 
 
 class MetAlertsRepository(
-    private val datasource: MetAlertsDatasource = RetrofitInstance.metAlertsApi
+    private val datasource: MetAlertsDatasource = MetAlertsRetrofitInstance.metAlertsApi
 ) {
     suspend fun getAlerts(): Result<MetAlertsResponse> {
         return try {

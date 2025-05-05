@@ -19,7 +19,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import no.uio.ifi.in2000.team46.R
-import no.uio.ifi.in2000.team46.domain.model.metalerts.Feature
+import no.uio.ifi.in2000.team46.domain.metalerts.Feature
 import no.uio.ifi.in2000.team46.utils.BulletText
 import no.uio.ifi.in2000.team46.utils.formatTime
 import no.uio.ifi.in2000.team46.utils.timeUntilStart

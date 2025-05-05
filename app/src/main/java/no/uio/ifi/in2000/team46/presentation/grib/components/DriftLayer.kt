@@ -1,13 +1,12 @@
 package no.uio.ifi.in2000.team46.presentation.grib.components
 
 import android.graphics.BitmapFactory
-import android.util.Log
 import androidx.compose.runtime.*
 import no.uio.ifi.in2000.team46.R
-import no.uio.ifi.in2000.team46.data.local.parser.DriftVector
-import no.uio.ifi.in2000.team46.data.local.parser.calculateDriftImpact
+import no.uio.ifi.in2000.team46.domain.grib.DriftVector
+import no.uio.ifi.in2000.team46.domain.usecase.drift.calculateDriftImpact
 import no.uio.ifi.in2000.team46.data.repository.Result
-import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.DriftViewModel
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.style.expressions.Expression

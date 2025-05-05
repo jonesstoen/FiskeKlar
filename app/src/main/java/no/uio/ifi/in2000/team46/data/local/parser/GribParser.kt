@@ -1,6 +1,12 @@
 package no.uio.ifi.in2000.team46.data.local.parser
 
 import android.util.Log
+import no.uio.ifi.in2000.team46.domain.grib.CurrentVector
+import no.uio.ifi.in2000.team46.domain.grib.PrecipitationPoint
+import no.uio.ifi.in2000.team46.domain.grib.Vector
+import no.uio.ifi.in2000.team46.domain.grib.VectorType
+import no.uio.ifi.in2000.team46.domain.grib.WaveVector
+import no.uio.ifi.in2000.team46.domain.grib.WindVector
 import ucar.ma2.ArrayFloat
 import ucar.ma2.Index4D
 import ucar.nc2.NetcdfFile
