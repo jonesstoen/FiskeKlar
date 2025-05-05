@@ -1,6 +1,7 @@
 package no.uio.ifi.in2000.team46.presentation.map.screens
 
 import android.Manifest
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -61,6 +62,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.zIndex
+import kotlinx.coroutines.flow.distinctUntilChanged
 import no.uio.ifi.in2000.team46.data.repository.WaveRepository
 import no.uio.ifi.in2000.team46.presentation.navigation.HighlightVesselData
 import org.maplibre.android.annotations.IconFactory
@@ -69,6 +71,11 @@ import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.grib.components.WaveLegend
 import no.uio.ifi.in2000.team46.data.repository.Result
+import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsLegend
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 
 // =====================
 // MAP SCREEN
@@ -282,11 +289,28 @@ fun MapScreen(
     // ----------- MetAlerts bottom sheet -----------
     val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()
     LaunchedEffect(selectedFeature) {
+        if (selectedFeature != null) scaffoldState.bottomSheetState.expand()
+        else scaffoldState.bottomSheetState.hide()
         if (selectedFeature != null) {
-            sheetState.expand()
+            scaffoldState.bottomSheetState.expand()
         } else {
-            sheetState.hide()
+            scaffoldState.bottomSheetState.hide()
         }
+    }
+
+    // Observe bottom sheet state and reset MetAlert when it's fully hidden
+    LaunchedEffect(scaffoldState.bottomSheetState) {
+        snapshotFlow { scaffoldState.bottomSheetState.currentValue }
+            .distinctUntilChanged()
+            .collect { state ->
+                Log.d("MapScreen", "Bottom sheet state: $state")
+
+                // Reset MetAlert only when the bottom sheet is fully hidden
+                if (state != SheetValue.Expanded) {
+                    metAlertsViewModel.selectFeature(null)  // Reset the selected MetAlert
+                    Log.d("MapScreen", "Selected alert cleared because bottom sheet is Hidden.")
+                }
+            }
     }
 
     // Tegn strek og marker hvis highlightVessel er satt
@@ -444,6 +468,35 @@ fun MapScreen(
                         .align(Alignment.TopEnd)
                         .padding(top= 100.dp, end = 12.dp)
                 )
+            }
+            val showMetAlertsLegend = remember { mutableStateOf(false) }
+            val isMetAlertsVisible by metAlertsViewModel.isLayerVisible.collectAsState()
+
+            if (isMetAlertsVisible) {
+                // Info-knapp
+                IconButton(
+                    onClick = { showMetAlertsLegend.value = !showMetAlertsLegend.value },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top = 100.dp, end = 12.dp)
+                        .zIndex(10f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Forklaring",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                //info legend
+                if (showMetAlertsLegend.value) {
+                    MetAlertsLegend(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .padding(top = 160.dp, end = 12.dp)
+                            .zIndex(9f)
+                    )
+                }
             }
             // 3) Kontroller
             mapLibreMap?.let { map ->

@@ -1,9 +1,11 @@
 package no.uio.ifi.in2000.team46.presentation.map.metalerts
 
 
+import android.animation.ValueAnimator
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import org.maplibre.android.maps.MapView
@@ -26,6 +28,11 @@ fun MetAlertsLayerComponent(
     val json by metAlertsViewModel.metAlertsJson.collectAsState()
     val isVisible by metAlertsViewModel.isLayerVisible.collectAsState()
     val metAlertsResponse by metAlertsViewModel.metAlertsResponse.collectAsState()
+    LaunchedEffect(isVisible) {
+        if (isVisible) {
+            Toast.makeText(context, "Trykk på et av varselområdene for mer info.", Toast.LENGTH_LONG).show()
+        }
+    }
 
     LaunchedEffect(isVisible, json) {
         mapView.getMapAsync { maplibreMap ->
@@ -46,6 +53,7 @@ fun MetAlertsLayerComponent(
                     }
 
                     addMetAlertsLayer(context, style, json!!, featuresWithIcons)
+                        MetAlertsAnimator.start(style)
                     maplibreMap.addOnMapClickListener { point ->
                         val screenPoint = maplibreMap.projection.toScreenLocation(point)
                         val features = maplibreMap.queryRenderedFeatures(screenPoint, "metalerts-layer")
@@ -63,6 +71,7 @@ fun MetAlertsLayerComponent(
                     style.getLayer("metalerts-layer")?.let { style.removeLayer(it) }
                     style.getLayer("metalerts-icons")?.let { style.removeLayer(it) }
                     style.getSource("metalerts-source")?.let { style.removeSource(it) }
+                    MetAlertsAnimator.stop()
 
                     Log.d("MetAlertsLayerComponent", "Fjernet metalerts-lag")
                 }
@@ -150,4 +159,5 @@ fun addMetAlertsLayer(
 
     )
     style.addLayerAbove(symbolLayer, "metalerts-layer")
+
 }
