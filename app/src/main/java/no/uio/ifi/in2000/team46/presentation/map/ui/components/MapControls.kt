@@ -11,6 +11,7 @@ import androidx.navigation.NavController
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModel
 import no.uio.ifi.in2000.team46.data.remote.geocoding.Feature
 import org.maplibre.android.maps.MapLibreMap
 import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.MapViewModel
@@ -18,6 +19,7 @@ import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.SearchViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
+
 
 import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
 import no.uio.ifi.in2000.team46.presentation.grib.WaveViewModel
@@ -34,6 +36,7 @@ fun MapControls(
     currentViewModel: CurrentViewModel,
     driftViewModel: DriftViewModel,
     waveViewModel: WaveViewModel,
+    precipitationViewModel: PrecipitationViewModel,
     hasLocationPermission: Boolean,
     onRequestPermission: () -> Unit,
     navController: NavController,
@@ -100,6 +103,7 @@ fun MapControls(
                 currentViewModel =  currentViewModel,
                 driftViewModel = driftViewModel,
                 waveViewModel = waveViewModel,
+                precipitationViewModel = precipitationViewModel,
             )
 
         }

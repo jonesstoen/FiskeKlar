@@ -5,6 +5,7 @@ import android.content.Context
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import no.uio.ifi.in2000.team46.data.local.parser.GribParser
+import no.uio.ifi.in2000.team46.data.local.parser.PrecipitationPoint
 import no.uio.ifi.in2000.team46.data.local.parser.VectorType
 import no.uio.ifi.in2000.team46.data.remote.grib.GribDataSource
 import no.uio.ifi.in2000.team46.data.local.parser.WindVector
@@ -17,7 +18,7 @@ class GribRepository(
     private val api: GribDataSource,
     private val context: Context
 ) {
-    private val localGribFile = File(context.filesDir, "gribfile_weather_oslofjord.grib")
+    private val localGribFile = File(context.filesDir, "gribfile_weather_west_norway.grib")
     private val parser = GribParser()
 
     /**
@@ -67,5 +68,25 @@ class GribRepository(
     private fun isCacheExpired(): Boolean {
         val ageMs = System.currentTimeMillis() - localGribFile.lastModified()
         return ageMs > 3 * 60 * 60 * 1000 // 3 timer
+    }
+
+    suspend fun getPrecipitationData(forceRefresh: Boolean = false): Result<List<PrecipitationPoint>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                if (!localGribFile.exists() || isCacheExpired() || forceRefresh) {
+                    downloadGribFile()
+                }
+                parser.listVariablesInGrib(localGribFile)
+                val list = parser.parsePrecipitationFile(
+                    localGribFile,
+                    timeIndex = 1,
+
+                    )
+
+                Result.Success(list)
+            } catch (e: Exception) {
+                Result.Error(e)
+            }
+        }
     }
 }

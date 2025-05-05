@@ -11,6 +11,9 @@ import java.io.File
 import ucar.nc2.time.Calendar
 
 class GribParser {
+    companion object {
+        private const val TAG = "GribParser"
+    }
 
     fun parseVectorFile(
         file: File,
@@ -108,6 +111,85 @@ class GribParser {
 
 
 
+    // for å parse nedbør
+    fun parsePrecipitationFile(
+        file: File,
+        timeIndex: Int = 1,
+        levelIndex: Int = 0
+    ): List<PrecipitationPoint> {
+        Log.d(TAG, "Opening GRIB file: ${file.absolutePath}")
+        val ncfile = NetcdfFile.open(file.absolutePath)
+        val precVar = ncfile.findVariable("Total_precipitation_height_above_ground")
+            ?: throw IllegalArgumentException("Fant ikke Total_precipitation_height_above_ground")
+        val latVar = ncfile.findVariable("lat")
+            ?: throw IllegalArgumentException("Fant ikke lat")
+        val lonVar = ncfile.findVariable("lon")
+            ?: throw IllegalArgumentException("Fant ikke lon")
+
+        // Log dimension info
+        val timeDim = precVar.dimensions.find { it.shortName == "time" }?.length ?: -1
+        val latLen = latVar.dimensions.firstOrNull()?.length ?: -1
+        val lonLen = lonVar.dimensions.firstOrNull()?.length ?: -1
+        Log.d(TAG, "Dimensions -> time=$timeDim, lat=$latLen, lon=$lonLen")
+
+        val units = precVar.getUnitsString()
+        Log.d(TAG, "Units: $units")
+
+        @Suppress("UNCHECKED_CAST")
+        val data = precVar.read() as ArrayFloat.D4
+        val lats = (latVar.read().reduce().storage as FloatArray)
+        val lons = (lonVar.read().reduce().storage as FloatArray)
+        val idx = data.index as Index4D
+
+        // Prepare sampling indices
+        val midLat = lats.size / 2
+        val midLon = lons.size / 2
+        var firstNonZeroLogged = false
+
+        val points = mutableListOf<PrecipitationPoint>()
+        for (iLat in lats.indices) {
+            for (iLon in lons.indices) {
+                // compute cumulative at timeIndex and previous
+                idx.set(timeIndex, levelIndex, iLat, iLon)
+                val rawCum = data.getFloat(idx).toDouble()
+                idx.set(timeIndex - 1, levelIndex, iLat, iLon)
+                val rawPrev = data.getFloat(idx).toDouble()
+                val rawDelta = (rawCum - rawPrev).coerceAtLeast(0.0)
+
+                // convert units
+                val inMm = when {
+                    units.contains("kg m^-2") -> rawDelta
+                    units.contains("m") -> rawDelta * 1000.0
+                    else -> rawDelta
+                }
+
+                // Log a few debug samples
+                if (!firstNonZeroLogged && inMm > 0) {
+                    Log.d(TAG, "First non-zero delta at [$iLat,$iLon]: cum=$rawCum, prev=$rawPrev, delta=$rawDelta, mm=$inMm")
+                    firstNonZeroLogged = true
+                }
+                if (iLat == 0 && iLon < 5) {
+                    Log.d(TAG, String.format("Top-row sample [%d,%d]: mm=%.3f", iLat, iLon, inMm))
+                }
+                if (iLat == midLat && iLon == midLon) {
+                    Log.d(TAG, String.format("Mid-grid sample [%d,%d]: mm=%.3f", iLat, iLon, inMm))
+                }
+
+                if (inMm.isFinite() && inMm > 0) {
+                    points += PrecipitationPoint(
+                        lon = lons[iLon].toDouble(),
+                        lat = lats[iLat].toDouble(),
+                        precipitation = inMm
+                    )
+                }
+            }
+        }
+
+        Log.d(TAG, "Parsed points count: ${points.size}")
+        ncfile.close()
+        return points
+    }
+
 
 
     // Debug: lists the variables in the file
@@ -134,5 +216,4 @@ class GribParser {
         }
         ncfile.close()
     }
-
 }

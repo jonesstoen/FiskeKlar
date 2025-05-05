@@ -48,6 +48,8 @@ import no.uio.ifi.in2000.team46.data.repository.CurrentRepository
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentViewModelFactory
 import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.annotations.PolygonOptions
@@ -271,6 +273,12 @@ fun MapScreen(
     val isWaveVisible   by waveViewModel.isLayerVisible.collectAsState()
     val waveResult      by waveViewModel.waveData.collectAsState()
 
+    val precipitationViewModel: PrecipitationViewModel = viewModel(
+        factory = PrecipitationViewModelFactory(
+            GribRepository(GribRetrofitInstance.GribApi, ctx)
+        )
+    )
+
     // ----------- MetAlerts bottom sheet -----------
     val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()
     LaunchedEffect(selectedFeature) {
@@ -426,7 +434,8 @@ fun MapScreen(
                     gribViewModel      = gribViewModel,
                     currentViewModel   = currentViewModel,
                     driftViewModel     = driftViewModel,
-                    waveViewModel      = waveViewModel
+                    waveViewModel      = waveViewModel,
+                    precipitationViewModel = precipitationViewModel
                 )
             }
             if (isWaveVisible && waveResult is Result.Success) {
@@ -449,6 +458,7 @@ fun MapScreen(
                     currentViewModel = currentViewModel,
                     driftViewModel = driftViewModel,
                     waveViewModel = waveViewModel,
+                    precipitationViewModel = precipitationViewModel,
                     hasLocationPermission = hasLocationPermission,
                     onRequestPermission = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
                     navController = navController,
