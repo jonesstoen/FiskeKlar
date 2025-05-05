@@ -70,18 +70,23 @@ class GribRepository(
         return ageMs > 3 * 60 * 60 * 1000 // 3 timer
     }
 
-    suspend fun getPrecipitationData(
-        forceRefresh: Boolean = false
-    ): Result<List<PrecipitationPoint>> = withContext(Dispatchers.IO) {
-        try {
-            if (!localGribFile.exists() || isCacheExpired() || forceRefresh) {
-                downloadGribFile()
+    suspend fun getPrecipitationData(forceRefresh: Boolean = false): Result<List<PrecipitationPoint>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                if (!localGribFile.exists() || isCacheExpired() || forceRefresh) {
+                    downloadGribFile()
+                }
+                parser.listVariablesInGrib(localGribFile)
+                val list = parser.parsePrecipitationFile(
+                    localGribFile,
+                    timeIndex = 1,
+
+                    )
+
+                Result.Success(list)
+            } catch (e: Exception) {
+                Result.Error(e)
             }
-            parser.listVariablesInGrib(localGribFile)
-            val list = parser.parsePrecipitationFile(localGribFile)
-            Result.Success(list)
-        } catch (e: Exception) {
-            Result.Error(e)
         }
     }
 }

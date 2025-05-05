@@ -40,6 +40,7 @@ import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.WaveViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModel
 
 @Composable
 fun LayerFilterButton(
@@ -50,6 +51,7 @@ fun LayerFilterButton(
     currentViewModel: CurrentViewModel,
     driftViewModel: DriftViewModel,
     waveViewModel: WaveViewModel,
+    precipitationViewModel: PrecipitationViewModel,
     modifier: Modifier = Modifier
 ) {
     val TAG = "LayerFilterButton"
@@ -67,6 +69,7 @@ fun LayerFilterButton(
     val isLoading by aisViewModel.isLoading.collectAsState()
     val error by aisViewModel.error.collectAsState()
     val selectedVesselTypes by aisViewModel.selectedVesselTypes.collectAsState()
+    val isPrecipitationVisible by precipitationViewModel.isLayerVisible.collectAsState()
 
     // Arrow rotation animation
     val vesselTypesArrowRotation by animateFloatAsState(if (vesselTypesExpanded) 180f else 0f)

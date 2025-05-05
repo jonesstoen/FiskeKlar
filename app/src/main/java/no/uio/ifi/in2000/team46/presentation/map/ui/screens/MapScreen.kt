@@ -457,6 +457,7 @@ fun MapScreen(
                     currentViewModel = currentViewModel,
                     driftViewModel = driftViewModel,
                     waveViewModel = waveViewModel,
+                    precipitationViewModel = precipitationViewModel,
                     hasLocationPermission = hasLocationPermission,
                     onRequestPermission = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
                     navController = navController,

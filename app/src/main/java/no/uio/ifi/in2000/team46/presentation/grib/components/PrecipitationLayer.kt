@@ -14,7 +14,6 @@ import org.maplibre.android.style.sources.GeoJsonSource
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
-import no.uio.ifi.in2000.team46.R
 import no.uio.ifi.in2000.team46.data.local.parser.PrecipitationPoint
 import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModel
 import org.maplibre.android.style.layers.HeatmapLayer
