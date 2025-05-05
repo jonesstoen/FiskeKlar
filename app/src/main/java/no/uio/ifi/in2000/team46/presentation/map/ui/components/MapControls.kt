@@ -1,26 +1,25 @@
 package no.uio.ifi.in2000.team46.presentation.map.ui.components
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import android.location.Location
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.Alignment
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import no.uio.ifi.in2000.team46.presentation.grib.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.DriftViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.GribViewModel
-import no.uio.ifi.in2000.team46.presentation.grib.PrecipitationViewModel
+import no.uio.ifi.in2000.team46.data.remote.geocoding.Feature
 import org.maplibre.android.maps.MapLibreMap
 import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.map.ui.viewmodel.SearchViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
+
+import no.uio.ifi.in2000.team46.data.remote.weather.WeatherService
 
 @Composable
 fun MapControls(
@@ -33,11 +32,26 @@ fun MapControls(
     gribViewModel: GribViewModel,
     currentViewModel: CurrentViewModel,
     driftViewModel: DriftViewModel,
-    precipitationViewModel: PrecipitationViewModel,
     hasLocationPermission: Boolean,
-    onRequestPermission: () -> Unit
+    onRequestPermission: () -> Unit,
+    navController: NavController,
+    onSearchResultSelected: (Feature) -> Unit,
+    onUserLocationSelected: (Location) -> Unit
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val weatherService = remember { WeatherService() }
+    val temperature by mapViewModel.temperature.collectAsState()
+    val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
+    val locationName = mapViewModel.locationName.collectAsState().value
+
+    // Oppdater været når markøren beveger seg
+    LaunchedEffect(map.cameraPosition.target) {
+        val target = map.cameraPosition.target
+        if (target != null) {
+            mapViewModel.updateWeatherForLocation(target.latitude, target.longitude)
+        }
+    }
 
     Box(Modifier.fillMaxSize()) {
         // 1) Søkeboks øverst til venstre
@@ -47,8 +61,8 @@ fun MapControls(
                 .padding(16.dp),
             map = map,
             searchResults = searchViewModel.searchResults.collectAsState().value,
-            isSearching   = searchViewModel.isSearching.collectAsState().value,
-            onSearch      = { query ->
+            isSearching = searchViewModel.isSearching.collectAsState().value,
+            onSearch = { query ->
                 val target = map.cameraPosition.target
                 if (target != null) {
                     searchViewModel.search(query, focusLat = target.latitude, focusLon = target.longitude)
@@ -59,32 +73,30 @@ fun MapControls(
                 if (coords.size >= 2) {
                     mapViewModel.zoomToLocation(map, coords[1], coords[0], zoom = 15.0)
                     searchViewModel.clearResults()
+                    onSearchResultSelected(feature)
                 }
             }
         )
 
         // 2) Zoom + filter i kolonne nederst til venstre
-        // Zoom + filter nederst til venstre, zoom rett over filter:
         Column(
             modifier = Modifier
-                .align(Alignment.BottomStart)  // <-- plasser kolonnen nederst til venstre
+                .align(Alignment.BottomStart)
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),  // litt mellomrom mellom knappene
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.Start
         ) {
             ZoomButton(
-                onZoomIn  = { mapViewModel.zoomIn(map) },
+                onZoomIn = { mapViewModel.zoomIn(map) },
                 onZoomOut = { mapViewModel.zoomOut(map) }
             )
             LayerFilterButton(
-                aisViewModel       = aisViewModel,
+                aisViewModel = aisViewModel,
                 metAlertsViewModel = metAlertsViewModel,
                 forbudViewModel    = forbudViewModel,
                 gribViewModel = gribViewModel,
                 currentViewModel =  currentViewModel,
-                driftViewModel = driftViewModel,
-                precipitationViewModel = precipitationViewModel,
-
+                driftViewModel = driftViewModel
             )
 
         }
@@ -97,12 +109,20 @@ fun MapControls(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             WeatherDisplay(
-                temperature = mapViewModel.temperature.collectAsState().value,
-                symbolCode  = mapViewModel.weatherSymbol.collectAsState().value
+                temperature = temperature,
+                symbolCode = weatherSymbol,
+                mapViewModel = mapViewModel,
+                navController = navController,
+                weatherService = weatherService,
+                modifier = Modifier.padding(4.dp)
             )
             zoomToLocationButton {
                 if (hasLocationPermission) {
-                    mapViewModel.zoomToUserLocation(map, context)
+                    val location = mapViewModel.userLocation.value
+                    if (location != null) {
+                        onUserLocationSelected(location)
+                        mapViewModel.zoomToUserLocation(map, context)
+                    }
                 } else {
                     onRequestPermission()
                 }

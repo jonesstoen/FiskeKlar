@@ -163,7 +163,7 @@ fun HomeScreen(
     )
 
     Scaffold(
-        containerColor = Background,
+        containerColor = MaterialTheme.colorScheme.background,
 
         ) { paddingValues ->
         Column(
@@ -172,12 +172,12 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // App logo and name
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(vertical = 16.dp)
+                modifier = Modifier.padding(vertical = 8.dp)
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.app_logo),
@@ -189,8 +189,8 @@ fun HomeScreen(
             // Greeting shown to the user
             Text(
                 text = "$greeting!",
-                style = MaterialTheme.typography.headlineSmall,
-                color = Navy
+                style = MaterialTheme.typography.headlineSmall,      // hent fra AppTypography
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             // Grid of quickactions
@@ -206,13 +206,13 @@ fun HomeScreen(
                         icon = Icons.Default.Map,
                         text = "Kart",
                         onClick = onNavigateToMap,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
                         icon = Icons.Default.List,
                         text = "Fiskelogg",
                         onClick = onNavigateToFishLog,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                 }
 
@@ -224,13 +224,13 @@ fun HomeScreen(
                         icon = Icons.Default.WbSunny,
                         text = "Værvarsel",
                         onClick = onNavigateToWeather,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
                         icon = Icons.Default.Favorite,
                         text = "Favoritter",
                         onClick = onNavigateToFavorites,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                 }
             }
@@ -252,7 +252,8 @@ private fun QuickAccessCard(
         modifier = modifier
             .height(190.dp),
         colors = CardDefaults.cardColors(
-            containerColor = CardGreen
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor   = MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
         Column(
@@ -266,14 +267,13 @@ private fun QuickAccessCard(
                 imageVector = icon,
                 contentDescription = text,
                 modifier = Modifier.size(40.dp),
-                tint = Navy
+
             )
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = text,
-                style = MaterialTheme.typography.bodyLarge,
+                style     = MaterialTheme.typography.bodyLarge,
                 fontWeight = FontWeight.Medium,
-                color = Navy
             )
         }
     }

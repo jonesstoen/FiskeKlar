@@ -66,6 +66,7 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.kotlinx.datetime)
     //maplibre
     implementation(libs.android.sdk)
     //location tracking and permissions
@@ -88,6 +89,7 @@ dependencies {
     // For grib
     implementation(libs.cdmcore)
     implementation(libs.grib)
+    implementation(libs.androidx.ui.text.google.fonts)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
