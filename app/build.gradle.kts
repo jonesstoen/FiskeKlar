@@ -68,7 +68,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.kotlinx.datetime)
     //maplibre
-    implementation(libs.android.sdk)
+    implementation(libs.maplibre.android)
     //location tracking and permissions
     implementation(libs.play.services.location)
     //corutine

@@ -15,6 +15,7 @@ import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
 import no.uio.ifi.in2000.team46.R
+import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.layers.SymbolLayer
 
 @Composable
@@ -93,6 +94,7 @@ fun GribWindLayer(
                             iconImage(Expression.get("icon")),
                             iconAllowOverlap(true),
                             iconIgnorePlacement(true),
+                            iconRotationAlignment("map"),
                             iconRotate(Expression.get("direction")),
                             iconSize(
                                 Expression.interpolate(

@@ -80,6 +80,7 @@ fun GribCurrentLayer(
                             iconImage(iconId),
                             iconAllowOverlap(false),
                             iconIgnorePlacement(false),
+                            iconRotationAlignment("map"),
                             iconRotate(Expression.get("direction")),
                             iconSize(
                                 Expression.interpolate(

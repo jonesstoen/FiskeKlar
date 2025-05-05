@@ -3,6 +3,7 @@ package no.uio.ifi.in2000.team46.presentation.map.ui.screens
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -11,6 +12,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.material3.rememberStandardBottomSheetState
 import androidx.compose.material3.BottomSheetScaffold
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SheetValue
 import androidx.compose.runtime.*
@@ -56,9 +58,17 @@ import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
 import org.maplibre.android.annotations.PolylineOptions
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.zIndex
+import no.uio.ifi.in2000.team46.data.repository.WaveRepository
 import no.uio.ifi.in2000.team46.presentation.navigation.HighlightVesselData
 import org.maplibre.android.annotations.IconFactory
 import no.uio.ifi.in2000.team46.domain.model.ais.VesselIcons
+import no.uio.ifi.in2000.team46.presentation.grib.WaveViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.WaveViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.grib.components.WaveLegend
+import no.uio.ifi.in2000.team46.data.repository.Result
 
 // =====================
 // MAP SCREEN
@@ -125,6 +135,10 @@ fun MapScreen(
     // Hent temperatur og værsymbol fra mapViewModel
     val temperature by mapViewModel.temperature.collectAsState()
     val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
+
+
+
+
 
     // Oppdater markørene når kartet er klart
     LaunchedEffect(mapLibreMap, userLocation) {
@@ -231,6 +245,33 @@ fun MapScreen(
             CurrentRepository(GribRetrofitInstance.GribApi, ctx)
         )
     )
+    // ------------- Bølger -------------
+    val waveViewModel: WaveViewModel = viewModel(
+        factory = WaveViewModelFactory(
+            WaveRepository(
+                api     = GribRetrofitInstance.GribApi,
+                context = ctx
+            )
+        )
+    )
+    // for tracking wave loading
+    val isWaveLoading by waveViewModel.isRasterLoading.collectAsState()
+    if (isWaveLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.3f))
+                .zIndex(10f)        // sørg for at det ligger over kart‐lagene
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier
+                    .align(Alignment.Center)
+            )
+        }
+    }
+    // for showing the wave legend
+    val isWaveVisible   by waveViewModel.isLayerVisible.collectAsState()
+    val waveResult      by waveViewModel.waveData.collectAsState()
 
     val precipitationViewModel: PrecipitationViewModel = viewModel(
         factory = PrecipitationViewModelFactory(
@@ -393,7 +434,14 @@ fun MapScreen(
                     gribViewModel      = gribViewModel,
                     currentViewModel   = currentViewModel,
                     driftViewModel     = driftViewModel,
-                    precipitationViewModel = precipitationViewModel,
+                    waveViewModel      = waveViewModel
+                )
+            }
+            if (isWaveVisible && waveResult is Result.Success) {
+                WaveLegend(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(top= 100.dp, end = 12.dp)
                 )
             }
             // 3) Kontroller
@@ -408,7 +456,7 @@ fun MapScreen(
                     gribViewModel = gribViewModel,
                     currentViewModel = currentViewModel,
                     driftViewModel = driftViewModel,
-                    precipitationViewModel = precipitationViewModel,
+                    waveViewModel = waveViewModel,
                     hasLocationPermission = hasLocationPermission,
                     onRequestPermission = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
                     navController = navController,
