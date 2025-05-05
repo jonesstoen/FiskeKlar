@@ -198,6 +198,8 @@ fun AppNavHost(
             composable("addFishingEntry") {
                 AddFishingEntryScreen(
                     viewModel = fishLogViewModel,
+                    favoritesViewModel = favoritesViewModel,
+                    navController = navController,
                     onCancel = { navController.popBackStack() },
                     onSave = { date, time, location, fishType, weight, notes, imageUri, latitude, longitude, fishCount ->
                         for (i in 1..fishCount) {
@@ -322,14 +324,26 @@ fun AppNavHost(
                 )
             ) { backStackEntry ->
                 val nameArg = backStackEntry.arguments?.getString("name") ?: ""
+                val previousRoute = navController.previousBackStackEntry?.destination?.route
 
                 AddFavoriteScreen(
                     viewModel = favoritesViewModel,
                     navController = navController,
                     onCancel = { navController.popBackStack() },
                     onSave = {
-                        navController.navigate("favorites") {
-                            popUpTo("favorites") { inclusive = true }
+                        if (previousRoute == "addFishingEntry") {
+                            navController.currentBackStackEntry?.savedStateHandle?.set("newFavorite", nameArg)
+                            navController.navigate("addFishingEntry") {
+                                popUpTo("addFishingEntry") { 
+                                    saveState = true 
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        } else {
+                            navController.navigate("favorites") {
+                                popUpTo("favorites") { inclusive = false }
+                            }
                         }
                     },
                     defaultName = nameArg

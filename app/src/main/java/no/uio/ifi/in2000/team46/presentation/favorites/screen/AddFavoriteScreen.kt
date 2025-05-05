@@ -3,6 +3,7 @@ package no.uio.ifi.in2000.team46.presentation.favorites.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,17 +17,18 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -52,6 +54,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import no.uio.ifi.in2000.team46.presentation.favorites.viewmodel.FavoritesViewModel
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 
 /**
  * Skjerm for å legge til et nytt favorittsted.
@@ -74,12 +81,17 @@ fun AddFavoriteScreen(
     defaultName: String = "",
     suggestions: List<String> = emptyList()
 ) {
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     // ----------- State og data -----------
     val coroutineScope = rememberCoroutineScope()
+    val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+    val clearFields = navController.currentBackStackEntry?.arguments?.getString("clearFields") == "true"
     var name by remember {
         mutableStateOf(
-            navController.currentBackStackEntry?.savedStateHandle?.get<String>("savedName")
+            if (clearFields) ""
+            else savedStateHandle?.get<String>("savedName")
                 ?: navController.currentBackStackEntry?.arguments?.getString("name")
                 ?: defaultName
         )
@@ -91,6 +103,9 @@ fun AddFavoriteScreen(
     var longitude by remember { mutableStateOf(10.75) }
     var areaPoints by remember { mutableStateOf(emptyList<Pair<Double, Double>>()) }
     var showDuplicateDialog by remember { mutableStateOf(false) }
+    var showNameInfo by remember { mutableStateOf(false) }
+    var showPositionInfo by remember { mutableStateOf(false) }
+    var showNotesInfo by remember { mutableStateOf(false) }
 
     // ----------- Håndtering av kartvalg og lagring av tilstand -----------
     val pickedPoint = navController.currentBackStackEntry
@@ -186,7 +201,7 @@ fun AddFavoriteScreen(
                 title = { Text("Legg til favoritt") },
                 navigationIcon = {
                     IconButton(onClick = onCancel) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Tilbake")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Tilbake")
                     }
                 }
             )
@@ -198,6 +213,12 @@ fun AddFavoriteScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
                 .verticalScroll(rememberScrollState())
+                .pointerInput(Unit) {
+                    detectTapGestures {
+                        focusManager.clearFocus()
+                        keyboardController?.hide()
+                    }
+                }
         ) {
             // ----------- Typevalg (punkt/område) -----------
             Text(
@@ -236,50 +257,96 @@ fun AddFavoriteScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // ----------- Navn og forslag/autocomplete -----------
-            Text(
-                "Stedsnavn",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Column {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    placeholder = { Text("Skriv navn på stedet...") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    "Stedsnavn",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
                 )
-                val matchingSuggestions = suggestions.filter {
-                    it.contains(name, ignoreCase = true) && !it.equals(name, ignoreCase = true)
+                IconButton(onClick = { showNameInfo = !showNameInfo }) {
+                    Icon(Icons.Default.Info, contentDescription = "Info om stedsnavn")
                 }
-                if (matchingSuggestions.isNotEmpty()) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF5F5F5))
+            }
+            if (showNameInfo) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp),
+                    color = Color(0xFFE3F2FD),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column {
-                            matchingSuggestions.forEach { suggestion ->
-                                Text(
-                                    text = suggestion,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clickable { name = suggestion }
-                                        .padding(12.dp)
-                                )
-                                Divider()
-                            }
+                        Text(
+                            "Gi området et navn så du enkelt finner det igjen.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = { showNameInfo = false }) {
+                            Icon(Icons.Default.Close, contentDescription = "Lukk info")
                         }
                     }
                 }
             }
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                placeholder = { Text("Skriv inn stedsnavn...") },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
+                keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // ----------- Kartvelger -----------
-                Text("Velg posisjon", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    "Velg posisjon",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                IconButton(onClick = { showPositionInfo = !showPositionInfo }) {
+                    Icon(Icons.Default.Info, contentDescription = "Info om posisjon")
+                }
+            }
+            if (showPositionInfo) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp),
+                    color = Color(0xFFE3F2FD),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            if (locationType == "POINT") 
+                                "Trykk på kartet for å velge det eksakte punktet du fisker fra."
+                            else 
+                                "Marker 3–5 punkter på kartet for å tegne inn området du ønsker å lagre.",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = { showPositionInfo = false }) {
+                            Icon(Icons.Default.Close, contentDescription = "Lukk info")
+                        }
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Box(
                 modifier = Modifier
@@ -324,7 +391,43 @@ fun AddFavoriteScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             // ----------- Notater -----------
-            Text("Notater (valgfritt)", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Text(
+                    "Notater (valgfritt)",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                IconButton(onClick = { showNotesInfo = !showNotesInfo }) {
+                    Icon(Icons.Default.Info, contentDescription = "Info om notater")
+                }
+            }
+            if (showNotesInfo) {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 4.dp),
+                    color = Color(0xFFE3F2FD),
+                    shape = RoundedCornerShape(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Legg til informasjon som dybde, strømforhold, fisketyper eller andre observasjoner dersom du ønsker det",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = { showNotesInfo = false }) {
+                            Icon(Icons.Default.Close, contentDescription = "Lukk info")
+                        }
+                    }
+                }
+            }
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedTextField(
                 value = notes,
@@ -344,7 +447,14 @@ fun AddFavoriteScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Button(
-                    onClick = onCancel,
+                    onClick = {
+                        // Nullstill all state i savedStateHandle
+                        savedStateHandle?.remove<String>("savedName")
+                        savedStateHandle?.remove<String>("savedLocationType")
+                        savedStateHandle?.remove<String>("savedNotes")
+                        savedStateHandle?.remove<List<String>>("savedFishTypes")
+                        onCancel()
+                    },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.White,
@@ -368,12 +478,16 @@ fun AddFavoriteScreen(
                                 notes = notes.takeIf { it.isNotBlank() },
                                 targetFishTypes = selectedFishTypes.toList()
                             )
+                            // Nullstill all state i savedStateHandle
+                            savedStateHandle?.remove<String>("savedName")
+                            savedStateHandle?.remove<String>("savedLocationType")
+                            savedStateHandle?.remove<String>("savedNotes")
+                            savedStateHandle?.remove<List<String>>("savedFishTypes")
                             onSave()
                             viewModel.removeSavedSuggestion(name)
                         }
                     },
-                    modifier = Modifier.weight(1f),
-                    enabled = name.isNotBlank()
+                    enabled = name.isNotBlank() && (pickedPoint != null || pickedArea != null)
                 ) {
                     Text("Lagre")
                 }
