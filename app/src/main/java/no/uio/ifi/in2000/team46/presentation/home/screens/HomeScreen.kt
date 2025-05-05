@@ -55,7 +55,7 @@ fun HomeScreen(
             in 15..17 -> "God ettermiddag"
             else -> "God kveld"
         }
-        if (name.isNotBlank()) "$timeGreeting, $name!" else "$timeGreeting!"
+        if (name.isNotBlank()) "$timeGreeting, $name" else "$timeGreeting!"
     }
 
     val fishingTips = listOf(
@@ -70,7 +70,6 @@ fun HomeScreen(
         "Bytt sluk ofte hvis du ikke får napp.",
         "Fisk dypere midt på dagen.",
         "Morgen og kveld gir oftest best fangst.",
-        "Bruk fluorcarbon som fortom for bedre skjul.",
         "Fisk saktere ved kaldt vær.",
         "Bruk levende agn på varme sommerdager.",
         "Let etter fugleaktivitet – ofte fisk under.",
@@ -107,7 +106,9 @@ fun HomeScreen(
         "Bruk UV-aktive sluker i gråvær.",
         "Lær deg å knyte gode fiskeknuter.",
         "Bruk agn med naturlig lukt.",
-        "Ved flom: fisk i sidekanaler og bakvann.",
+        "Langt å gå, fisk å få.",
+        "Det er flere fisk på havet, enn på motorveien",
+        "Hvis flyvefisk, kast opp",
         "Prøv nattfiske på varme sommernetter.",
         "Bruk slow-jigging teknikk i dype områder.",
         "Se etter skiftninger i bunnforhold.",
@@ -156,9 +157,12 @@ fun HomeScreen(
         "Variér pauser i innsveivingen.",
         "Prøv slow-rolling teknikk på spinnerbaits.",
         "Bruk kroker med røde detaljer for å simulere sår.",
+        "Hvis abboren går oppstrøms på land, sjekk om du har vridd innsjøen baklengs.",
         "Velg sluker som lager mye bevegelse i kaldt vann.",
         "Bruk krepsimitasjoner på bunnen.",
-        "Ha det gøy – fisking handler om opplevelsen!"
+        "Ha det gøy – fisking handler om opplevelsen!",
+        "Hvis du fisker i IFI-dammen, se opp for Kiwi Ulven!",
+
     )
 
     Scaffold(
@@ -359,7 +363,7 @@ fun RandomFishTipBox(
                 modifier = Modifier.align(Alignment.CenterStart)
             ) {
                 Text(
-                    text = "🎣 Ønsker du dagens fisketips?",
+                    text = "🎣 Dagens fisketips?",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = Navy

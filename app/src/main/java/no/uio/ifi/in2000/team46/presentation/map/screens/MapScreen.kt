@@ -76,6 +76,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.runtime.saveable.rememberSaveable
 
 // =====================
 // MAP SCREEN
@@ -102,11 +103,12 @@ fun MapScreen(
     areaPoints: List<Pair<Double, Double>>? = null,
     highlightVessel: HighlightVesselData? = null
 ) {
+    // noen av verdiene som vi kunne brukt remembersavable på støtter ikke den funksjonaliteten derfor er de bare remember
     // ----------- State og permissions -----------
     val ctx = LocalContext.current
 
     // Request location permission
-    var hasLocationPermission by remember { mutableStateOf(false) }
+    var hasLocationPermission by rememberSaveable { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted -> hasLocationPermission = granted }
@@ -128,10 +130,10 @@ fun MapScreen(
     )
 
     // ----------- MapLibreMap referanse -----------
-    var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
+    var mapLibreMap by remember  { mutableStateOf<MapLibreMap?>(null) }
 
     // Track whether user is currently dragging the map
-    var isUserDragging by remember { mutableStateOf(false) }
+    var isUserDragging by remember  { mutableStateOf(false) }
 
     // ----------- Brukerposisjon og indikator -----------
     val userLocation by mapViewModel.userLocation.collectAsState()
@@ -469,7 +471,7 @@ fun MapScreen(
                         .padding(top= 100.dp, end = 12.dp)
                 )
             }
-            val showMetAlertsLegend = remember { mutableStateOf(false) }
+            val showMetAlertsLegend = rememberSaveable { mutableStateOf(false) }
             val isMetAlertsVisible by metAlertsViewModel.isLayerVisible.collectAsState()
 
             if (isMetAlertsVisible) {

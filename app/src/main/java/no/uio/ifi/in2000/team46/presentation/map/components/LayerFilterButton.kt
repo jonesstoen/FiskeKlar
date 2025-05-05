@@ -108,7 +108,7 @@ fun LayerFilterButton(
         ) {
             Surface(
                 shape = RoundedCornerShape(8.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f),
+                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
                 contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 tonalElevation = 4.dp,
                 modifier = Modifier.width(300.dp)
@@ -126,7 +126,8 @@ fun LayerFilterButton(
                         )
                         Text(
                             text = "Kartlag",
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                     }
 
@@ -274,6 +275,7 @@ fun LayerFilterButton(
                             text = message,
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall
+
                         )
                     }
                 }
@@ -311,6 +313,7 @@ fun LayerToggleRow(
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f)
         )
         trailing?.invoke()
