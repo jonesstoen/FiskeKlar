@@ -32,7 +32,7 @@ class WaveRepository(
         }
 
     private suspend fun downloadWaves() {
-        val resp = api.getGribFiles(content = "waves", area = "skagerrak")
+        val resp = api.getGribFiles(content = "waves", area = "west_norway")
         if (resp.isSuccessful && resp.body() != null) {
             resp.body()!!.byteStream().use { inp ->
                 cacheFile.outputStream().use { out -> inp.copyTo(out) }
@@ -43,6 +43,6 @@ class WaveRepository(
     }
 
     private fun isExpired(file: File): Boolean {
-        return System.currentTimeMillis() - file.lastModified() > 3 * 60 * 60 * 1000
+        return true//System.currentTimeMillis() - file.lastModified() > 3 * 60 * 60 * 1000
     }
 }
