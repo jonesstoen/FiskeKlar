@@ -115,7 +115,8 @@ fun LayerFilterButton(
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+
                 ) {
                     // Header
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -208,11 +209,11 @@ fun LayerFilterButton(
                     )
 
                     // Forbudsoner
-                    LayerToggleRow(
-                        label = "Fiskeforbudsoner",
-                        checked = isForbudLayerVisible,
-                        onCheckedChange = { forbudViewModel.toggleLayerVisibility() }
-                    )
+//                    LayerToggleRow(
+//                        label = "Fiskeforbudsoner",
+//                        checked = isForbudLayerVisible,
+//                        onCheckedChange = { forbudViewModel.toggleLayerVisibility() }
+//                    )
 
                     // Vind
                     LayerToggleRow(

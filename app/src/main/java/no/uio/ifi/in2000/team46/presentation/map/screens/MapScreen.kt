@@ -72,11 +72,9 @@ import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.grib.components.WaveLegend
 import no.uio.ifi.in2000.team46.data.repository.Result
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsLegend
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.runtime.saveable.rememberSaveable
+import no.uio.ifi.in2000.team46.presentation.grib.components.WindLegend
+import no.uio.ifi.in2000.team46.presentation.map.components.LegendToggle
 
 // =====================
 // MAP SCREEN
@@ -142,8 +140,9 @@ fun MapScreen(
     val selectedSearchResult = remember { mutableStateOf<Feature?>(null) }
 
     // Hent temperatur og værsymbol fra mapViewModel
-    val temperature by mapViewModel.temperature.collectAsState()
-    val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
+    //FIXME: is this being  used ?
+//    val temperature by mapViewModel.temperature.collectAsState()
+//    val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
 
 
 
@@ -163,17 +162,20 @@ fun MapScreen(
         }
     }
 
-    // Oppdater markørene når lokasjonen endres
+
+    //updating user location indicator on location change
     LaunchedEffect(mapLibreMap, userLocation, selectedLocation, isUserDragging, selectedSearchResult.value) {
         val map = mapLibreMap ?: return@LaunchedEffect
         if (!isUserDragging) {  // Only update markers if user is not dragging
             map.getStyle { style ->
-                // Oppdater brukerens posisjonsmarkør
+
+                //updating user location indicator
                 userLocation?.let { loc ->
                     addUserLocationIndicator(map, style, loc.latitude, loc.longitude)
                 }
 
-                // Oppdater valgt posisjonsmarkør KUN hvis en er valgt bevisst
+
+                //update marker for selected location only if it is explicity selected
                 when {
                     selectedSearchResult.value != null -> {
                         val result = selectedSearchResult.value!!
@@ -194,7 +196,8 @@ fun MapScreen(
         }
     }
 
-    // ----------- Håndter initialLocation og areaPoints -----------
+
+    //handling for initialLocation and areaPoints
     LaunchedEffect(mapLibreMap, areaPoints, initialLocation) {
         mapLibreMap?.let { map ->
             map.clear()
@@ -402,12 +405,12 @@ fun MapScreen(
                         if (reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE) {
                             isUserDragging = true
                         }
-                        true
+
                     }
 
                     map.addOnCameraIdleListener {
                         isUserDragging = false
-                        true
+
                     }
 
                     // Add click listener for the map
@@ -464,42 +467,35 @@ fun MapScreen(
                     precipitationViewModel = precipitationViewModel
                 )
             }
-            if (isWaveVisible && waveResult is Result.Success) {
-                WaveLegend(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top= 100.dp, end = 12.dp)
-                )
+            LegendToggle(
+                isLayerVisible = isWaveVisible && waveResult is Result.Success,
+                iconOffset = 100.dp,
+                legendOffset = 160.dp
+            ) {
+                WaveLegend(modifier = Modifier.align(Alignment.TopEnd))
             }
-            val showMetAlertsLegend = rememberSaveable { mutableStateOf(false) }
+
             val isMetAlertsVisible by metAlertsViewModel.isLayerVisible.collectAsState()
 
-            if (isMetAlertsVisible) {
-                // Info-knapp
-                IconButton(
-                    onClick = { showMetAlertsLegend.value = !showMetAlertsLegend.value },
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(top = 100.dp, end = 12.dp)
-                        .zIndex(10f)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = "Forklaring",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                }
-
-                //info legend
-                if (showMetAlertsLegend.value) {
-                    MetAlertsLegend(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(top = 160.dp, end = 12.dp)
-                            .zIndex(9f)
-                    )
-                }
+            LegendToggle(
+                isLayerVisible = isMetAlertsVisible,
+                iconOffset = 100.dp,
+                legendOffset = 160.dp
+            ) {
+                MetAlertsLegend(modifier = Modifier.align(Alignment.TopEnd))
             }
+
+            val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
+
+            LegendToggle(
+                isLayerVisible = isWindLayerVisible,
+                iconOffset = 160.dp,
+                legendOffset = 220.dp
+            ) {
+                WindLegend(modifier = Modifier.align(Alignment.TopEnd))
+            }
+
+
             // 3) Kontroller
             mapLibreMap?.let { map ->
                 MapControls(

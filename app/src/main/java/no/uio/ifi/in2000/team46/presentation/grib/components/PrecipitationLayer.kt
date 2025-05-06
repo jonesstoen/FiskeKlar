@@ -11,6 +11,10 @@ import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
 import no.uio.ifi.in2000.team46.domain.grib.PrecipitationPoint
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModel
+import org.maplibre.android.style.expressions.Expression.interpolate
+import org.maplibre.android.style.expressions.Expression.linear
+import org.maplibre.android.style.expressions.Expression.literal
+import org.maplibre.android.style.expressions.Expression.zoom
 import org.maplibre.android.style.layers.CircleLayer
 
 @Composable
@@ -47,13 +51,14 @@ fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
             // circle‐layer: size by zoom, color by precip
             val layer = CircleLayer(circleLayerId, srcId).withProperties(
                 circleRadius(
-                    Expression.interpolate(
-                        Expression.linear(), Expression.zoom(),
-                        Expression.literal(0),  Expression.literal(2f),
-                        Expression.literal(5),  Expression.literal(6f),
-                        Expression.literal(10), Expression.literal(12f)
-                    )
-                ),
+                    interpolate(
+                        linear(), zoom(),
+                        literal(0),  literal(2f),
+                        literal(5),  literal(4f),
+                        literal(10), literal(12f),
+                        literal(14), literal(20f),
+                        literal(16), literal(28f)
+                    )),
                 circleOpacity(Expression.literal(0.8f)),
                 circleColor(
                     Expression.step(
