@@ -2,6 +2,14 @@ package no.uio.ifi.in2000.team46.presentation.map.components
 
 import android.location.Location
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ZoomIn
+import androidx.compose.material.icons.filled.ZoomOut
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +39,6 @@ fun MapControls(
     searchViewModel: SearchViewModel,
     metAlertsViewModel: MetAlertsViewModel,
     aisViewModel: AisViewModel,
-    forbudViewModel: ForbudViewModel,
     gribViewModel: GribViewModel,
     currentViewModel: CurrentViewModel,
     driftViewModel: DriftViewModel,
@@ -83,30 +90,51 @@ fun MapControls(
             }
         )
 
-        // 2) Zoom + filter i kolonne nederst til venstre
-        Column(
+        LayerFilterButton(
+            aisViewModel,
+            metAlertsViewModel,
+            gribViewModel,
+            currentViewModel,
+            driftViewModel,
+            waveViewModel,
+            precipitationViewModel,
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.Start
-        ) {
-            ZoomButton(
-                onZoomIn = { mapViewModel.zoomIn(map) },
-                onZoomOut = { mapViewModel.zoomOut(map) }
-            )
-            LayerFilterButton(
-                aisViewModel = aisViewModel,
-                metAlertsViewModel = metAlertsViewModel,
-                forbudViewModel    = forbudViewModel,
-                gribViewModel = gribViewModel,
-                currentViewModel =  currentViewModel,
-                driftViewModel = driftViewModel,
-                waveViewModel = waveViewModel,
-                precipitationViewModel = precipitationViewModel,
-            )
+                .padding(16.dp)
+        )
 
+        // 2b) Zoom-knapper plassert til høyre for filter-knappen
+        val fabSize = 56.dp  // FloatingActionButton default size
+        val spacing = 8.dp
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 16.dp + fabSize + spacing, bottom = 16.dp),
+            horizontalArrangement = Arrangement.spacedBy(spacing),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Zoom inn
+            Surface(
+                shape = CircleShape,
+                tonalElevation = 4.dp,
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                IconButton(onClick = { mapViewModel.zoomIn(map) }) {
+                    Icon(Icons.Default.ZoomIn, contentDescription = "Zoom in")
+                }
+            }
+            // Zoom ut
+            Surface(
+                shape = CircleShape,
+                tonalElevation = 4.dp,
+                color = MaterialTheme.colorScheme.surface
+            ) {
+                IconButton(onClick = { mapViewModel.zoomOut(map) }) {
+                    Icon(Icons.Default.ZoomOut, contentDescription = "Zoom out")
+                }
+            }
         }
+
 
         // 3) Vær‐display + posisjonsknapp nederst til høyre
         Column(
@@ -138,6 +166,5 @@ fun MapControls(
         }
     }
 }
-
 
 

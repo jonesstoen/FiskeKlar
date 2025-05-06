@@ -9,9 +9,7 @@ import no.uio.ifi.in2000.team46.presentation.grib.components.DriftLayer
 import no.uio.ifi.in2000.team46.presentation.grib.components.GribCurrentLayer
 import no.uio.ifi.in2000.team46.presentation.grib.components.GribWindLayer
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisLayer
-import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudLayer
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
-import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsLayerComponent
 import org.maplibre.android.maps.MapLibreMap
@@ -28,7 +26,6 @@ fun MapLayers(
     mapView: MapView,
     aisViewModel: AisViewModel,
     metAlertsViewModel: MetAlertsViewModel,
-    forbudViewModel: ForbudViewModel,
     gribViewModel: GribViewModel,
     currentViewModel: CurrentViewModel,
     driftViewModel: DriftViewModel,
@@ -37,7 +34,6 @@ fun MapLayers(
 ) {
     MetAlertsLayerComponent(metAlertsViewModel, mapView)
     AisLayer(mapView, aisViewModel)
-    ForbudLayer(mapView, forbudViewModel)
     GribWindLayer(
         gribViewModel = gribViewModel,
         map           = map,
