@@ -212,7 +212,7 @@ fun MapScreen(
                 map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50))
             } else if (initialLocation != null) {
                 val (lat, lng) = initialLocation
-                map.addMarker(MarkerOptions().position(LatLng(lat, lng)).title("Favorittpunkt"))
+                //map.addMarker(MarkerOptions().position(LatLng(lat, lng)).title("Favorittpunkt"))
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 14.0))
             }
         }
@@ -414,7 +414,7 @@ fun MapScreen(
                     }
 
                     // Add click listener for the map
-                    map.addOnMapClickListener { point ->
+                    map.addOnMapLongClickListener { point ->
                         if (!isUserDragging) {
                             // Konverter klikk-koordinater til skjermkoordinater
                             val screenPoint = map.projection.toScreenLocation(point)
@@ -528,7 +528,7 @@ fun MapScreen(
                     },
                     onUserLocationSelected = { location ->
                         map.getStyle { style ->
-                            addMapMarker(map, style, location.latitude, location.longitude, ctx)
+                            //addMapMarker(map, style, location.latitude, location.longitude, ctx)
                             mapViewModel.setSelectedLocation(location.latitude, location.longitude)
                             mapViewModel.updateWeatherForLocation(location.latitude, location.longitude)
                         }

@@ -127,7 +127,8 @@ fun MapControls(
                 if (hasLocationPermission) {
                     val location = mapViewModel.userLocation.value
                     if (location != null) {
-                        onUserLocationSelected(location)
+                        mapViewModel.setSelectedLocation(location.latitude, location.longitude)
+                        mapViewModel.updateWeatherForLocation(location.latitude, location.longitude)
                         mapViewModel.zoomToUserLocation(map, context)
                     }
                 } else {
