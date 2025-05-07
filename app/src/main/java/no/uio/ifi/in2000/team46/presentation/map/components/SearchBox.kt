@@ -21,6 +21,9 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -50,7 +53,9 @@ fun SearchBox(
     onResultSelected: (Feature) -> Unit,
     isSearching: Boolean = false,
     isShowingHistory: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onDismissRequest: () -> Unit
+
 ) {
     val focusManager = LocalFocusManager.current
     val focusRequester = remember { FocusRequester() }
@@ -187,17 +192,25 @@ fun SearchBox(
                             }
                         )
 
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .padding(4.dp),
-                            contentAlignment = androidx.compose.ui.Alignment.Center
+                        Row(
+                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
                         ) {
-                            if (isSearching) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(24.dp),
-                                    strokeWidth = 2.dp
-                                )
+                            if (searchText.isNotEmpty()) {
+                                IconButton(
+                                    onClick = {
+                                        searchText = ""
+                                        onSearch("")
+                                        shouldShowHistory = true
+                                        hasSearched = true
+                                    },
+                                    modifier = Modifier.size(24.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Clear,
+                                        contentDescription = "Tøm søk",
+                                        tint = Color.Gray
+                                    )
+                                }
                             } else {
                                 Icon(
                                     Icons.Default.Search,
@@ -206,7 +219,24 @@ fun SearchBox(
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
+
+                            IconButton(
+                                onClick = {
+                                    focusManager.clearFocus()
+                                    isInSearchMode = false
+                                    isSearchBoxFocused = false
+                                    onDismissRequest()
+                                },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Cancel,
+                                    contentDescription = "Lukk søkeboks",
+                                    tint = Color.Gray
+                                )
+                            }
                         }
+
                     }
 
                     // Show a thin line only when results are visible

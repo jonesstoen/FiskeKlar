@@ -1,10 +1,17 @@
 package no.uio.ifi.in2000.team46.presentation.map.components
 
 import android.location.Location
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -49,6 +56,7 @@ fun MapControls(
     val temperature by mapViewModel.temperature.collectAsState()
     val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
     val locationName = mapViewModel.locationName.collectAsState().value
+    var isSearchExpanded by remember { mutableStateOf(false) }
 
     // Oppdater været når markøren beveger seg
     LaunchedEffect(map.cameraPosition.target) {
@@ -60,28 +68,51 @@ fun MapControls(
 
     Box(Modifier.fillMaxSize()) {
         // 1) Søkeboks øverst til venstre
-        SearchBox(
-            modifier = Modifier
-                .align(Alignment.TopStart)
-                .padding(16.dp),
-            map = map,
-            searchResults = searchViewModel.searchResults.collectAsState().value,
-            isSearching = searchViewModel.isSearching.collectAsState().value,
-            onSearch = { query ->
-                val target = map.cameraPosition.target
-                if (target != null) {
-                    searchViewModel.search(query, focusLat = target.latitude, focusLon = target.longitude)
-                }
-            },
-            onResultSelected = { feature ->
-                val coords = feature.geometry.coordinates
-                if (coords.size >= 2) {
-                    mapViewModel.zoomToLocation(map, coords[1], coords[0], zoom = 15.0)
-                    searchViewModel.clearResults()
-                    onSearchResultSelected(feature)
+        Box(modifier = Modifier.align(Alignment.TopStart).padding(16.dp)) {
+            if (isSearchExpanded) {
+                SearchBox(
+                    modifier = Modifier,
+                    map = map,
+                    searchResults = searchViewModel.searchResults.collectAsState().value,
+                    isSearching = searchViewModel.isSearching.collectAsState().value,
+                    onSearch = { query ->
+                        val target = map.cameraPosition.target
+                        if (target != null) {
+                            searchViewModel.search(query, focusLat = target.latitude, focusLon = target.longitude)
+                        }
+                    },
+                    onResultSelected = { feature ->
+                        val coords = feature.geometry.coordinates
+                        if (coords.size >= 2) {
+                            mapViewModel.zoomToLocation(map, coords[1], coords[0], zoom = 15.0)
+                            searchViewModel.clearResults()
+                            onSearchResultSelected(feature)
+                            isSearchExpanded = false // collapse after selection
+                            map.uiSettings.setAllGesturesEnabled(true)
+                        }
+                    },
+                    isShowingHistory = true,
+                    onDismissRequest = {
+                        isSearchExpanded = false
+                        map.uiSettings.setAllGesturesEnabled(true)
+                    }
+                )
+            } else {
+                IconButton(
+                    onClick = { isSearchExpanded = true },
+                    modifier = Modifier
+                        .size(48.dp)
+                        .background(Color.White, shape = RoundedCornerShape(12.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Åpne søk",
+                        tint = Color.Gray
+                    )
                 }
             }
-        )
+        }
+
 
         // 2) Zoom + filter i kolonne nederst til venstre
         Column(

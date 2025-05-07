@@ -41,7 +41,8 @@ fun MapLayers(
     GribWindLayer(
         gribViewModel = gribViewModel,
         map           = map,
-        mapView       = mapView
+        mapView       = mapView,
+        filterVectors = true
     )
     GribCurrentLayer(
         currentViewModel = currentViewModel,
