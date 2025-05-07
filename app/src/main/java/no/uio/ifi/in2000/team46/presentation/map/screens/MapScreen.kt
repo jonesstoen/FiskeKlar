@@ -30,12 +30,8 @@ import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.map.viewmodel.MapUiEvent
 import no.uio.ifi.in2000.team46.presentation.map.viewmodel.MapViewModel
-import no.uio.ifi.in2000.team46.presentation.map.viewmodel.MapViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.map.viewmodel.SearchViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
-import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModelFactory
-import no.uio.ifi.in2000.team46.data.repository.LocationRepository
-import no.uio.ifi.in2000.team46.data.repository.MetAlertsRepository
 import no.uio.ifi.in2000.team46.presentation.map.components.MapControls
 import no.uio.ifi.in2000.team46.presentation.map.components.MapLayers
 import no.uio.ifi.in2000.team46.presentation.map.components.MapViewContainer
@@ -75,6 +71,7 @@ import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsLegend
 import androidx.compose.runtime.saveable.rememberSaveable
 import no.uio.ifi.in2000.team46.presentation.grib.components.WindLegend
 import no.uio.ifi.in2000.team46.presentation.map.components.LegendToggle
+import no.uio.ifi.in2000.team46.presentation.map.utils.removeMapMarker
 
 // =====================
 // MAP SCREEN
@@ -84,16 +81,9 @@ import no.uio.ifi.in2000.team46.presentation.map.components.LegendToggle
 @Composable
 fun MapScreen(
     mapView: MapView,
-    mapViewModel: MapViewModel = viewModel(
-        factory = MapViewModelFactory(
-            LocationRepository(LocalContext.current),
-            MetAlertsRepository()
-        )
-    ),
+    mapViewModel: MapViewModel,
     aisViewModel: AisViewModel = viewModel(),
-    metAlertsViewModel: MetAlertsViewModel = viewModel(
-        factory = MetAlertsViewModelFactory(MetAlertsRepository())
-    ),
+    metAlertsViewModel: MetAlertsViewModel = viewModel(),
     forbudViewModel: ForbudViewModel = viewModel(),
     searchViewModel: SearchViewModel = viewModel(),
     navController: NavHostController,
@@ -144,59 +134,6 @@ fun MapScreen(
 //    val temperature by mapViewModel.temperature.collectAsState()
 //    val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
 
-
-
-
-
-    // Oppdater markørene når kartet er klart
-    LaunchedEffect(mapLibreMap, userLocation) {
-        val map = mapLibreMap ?: return@LaunchedEffect
-        val loc = userLocation ?: return@LaunchedEffect
-        map.getStyle { style ->
-            addUserLocationIndicator(map, style, loc.latitude, loc.longitude)
-
-            // Oppdater vær basert på brukerens posisjon ved oppstart
-            if (!mapViewModel.isLocationExplicitlySelected()) {
-                mapViewModel.updateTemperature(loc.latitude, loc.longitude)
-            }
-        }
-    }
-
-
-    //updating user location indicator on location change
-    LaunchedEffect(mapLibreMap, userLocation, selectedLocation, isUserDragging, selectedSearchResult.value) {
-        val map = mapLibreMap ?: return@LaunchedEffect
-        if (!isUserDragging) {  // Only update markers if user is not dragging
-            map.getStyle { style ->
-
-                //updating user location indicator
-                userLocation?.let { loc ->
-                    addUserLocationIndicator(map, style, loc.latitude, loc.longitude)
-                }
-
-
-                //update marker for selected location only if it is explicity selected
-                when {
-                    selectedSearchResult.value != null -> {
-                        val result = selectedSearchResult.value!!
-                        val coordinates = result.geometry.coordinates
-                        if (coordinates.size >= 2) {
-                            val longitude = coordinates[0]
-                            val latitude = coordinates[1]
-                            addMapMarker(map, style, latitude, longitude, ctx)
-                            mapViewModel.setSelectedLocation(latitude, longitude)
-                            mapViewModel.updateWeatherForLocation(latitude, longitude)
-                        }
-                    }
-                    selectedLocation != null && mapViewModel.isLocationExplicitlySelected() -> {
-                        addMapMarker(map, style, selectedLocation!!.first, selectedLocation!!.second, ctx)
-                    }
-                }
-            }
-        }
-    }
-
-
     //handling for initialLocation and areaPoints
     LaunchedEffect(mapLibreMap, areaPoints, initialLocation) {
         mapLibreMap?.let { map ->
@@ -215,13 +152,6 @@ fun MapScreen(
                 //map.addMarker(MarkerOptions().position(LatLng(lat, lng)).title("Favorittpunkt"))
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 14.0))
             }
-        }
-    }
-
-    // ----------- Rydd opp markører ved skjermbytte -----------
-    DisposableEffect(Unit) {
-        onDispose {
-            mapLibreMap?.clear()
         }
     }
 
@@ -321,7 +251,11 @@ fun MapScreen(
     // Tegn strek og marker hvis highlightVessel er satt
     LaunchedEffect(mapLibreMap, highlightVessel) {
         val map = mapLibreMap ?: return@LaunchedEffect
+        map.getStyle { style ->
+            removeMapMarker(style) // Fjern markøren for valgt posisjon
+        }
         if (highlightVessel != null) {
+            mapViewModel.clearSelectedLocation() // Fjern valgt posisjon i ViewModel også
             map.clear()
             // Viktig: Initialiser AIS-ikoner før bruk!
             VesselIcons.initializeIcons(ctx)
@@ -361,6 +295,35 @@ fun MapScreen(
                 .include(LatLng(highlightVessel.vesselLat, highlightVessel.vesselLon))
                 .build()
             map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150))
+            // Oppdater vær for brukerposisjon og båtposisjon uten å sette valgt markør
+            mapViewModel.updateWeatherForLocation(highlightVessel.userLat, highlightVessel.userLon, explicit = false)
+            mapViewModel.updateWeatherForLocation(highlightVessel.vesselLat, highlightVessel.vesselLon, explicit = false)
+        }
+    }
+
+    // Oppdater brukerposisjons-indikator når kartet er klart eller brukerposisjon endres
+    LaunchedEffect(mapLibreMap, userLocation) {
+        val map = mapLibreMap ?: return@LaunchedEffect
+        val loc = userLocation ?: return@LaunchedEffect
+        map.getStyle { style ->
+            addUserLocationIndicator(map, style, loc.latitude, loc.longitude)
+
+            // Oppdater vær basert på brukerens posisjon ved oppstart
+            if (!mapViewModel.isLocationExplicitlySelected()) {
+                mapViewModel.updateTemperature(loc.latitude, loc.longitude)
+            }
+        }
+    }
+
+    // Oppdater markør når kartet er klart eller når selectedLocation endres
+    LaunchedEffect(mapLibreMap, mapViewModel.selectedLocation.collectAsState().value) {
+        val map = mapLibreMap ?: return@LaunchedEffect
+        map.getStyle { style ->
+            if (mapViewModel.selectedLocation.value != null && mapViewModel.isLocationExplicitlySelected()) {
+                val selectedLoc = mapViewModel.selectedLocation.value!!
+                addMapMarker(map, style, selectedLoc.first, selectedLoc.second, ctx)
+            } else {
+            }
         }
     }
 
@@ -368,11 +331,11 @@ fun MapScreen(
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
 
-        // Hoved‐underlag for hele Scaffold (selve “screen‐bakgrunnen”)
+        // Hoved‐underlag for hele Scaffold (selve "screen-bakgrunnen")
         containerColor = MaterialTheme.colorScheme.background,
         contentColor   = MaterialTheme.colorScheme.onBackground,
 
-        // Arkets bakgrunn og tekst‐ikon‐farge
+        // Arkets bakgrunn og tekst-ikon-farge
         sheetContainerColor = MaterialTheme.colorScheme.surfaceVariant,
         sheetContentColor   = MaterialTheme.colorScheme.onSurfaceVariant,
 
@@ -393,52 +356,39 @@ fun MapScreen(
         ) {
             // 1) Kartcontainer
             MapViewContainer(
-                mapView  = mapView,
+                mapView = mapView,
                 styleUrl = mapViewModel.styleUrl,
                 modifier = Modifier.fillMaxSize(),
                 onMapReady = { map, _ ->
+                    Log.d("MapScreen", "onMapReady called")
                     mapLibreMap = map
                     mapViewModel.initializeMap(map, ctx)
-
+                    
                     // Add listeners to detect when user is dragging the map
                     map.addOnCameraMoveStartedListener { reason ->
                         if (reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE) {
                             isUserDragging = true
                         }
-
                     }
-
                     map.addOnCameraIdleListener {
                         isUserDragging = false
-
                     }
 
                     // Add click listener for the map
                     map.addOnMapLongClickListener { point ->
                         if (!isUserDragging) {
-                            // Konverter klikk-koordinater til skjermkoordinater
                             val screenPoint = map.projection.toScreenLocation(point)
-
-                            // Sjekk features på klikk-posisjonen for hvert lag separat
                             val aisFeatures = map.queryRenderedFeatures(screenPoint, "ais-vessels-layer")
                             val metAlertFeatures = map.queryRenderedFeatures(screenPoint, "metalerts-layer")
                             val forbudFeatures = map.queryRenderedFeatures(screenPoint, "forbud-layer")
 
                             when {
-                                // Hvis vi klikket på en AIS-feature, ikke flytt markøren
                                 aisFeatures.isNotEmpty() -> false
-
-                                // Hvis vi klikket på et farevarsel, ikke flytt markøren
                                 metAlertFeatures.isNotEmpty() -> false
-
-                                // Hvis vi klikket på et forbudsområde, ikke flytt markøren
                                 forbudFeatures.isNotEmpty() -> false
-
-                                // Hvis vi ikke klikket på noe spesielt, flytt markøren
                                 else -> {
-                                    selectedSearchResult.value = null  // Nullstill søkeresultatet
+                                    Log.d("MapScreen", "Setting new location: ${point.latitude}, ${point.longitude}")
                                     mapViewModel.setSelectedLocation(point.latitude, point.longitude)
-                                    // Oppdater markøren umiddelbart
                                     map.getStyle { style ->
                                         addMapMarker(map, style, point.latitude, point.longitude, ctx)
                                     }
@@ -522,15 +472,15 @@ fun MapScreen(
                                 val latitude = coordinates[1]
                                 addMapMarker(map, style, latitude, longitude, ctx)
                                 mapViewModel.setSelectedLocation(latitude, longitude)
-                                mapViewModel.updateWeatherForLocation(latitude, longitude)
+                                mapViewModel.updateWeatherForLocation(latitude, longitude, explicit = true)
                             }
                         }
                     },
                     onUserLocationSelected = { location ->
                         map.getStyle { style ->
-                            //addMapMarker(map, style, location.latitude, location.longitude, ctx)
-                            mapViewModel.setSelectedLocation(location.latitude, location.longitude)
-                            mapViewModel.updateWeatherForLocation(location.latitude, location.longitude)
+                            removeMapMarker(style)  // Fjern eksisterende markør
+                            mapViewModel.clearSelectedLocation()  // Nullstill valgt posisjon
+                            mapViewModel.updateWeatherForLocation(location.latitude, location.longitude, explicit = false)
                         }
                     }
                 )

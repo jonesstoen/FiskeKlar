@@ -36,6 +36,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
+import no.uio.ifi.in2000.team46.presentation.map.utils.removeMapMarker
+
 //import mapconstants
 
 /**MapViewModel styrer forretningslogikken og tilstanden for kartet.
@@ -107,9 +109,6 @@ class MapViewModel(
 
     init {
         viewModelScope.launch {
-            // Reset all states
-            _selectedLocation.value = null
-            _isLocationExplicitlySelected.value = false
             _locationName.value = "Nåværende posisjon"
             _temperature.value = null
             _weatherSymbol.value = null
@@ -129,7 +128,7 @@ class MapViewModel(
 
             // Start polling og hent varsler etter initial oppsett
             startLocationPolling()
-        fetchMetAlerts()
+            fetchMetAlerts()
         }
     }
 
@@ -303,9 +302,10 @@ class MapViewModel(
         viewModelScope.launch {
             val loc = locationRepository.getFastLocation()
             loc?.let {
-                setSelectedLocation(it.latitude, it.longitude)
+                clearSelectedLocation()  // Nullstill valgt posisjon
                 zoomToLocation(map, it.latitude, it.longitude, map.cameraPosition.zoom)
                 map.getStyle { style ->
+                    removeMapMarker(style)  // Fjern eksisterende markør
                     addUserLocationIndicator(map, style, it.latitude, it.longitude)
                 }
             }
@@ -356,7 +356,7 @@ class MapViewModel(
         return _isLocationExplicitlySelected.value
     }
 
-    fun updateWeatherForLocation(latitude: Double, longitude: Double) {
+    fun updateWeatherForLocation(latitude: Double, longitude: Double, explicit: Boolean = true) {
         // Valider koordinater
         if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
             Log.e("MapViewModel", "Ugyldige koordinater: lat=$latitude, lon=$longitude")
@@ -368,7 +368,9 @@ class MapViewModel(
                 val weatherData = weatherService.getWeatherData(latitude, longitude)
                 _temperature.value = weatherData.temperature
                 _weatherSymbol.value = weatherData.symbolCode
-                _selectedLocation.value = Pair(latitude, longitude)
+                if (explicit) {
+                    _selectedLocation.value = Pair(latitude, longitude)
+                }
             } catch (e: Exception) {
                 Log.e("MapViewModel", "Error fetching weather: ${e.message}")
             }
