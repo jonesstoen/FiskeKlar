@@ -33,6 +33,10 @@ class DriftViewModel(
             fetchDriftData()
         }
     }
+    fun deactivateLayer() {
+        _isLayerVisible.value = false
+        _driftData.value = null
+    }
     fun selectDriftVectorInfo(speed: Double, direction: Double, driftImpact: Double, point: Point) {
         _selectedDriftVector.value = SelectedDriftVector(speed, direction, driftImpact, point)
     }

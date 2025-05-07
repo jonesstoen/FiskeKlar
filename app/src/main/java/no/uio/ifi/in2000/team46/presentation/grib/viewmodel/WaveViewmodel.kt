@@ -24,6 +24,10 @@ class WaveViewModel(private val repo: WaveRepository) : ViewModel() {
         _visible.value = !_visible.value
         if (_visible.value) fetchWaves()
     }
+    fun deactivateLayer() {
+        _visible.value = false
+        _waves.value = null
+    }
     fun setRasterLoading(loading: Boolean) {
         _isRasterLoading.value = loading
     }
