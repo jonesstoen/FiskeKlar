@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.GribViewModel
+import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModel
 
 sealed class GribMenuState {
@@ -16,6 +17,7 @@ sealed class GribMenuState {
     object Wind : GribMenuState()
     object Current : GribMenuState()
     object Wave : GribMenuState()
+    object Precipitation : GribMenuState()
 }
 
 @Composable
@@ -31,11 +33,12 @@ fun GribLayerMenu(
     onToggleCurrent: (Boolean) -> Unit,
     onToggleDrift: () -> Unit,
     onToggleWave: (Boolean) -> Unit,
-    onTogglePrecip: () -> Unit,
+    onTogglePrecip: (Boolean) -> Unit,
     onBack: () -> Unit,
     gribViewModel: GribViewModel,
     waveViewModel: WaveViewModel,
     currentViewModel: CurrentViewModel,
+    precipitationViewModel: PrecipitationViewModel
 ) {
     when (state) {
         is GribMenuState.Wind -> {
@@ -69,6 +72,20 @@ fun GribLayerMenu(
             )
         }
 
+        is GribMenuState.Precipitation -> {
+            val threshold by precipitationViewModel.precipThreshold.collectAsState()
+            PrecipitationLayerSettings(
+                isChecked = isPrecip,
+                threshold = threshold,
+                onToggle = { isChecked ->
+                    if (isChecked) precipitationViewModel.toggleLayerVisibility()
+                    else precipitationViewModel.deactivateLayer()
+                },
+                onThresholdChange = { precipitationViewModel.setPrecipThreshold(it) },
+                onBack = { onStateChange(GribMenuState.Main) }
+            )
+        }
+
         is GribMenuState.Main -> {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = onBack) {
@@ -91,8 +108,11 @@ fun GribLayerMenu(
                     Text("Bølgeinnstillinger")
                 }
 
-                LayerToggleRow("Regn", isPrecip, { onTogglePrecip() })
+                TextButton(onClick = { onStateChange(GribMenuState.Precipitation) }) {
+                    Text("Regninnstillinger")
+                }
             }
         }
     }
 }
+

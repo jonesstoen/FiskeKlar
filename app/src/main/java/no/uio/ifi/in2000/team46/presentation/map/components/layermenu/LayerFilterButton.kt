@@ -138,6 +138,7 @@ fun LayerFilterButton(
                         gribViewModel = gribViewModel,
                         waveViewModel = waveViewModel,
                         currentViewModel = currentViewModel,
+                        precipitationViewModel = precipitationViewModel,
                         onBack = { selectedCategory = LayerCategory.NONE }
                     )
                 }

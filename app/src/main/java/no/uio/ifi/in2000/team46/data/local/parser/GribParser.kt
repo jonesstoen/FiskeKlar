@@ -10,6 +10,7 @@ import no.uio.ifi.in2000.team46.domain.grib.WindVector
 import ucar.ma2.ArrayFloat
 import ucar.ma2.Index4D
 import ucar.nc2.NetcdfFile
+import ucar.nc2.NetcdfFiles
 import ucar.nc2.time.CalendarDateUnit
 import kotlin.math.atan2
 import kotlin.math.sqrt
@@ -28,7 +29,7 @@ class GribParser {
         vectorType: VectorType
     ): List<Vector> {
         val vectors = mutableListOf<Vector>()
-        val ncfile = NetcdfFile.open(file.absolutePath)
+        val ncfile = NetcdfFiles.open(file.absolutePath)
 
         val uVar = ncfile.findVariable(uComponentName)
             ?: throw IllegalArgumentException("Fant ikke $uComponentName")
@@ -70,7 +71,7 @@ class GribParser {
         return vectors
     }
     fun parseWaveFile(file: File): List<WaveVector> {
-        val ncfile = NetcdfFile.open(file.absolutePath)
+        val ncfile = NetcdfFiles.open(file.absolutePath)
 
         // bruk de faktiske navnene fra Logcat
         val swhName = "Significant_height_of_combined_wind_waves_and_swell_height_above_ground"
@@ -124,7 +125,7 @@ class GribParser {
         levelIndex: Int = 0
     ): List<PrecipitationPoint> {
         Log.d(TAG, "Opening GRIB file: ${file.absolutePath}")
-        val ncfile = NetcdfFile.open(file.absolutePath)
+        val ncfile = NetcdfFiles.open(file.absolutePath)
         val precVar = ncfile.findVariable("Total_precipitation_height_above_ground")
             ?: throw IllegalArgumentException("Fant ikke Total_precipitation_height_above_ground")
         val latVar = ncfile.findVariable("lat")
@@ -200,7 +201,7 @@ class GribParser {
 
     // Debug: lists the variables in the file
     fun listVariablesInGrib(file: File) {
-        val ncfile = NetcdfFile.open(file.absolutePath)
+        val ncfile = NetcdfFiles.open(file.absolutePath)
         Log.d("GribParser", "=== Variabler i GRIB-filen ===")
         ncfile.variables.forEach { variable ->
             Log.d("GribParser", "Navn: ${variable.fullName}, Dimensions: ${variable.dimensionsString}")

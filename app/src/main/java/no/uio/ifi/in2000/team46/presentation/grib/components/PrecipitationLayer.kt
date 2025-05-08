@@ -21,12 +21,12 @@ import org.maplibre.android.style.layers.CircleLayer
 fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
     val isVisible     by vm.isLayerVisible.collectAsState()
     val result        by vm.data.collectAsState()
+    val threshold     by vm.precipThreshold.collectAsState()
     val srcId         = "precip_source"
     val circleLayerId = "precip_circle_layer"
 
-    LaunchedEffect(isVisible, result) {
+    LaunchedEffect(isVisible, result, threshold) {
         map.getStyle { style ->
-            // remove old
             if (!isVisible || result !is Result.Success) {
                 style.removeLayer(circleLayerId)
                 style.removeSource(srcId)
@@ -36,19 +36,16 @@ fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
             val points = (result as Result.Success<List<PrecipitationPoint>>).data
             if (points.isEmpty()) return@getStyle
 
-            // build GeoJSON
             val features = points.map { p ->
                 Feature.fromGeometry(Point.fromLngLat(p.lon, p.lat))
                     .apply { addNumberProperty("precip", p.precipitation) }
             }
-            val fc = FeatureCollection.fromFeatures(features.toTypedArray())
+            val fc = FeatureCollection.fromFeatures(features)
 
-            // clear + add source
             style.removeLayer(circleLayerId)
             style.removeSource(srcId)
             style.addSource(GeoJsonSource(srcId, fc))
 
-            // circle‐layer: size by zoom, color by precip
             val layer = CircleLayer(circleLayerId, srcId).withProperties(
                 circleRadius(
                     interpolate(
@@ -58,15 +55,14 @@ fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
                         literal(10), literal(12f),
                         literal(14), literal(20f),
                         literal(16), literal(28f)
-                    )),
-                circleOpacity(Expression.literal(0.8f)),
+                    )
+                ),
+                circleOpacity(literal(0.8f)),
                 circleColor(
-                    Expression.step(
-                        Expression.get("precip"),
-                        Expression.color(0xFFB0E2FF.toInt()),  // <= 0mm: pale
-                        Expression.literal(1.0), Expression.color(0xFF64B5F6.toInt()), // >=1mm
-                        Expression.literal(5.0), Expression.color(0xFF1976D2.toInt()), // >=5mm
-                        Expression.literal(10.0),Expression.color(0xFF0D47A1.toInt())  // >=10mm
+                    Expression.switchCase(
+                        Expression.gt(Expression.get("precip"), literal(threshold)),
+                        Expression.color(0xFFB2182B.toInt()), // Rødt hvis over terskel
+                        Expression.color(0xFF64B5F6.toInt())  // Standard blå
                     )
                 )
             )
@@ -74,3 +70,4 @@ fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
         }
     }
 }
+

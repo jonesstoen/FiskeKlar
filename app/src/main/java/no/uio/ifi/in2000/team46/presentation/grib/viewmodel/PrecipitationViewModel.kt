@@ -28,6 +28,13 @@ class PrecipitationViewModel(
     private val _isLayerVisible = MutableStateFlow(false)
     val isLayerVisible: StateFlow<Boolean> = _isLayerVisible
 
+    private val _precipThreshold = MutableStateFlow(5.0)
+    val precipThreshold: StateFlow<Double> = _precipThreshold
+
+    fun setPrecipThreshold(value: Double) {
+        _precipThreshold.value = value
+    }
+
     fun toggleLayerVisibility() {
         _isLayerVisible.value = !_isLayerVisible.value
         if (_isLayerVisible.value) fetch()
