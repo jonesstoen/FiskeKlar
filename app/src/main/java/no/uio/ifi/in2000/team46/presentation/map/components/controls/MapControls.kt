@@ -8,10 +8,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -60,7 +60,7 @@ fun MapControls(
     val locationName = mapViewModel.locationName.collectAsState().value
     var isSearchExpanded by remember { mutableStateOf(false) }
 
-    // Oppdater været når markøren beveger seg
+    //updating the weather when the marker moves
     LaunchedEffect(map.cameraPosition.target) {
         val target = map.cameraPosition.target
         if (target != null) {
@@ -69,7 +69,7 @@ fun MapControls(
     }
 
     Box(Modifier.fillMaxSize()) {
-        // 1) Søkeboks øverst til venstre
+        // search button
         Box(modifier = Modifier.align(Alignment.TopStart).padding(16.dp)) {
             if (isSearchExpanded) {
                 SearchBox(
@@ -104,44 +104,53 @@ fun MapControls(
                     onClick = { isSearchExpanded = true },
                     modifier = Modifier
                         .size(48.dp)
-                        .background(Color.White, shape = RoundedCornerShape(12.dp))
+                        .background(
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = RoundedCornerShape(12.dp))
                 ) {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Åpne søk",
-                        tint = Color.Gray
+
                     )
                 }
             }
         }
 
 
-        // 2) Zoom + filter i kolonne nederst til venstre
-        Column(
+        //zoom and filter buttons
+        Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.Start
+                .padding(16.dp)
         ) {
-            ZoomButton(
-                onZoomIn = { mapViewModel.zoomIn(map) },
-                onZoomOut = { mapViewModel.zoomOut(map) }
-            )
-            LayerFilterButton(
-                aisViewModel = aisViewModel,
-                metAlertsViewModel = metAlertsViewModel,
-                forbudViewModel    = forbudViewModel,
-                gribViewModel = gribViewModel,
-                currentViewModel =  currentViewModel,
-                driftViewModel = driftViewModel,
-                waveViewModel = waveViewModel,
-                precipitationViewModel = precipitationViewModel,
-            )
-
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 600.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalAlignment = Alignment.Start
+            ) {
+                ZoomButton(
+                    onZoomIn = { mapViewModel.zoomIn(map) },
+                    onZoomOut = { mapViewModel.zoomOut(map) }
+                )
+                LayerFilterButton(
+                    aisViewModel = aisViewModel,
+                    metAlertsViewModel = metAlertsViewModel,
+                    forbudViewModel = forbudViewModel,
+                    gribViewModel = gribViewModel,
+                    currentViewModel = currentViewModel,
+                    driftViewModel = driftViewModel,
+                    waveViewModel = waveViewModel,
+                    precipitationViewModel = precipitationViewModel,
+                )
+            }
         }
 
-        // 3) Vær‐display + posisjonsknapp nederst til høyre
+
+
+        //weather display and location button in the right corner
         Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -156,7 +165,11 @@ fun MapControls(
                 weatherService = weatherService,
                 modifier = Modifier.padding(4.dp)
             )
-            zoomToLocationButton {
+            zoomToLocationButton(
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(end = 16.dp)
+            ) {
                 if (hasLocationPermission) {
                     val location = mapViewModel.userLocation.value
                     if (location != null) {

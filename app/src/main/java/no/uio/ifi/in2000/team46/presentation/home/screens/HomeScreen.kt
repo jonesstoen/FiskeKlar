@@ -7,6 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -175,53 +177,53 @@ fun HomeScreen(
     )
 
     Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        topBar = {
-            TopAppBar(
-                title = { },
-                actions = {
-                    IconButton(onClick = { onboardingViewModel.showOnboarding() }) {
-                        Icon(
-                            imageVector = Icons.Default.Help,
-                            contentDescription = "Vis introduksjon",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        }
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxHeight()
+                .fillMaxWidth()
                 .padding(paddingValues)
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // App logo and name
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(vertical = 8.dp)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp)
             ) {
+                // Centered app logo
                 Image(
                     painter = painterResource(id = R.drawable.app_logo),
                     contentDescription = "App Logo",
-                    modifier = Modifier.size(80.dp)
+                    modifier = Modifier
+                        .size(60.dp)
+                        .align(Alignment.Center)
                 )
+
+                // Help button at top end
+                IconButton(
+                    onClick = { onboardingViewModel.showOnboarding() },
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Help,
+                        contentDescription = "Show onboarding",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
 
-            // Greeting shown to the user
+// Greeting below the logo
             Text(
                 text = "$greeting!",
-                style = MaterialTheme.typography.headlineSmall,      // hent fra AppTypography
-                color = MaterialTheme.colorScheme.onBackground
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(top = 12.dp, bottom = 20.dp) // <- Extra spacing added here
             )
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Grid of quickactions
+            // Grid of quick action cards
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -232,13 +234,13 @@ fun HomeScreen(
                 ) {
                     QuickAccessCard(
                         icon = Icons.Default.Map,
-                        text = "Kart",
+                        text = "Map",
                         onClick = onNavigateToMap,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
-                        icon = Icons.Default.List,
-                        text = "Fiskelogg",
+                        icon = Icons.AutoMirrored.Filled.List,
+                        text = "Fish Log",
                         onClick = onNavigateToFishLog,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
@@ -250,21 +252,27 @@ fun HomeScreen(
                 ) {
                     QuickAccessCard(
                         icon = Icons.Default.WbSunny,
-                        text = "Værvarsel",
+                        text = "Weather",
                         onClick = onNavigateToWeather,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
                         icon = Icons.Default.Favorite,
-                        text = "Favoritter",
+                        text = "Favorites",
                         onClick = onNavigateToFavorites,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                 }
             }
+
+            // Push fish tip box to the bottom
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Random fishing tip card at the bottom
             RandomFishTipBox(fishingTips = fishingTips)
         }
     }
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
