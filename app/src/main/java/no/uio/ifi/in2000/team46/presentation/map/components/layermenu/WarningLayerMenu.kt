@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team46.presentation.map.components
+package no.uio.ifi.in2000.team46.presentation.map.components.layermenu
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

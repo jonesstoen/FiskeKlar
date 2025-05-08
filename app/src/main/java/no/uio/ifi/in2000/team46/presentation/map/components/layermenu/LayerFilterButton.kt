@@ -1,7 +1,6 @@
-package no.uio.ifi.in2000.team46.presentation.map.components
+package no.uio.ifi.in2000.team46.presentation.map.components.layermenu
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -10,29 +9,21 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import no.uio.ifi.in2000.team46.domain.ais.VesselTypes
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.*
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
-import no.uio.ifi.in2000.team46.presentation.map.components.CategoryMenu
-import no.uio.ifi.in2000.team46.presentation.map.components.LayerToggleRow
 
 enum class LayerCategory { NONE, TRAFFIC, WARNINGS, GRIB }
-
 
 @Composable
 fun LayerFilterButton(
@@ -48,6 +39,7 @@ fun LayerFilterButton(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf(LayerCategory.NONE) }
+    var gribMenuState by remember { mutableStateOf<GribMenuState>(GribMenuState.Main) }
 
     val isAisLayerVisible by aisViewModel.isLayerVisible.collectAsState()
     val isMetAlertsLayerVisible by metAlertsViewModel.isLayerVisible.collectAsState()
@@ -70,7 +62,6 @@ fun LayerFilterButton(
                         interactionSource = remember { MutableInteractionSource() }
                     ) {
                         expanded = false
-                        selectedCategory = LayerCategory.NONE
                     }
             )
         }
@@ -132,6 +123,8 @@ fun LayerFilterButton(
                     )
 
                     LayerCategory.GRIB -> GribLayerMenu(
+                        state = gribMenuState,
+                        onStateChange = { gribMenuState = it },
                         isWind = isWindLayerVisible,
                         isCurrent = isCurrentLayerVisible,
                         isDrift = isDriftLayerVisible,
@@ -144,6 +137,7 @@ fun LayerFilterButton(
                         onTogglePrecip = { precipitationViewModel.toggleLayerVisibility() },
                         gribViewModel = gribViewModel,
                         waveViewModel = waveViewModel,
+                        currentViewModel = currentViewModel,
                         onBack = { selectedCategory = LayerCategory.NONE }
                     )
                 }

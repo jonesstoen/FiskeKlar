@@ -32,7 +32,7 @@ import no.uio.ifi.in2000.team46.presentation.map.viewmodel.MapUiEvent
 import no.uio.ifi.in2000.team46.presentation.map.viewmodel.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.map.viewmodel.SearchViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
-import no.uio.ifi.in2000.team46.presentation.map.components.MapControls
+import no.uio.ifi.in2000.team46.presentation.map.components.controls.MapControls
 import no.uio.ifi.in2000.team46.presentation.map.components.MapLayers
 import no.uio.ifi.in2000.team46.presentation.map.components.MapViewContainer
 import no.uio.ifi.in2000.team46.data.remote.api.Feature
@@ -47,7 +47,6 @@ import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.DriftViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.DriftViewModelFactory
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModelFactory
-import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentViewModelFactory
 import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.annotations.PolygonOptions
 import org.maplibre.android.camera.CameraUpdateFactory
@@ -70,7 +69,8 @@ import no.uio.ifi.in2000.team46.data.repository.Result
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsLegend
 import androidx.compose.runtime.saveable.rememberSaveable
 import no.uio.ifi.in2000.team46.presentation.grib.components.WindLegend
-import no.uio.ifi.in2000.team46.presentation.map.components.LegendToggle
+import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.CurrentViewModelFactory
+import no.uio.ifi.in2000.team46.presentation.map.components.controls.LegendToggle
 import no.uio.ifi.in2000.team46.presentation.map.utils.removeMapMarker
 
 // =====================

@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team46.presentation.map.components
+package no.uio.ifi.in2000.team46.presentation.map.components.controls
 
 import android.location.Location
 import androidx.compose.foundation.background
@@ -30,6 +30,8 @@ import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 
 import no.uio.ifi.in2000.team46.data.remote.api.WeatherService
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModel
+import no.uio.ifi.in2000.team46.presentation.map.components.WeatherDisplay
+import no.uio.ifi.in2000.team46.presentation.map.components.layermenu.LayerFilterButton
 
 @Composable
 fun MapControls(

@@ -1,4 +1,4 @@
-package no.uio.ifi.in2000.team46.presentation.map.components
+package no.uio.ifi.in2000.team46.presentation.map.components.controls
 
 
 import androidx.compose.foundation.background
@@ -7,11 +7,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
