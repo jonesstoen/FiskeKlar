@@ -78,6 +78,7 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.*
 import no.uio.ifi.in2000.team46.presentation.onboarding.screens.MapOnboardingScreen
+import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.MapOnboardingViewModel
 
 // =====================
 // MAP SCREEN
@@ -95,9 +96,11 @@ fun MapScreen(
     navController: NavHostController,
     initialLocation: Pair<Double, Double>? = null,
     areaPoints: List<Pair<Double, Double>>? = null,
-    highlightVessel: HighlightVesselData? = null
+    highlightVessel: HighlightVesselData? = null,
+    mapOnboardingViewModel: MapOnboardingViewModel = viewModel()
 ) {
-    var showOnboarding by remember { mutableStateOf(false) }
+    // Fjern lokal showOnboarding state og bruk ViewModel state direkte
+    val showMapOnboarding by mapOnboardingViewModel.showMapOnboarding.collectAsState()
     
     // noen av verdiene som vi kunne brukt remembersavable på støtter ikke den funksjonaliteten derfor er de bare remember
     // ----------- State og permissions -----------
@@ -335,6 +338,11 @@ fun MapScreen(
         }
     }
 
+    // Sjekk om dette er første launch når komponenten monteres
+    LaunchedEffect(Unit) {
+        mapOnboardingViewModel.checkFirstLaunch(ctx)
+    }
+
     // ----------- UI: BottomSheetScaffold med kart, lag og kontroller -----------
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
@@ -422,30 +430,27 @@ fun MapScreen(
             }
             LegendToggle(
                 isLayerVisible = isWaveVisible && waveResult is Result.Success,
-                iconOffset = 100.dp,
-                legendOffset = 160.dp
+                verticalPosition = 0
             ) {
-                WaveLegend(modifier = Modifier.align(Alignment.TopEnd))
+                WaveLegend(modifier = Modifier.align(Alignment.CenterEnd))
             }
 
             val isMetAlertsVisible by metAlertsViewModel.isLayerVisible.collectAsState()
 
             LegendToggle(
                 isLayerVisible = isMetAlertsVisible,
-                iconOffset = 100.dp,
-                legendOffset = 160.dp
+                verticalPosition = 1
             ) {
-                MetAlertsLegend(modifier = Modifier.align(Alignment.TopEnd))
+                MetAlertsLegend(modifier = Modifier.align(Alignment.CenterEnd))
             }
 
             val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
 
             LegendToggle(
                 isLayerVisible = isWindLayerVisible,
-                iconOffset = 160.dp,
-                legendOffset = 220.dp
+                verticalPosition = 2
             ) {
-                WindLegend(modifier = Modifier.align(Alignment.TopEnd))
+                WindLegend(modifier = Modifier.align(Alignment.CenterEnd))
             }
 
             // 3) Kontroller
@@ -490,7 +495,7 @@ fun MapScreen(
 
             // Legg til hjelpeknapp i øvre høyre hjørne
             IconButton(
-                onClick = { showOnboarding = true },
+                onClick = { mapOnboardingViewModel.showMapOnboarding() },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(16.dp)
@@ -503,9 +508,11 @@ fun MapScreen(
                 )
             }
 
-            if (showOnboarding) {
+            // Bruk showMapOnboarding fra ViewModel
+            if (showMapOnboarding) {
                 MapOnboardingScreen(
-                    onFinish = { showOnboarding = false }
+                    viewModel = mapOnboardingViewModel,
+                    onFinish = { mapOnboardingViewModel.hideMapOnboarding() }
                 )
             }
         }
