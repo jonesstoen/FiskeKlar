@@ -72,6 +72,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import no.uio.ifi.in2000.team46.presentation.grib.components.WindLegend
 import no.uio.ifi.in2000.team46.presentation.map.components.LegendToggle
 import no.uio.ifi.in2000.team46.presentation.map.utils.removeMapMarker
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Help
+import androidx.compose.material.icons.filled.Help
+import androidx.compose.material3.*
+import no.uio.ifi.in2000.team46.presentation.onboarding.screens.MapOnboardingScreen
 
 // =====================
 // MAP SCREEN
@@ -91,6 +97,8 @@ fun MapScreen(
     areaPoints: List<Pair<Double, Double>>? = null,
     highlightVessel: HighlightVesselData? = null
 ) {
+    var showOnboarding by remember { mutableStateOf(false) }
+    
     // noen av verdiene som vi kunne brukt remembersavable på støtter ikke den funksjonaliteten derfor er de bare remember
     // ----------- State og permissions -----------
     val ctx = LocalContext.current
@@ -330,17 +338,12 @@ fun MapScreen(
     // ----------- UI: BottomSheetScaffold med kart, lag og kontroller -----------
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
-
-        // Hoved‐underlag for hele Scaffold (selve "screen-bakgrunnen")
         containerColor = MaterialTheme.colorScheme.background,
-        contentColor   = MaterialTheme.colorScheme.onBackground,
-
-        // Arkets bakgrunn og tekst-ikon-farge
+        contentColor = MaterialTheme.colorScheme.onBackground,
         sheetContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-        sheetContentColor   = MaterialTheme.colorScheme.onSurfaceVariant,
-
+        sheetContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
         sheetPeekHeight = 0.dp,
-        sheetContent   = {
+        sheetContent = {
             selectedFeature?.let { feature ->
                 MetAlertsBottomSheetContent(
                     feature = feature,
@@ -445,7 +448,6 @@ fun MapScreen(
                 WindLegend(modifier = Modifier.align(Alignment.TopEnd))
             }
 
-
             // 3) Kontroller
             mapLibreMap?.let { map ->
                 MapControls(
@@ -486,6 +488,27 @@ fun MapScreen(
                 )
             }
 
+            // Legg til hjelpeknapp i øvre høyre hjørne
+            IconButton(
+                onClick = { showOnboarding = true },
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(16.dp)
+                    .zIndex(1f)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.Help,
+                    contentDescription = "Vis hjelp",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+            if (showOnboarding) {
+                MapOnboardingScreen(
+                    onFinish = { showOnboarding = false }
+                )
+            }
         }
     }
 }
+
