@@ -60,15 +60,15 @@ fun MapOnboardingScreen(
             description = "Søk etter steder for å se farevarsler og værvarsel",
             icon = Icons.Default.Search,
             highlightColor = Color(0xFF1B4965),
-            spotlightPosition = Offset(0.48f, 0.07f),
-            spotlightSize = Size(327f, 56f)
+            spotlightPosition = Offset(0.105f, 0.055f),
+            spotlightSize = Size(64f, 56f)
         ),
         MapOnboardingStep(
             title = "Zoom-knapper",
             description = "Bruk disse knappene for å zoome inn og ut på kartet. Du kan også bruke to fingre",
             icon = Icons.Default.ZoomIn,
             highlightColor = Color(0xFF5FA8D3),
-            spotlightPosition = Offset(0.1f, 0.83f),
+            spotlightPosition = Offset(0.11f, 0.80f),
             spotlightSize = Size(70f, 130f)
         ),
         MapOnboardingStep(
@@ -76,7 +76,7 @@ fun MapOnboardingScreen(
             description = "Her kan du filtrere kartet for å se ulike lag og data",
             icon = Icons.Default.Layers,
             highlightColor = Color(0xFF9DC88D),
-            spotlightPosition = Offset(0.1f, 0.95f),
+            spotlightPosition = Offset(0.11f, 0.935f),
             spotlightSize = Size(64f, 64f)
         ),
         MapOnboardingStep(
@@ -92,7 +92,7 @@ fun MapOnboardingScreen(
             description = "Her ser du vær og temperatur for valgt sted (trykk og hold inne hvor som helst på kartet for å velge et sted), eller min posisjon dersom noe sted ikke er valgt",
             icon = Icons.Default.WbSunny,
             highlightColor = Color(0xFFBEE9E8),
-            spotlightPosition = Offset(0.86f, 0.87f),
+            spotlightPosition = Offset(0.85f, 0.85f),
             spotlightSize = Size(100f, 72f)
         ),
         MapOnboardingStep(
@@ -100,7 +100,7 @@ fun MapOnboardingScreen(
             description = "Trykk her for å se din nåværende posisjon på kartet",
             icon = Icons.Default.LocationOn,
             highlightColor = Color(0xFFD32F2F),
-            spotlightPosition = Offset(0.83f, 0.95f),
+            spotlightPosition = Offset(0.84f, 0.94f),
             spotlightSize = Size(64f, 64f)
         )
     )
