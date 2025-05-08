@@ -19,6 +19,9 @@ class WaveViewModel(private val repo: WaveRepository) : ViewModel() {
 
     private val _isRasterLoading = MutableStateFlow(false)
     val isRasterLoading: StateFlow<Boolean> = _isRasterLoading
+    //treshold
+    private val _waveThreshold = MutableStateFlow(4.0)
+    val waveThreshold: StateFlow<Double> = _waveThreshold
 
     fun toggleLayer() {
         _visible.value = !_visible.value
@@ -30,6 +33,9 @@ class WaveViewModel(private val repo: WaveRepository) : ViewModel() {
     }
     fun setRasterLoading(loading: Boolean) {
         _isRasterLoading.value = loading
+    }
+    fun setWaveThreshold(value: Double) {
+        _waveThreshold.value = value
     }
 
     private fun fetchWaves() = viewModelScope.launch {

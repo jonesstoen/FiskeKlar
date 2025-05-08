@@ -143,6 +143,7 @@ fun LayerFilterButton(
                         onToggleWave = { waveViewModel.toggleLayer() },
                         onTogglePrecip = { precipitationViewModel.toggleLayerVisibility() },
                         gribViewModel = gribViewModel,
+                        waveViewModel = waveViewModel,
                         onBack = { selectedCategory = LayerCategory.NONE }
                     )
                 }
