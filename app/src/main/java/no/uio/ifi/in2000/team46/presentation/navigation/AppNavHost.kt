@@ -24,7 +24,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
-import no.uio.ifi.in2000.team46.presentation.map.screens.MapScreen
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import no.uio.ifi.in2000.team46.presentation.home.screens.HomeScreen
@@ -60,6 +59,8 @@ import androidx.compose.runtime.setValue
 import no.uio.ifi.in2000.team46.presentation.sos.screens.SosScreen
 import androidx.compose.ui.graphics.Color
 import no.uio.ifi.in2000.team46.domain.weather.WeatherDetails
+import no.uio.ifi.in2000.team46.presentation.map.screens.MapScreen
+import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.OnboardingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,6 +74,7 @@ fun AppNavHost(
     searchViewModel: SearchViewModel,
     fishLogViewModel: FishingLogViewModel,
     profileViewModel: ProfileViewModel,
+    onboardingViewModel: OnboardingViewModel,
     weatherService: WeatherService,
 ) {
     val backStack by navController.currentBackStackEntryAsState()
@@ -146,6 +148,7 @@ fun AppNavHost(
                 val userRepo = UserRepository(db.userDao())
                 HomeScreen(
                     viewModel = profileViewModel,
+                    onboardingViewModel = onboardingViewModel,
                     onNavigateToMap = { navController.navigate("map") },
                     onNavigateToWeather = { navController.navigate("weather") },
                     onNavigateToFishLog = { navController.navigate("fishingLog") },

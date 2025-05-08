@@ -18,11 +18,13 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.unit.times
+
 @Composable
 fun LegendToggle(
     isLayerVisible: Boolean,
-    iconOffset: Dp = 100.dp,
-    legendOffset: Dp = 160.dp,
+    verticalPosition: Int = 0, // 0 for first button, 1 for second button, etc.
+    iconSpacing: Dp = 50.dp, // Spacing between buttons
     legend: @Composable () -> Unit
 ) {
     val showLegend = rememberSaveable { mutableStateOf(false) }
@@ -33,11 +35,14 @@ fun LegendToggle(
         }
     }
 
+    // Calculate vertical offset based on position
+    val bottomOffset = 140.dp + (verticalPosition * iconSpacing)
+
     if (isLayerVisible) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(end = 55.dp, bottom = 140.dp)
+                .padding(end = 55.dp, bottom = bottomOffset)
                 .zIndex(10f),
             contentAlignment = Alignment.BottomEnd
         ) {

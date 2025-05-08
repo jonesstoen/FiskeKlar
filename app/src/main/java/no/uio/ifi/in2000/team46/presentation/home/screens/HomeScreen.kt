@@ -25,6 +25,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import no.uio.ifi.in2000.team46.R
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
+import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.OnboardingViewModel
+import no.uio.ifi.in2000.team46.presentation.onboarding.screens.OnboardingScreen
 import java.time.LocalTime
 
 // Fargepalett
@@ -38,6 +40,7 @@ private val CardGreen = Color(0xFFB5C9B7)
 @Composable
 fun HomeScreen(
     viewModel: ProfileViewModel,
+    onboardingViewModel: OnboardingViewModel,
     onNavigateToMap: () -> Unit,
     onNavigateToWeather: () -> Unit,
     onNavigateToFishLog: () -> Unit,
@@ -46,6 +49,13 @@ fun HomeScreen(
     onNavigateToAlerts: () -> Unit
 ) {
     val user by viewModel.user.collectAsState()
+    val showOnboarding by onboardingViewModel.showOnboarding.collectAsState()
+    
+    if (showOnboarding) {
+        OnboardingScreen(
+            onFinish = { onboardingViewModel.hideOnboarding() }
+        )
+    }
 
     val greeting = remember(user) {
         val name = user?.name?.split(" ")?.firstOrNull() ?: ""
@@ -139,7 +149,7 @@ fun HomeScreen(
         "Se på månefaser – de kan påvirke fisket.",
         "Bruk naturlige farger i klart sollys.",
         "Fisk med vinden i ryggen for lengre kast.",
-        "Sørg for at agnet ditt ser “skadet” ut – det lokker!",
+        "Sørg for at agnet ditt ser skadet ut – det lokker!",
         "Beveg sluken i rykkvise bevegelser.",
         "Bruk tyngre agn i sterk vind.",
         "Kast mot strukturer og trekk ut.",
@@ -162,13 +172,28 @@ fun HomeScreen(
         "Bruk krepsimitasjoner på bunnen.",
         "Ha det gøy – fisking handler om opplevelsen!",
         "Hvis du fisker i IFI-dammen, se opp for Kiwi Ulven!",
-
     )
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-
-        ) { paddingValues ->
+        topBar = {
+            TopAppBar(
+                title = { },
+                actions = {
+                    IconButton(onClick = { onboardingViewModel.showOnboarding() }) {
+                        Icon(
+                            imageVector = Icons.Default.Help,
+                            contentDescription = "Vis introduksjon",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background
+                )
+            )
+        }
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
