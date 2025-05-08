@@ -11,6 +11,13 @@ import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModel
+import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.Switch
+
 
 sealed class GribMenuState {
     object Main : GribMenuState()
@@ -86,33 +93,55 @@ fun GribLayerMenu(
             )
         }
 
-        is GribMenuState.Main -> {
+        GribMenuState.Main -> {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 TextButton(onClick = onBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = null)
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     Spacer(Modifier.width(4.dp))
                     Text("Tilbake")
                 }
 
-                TextButton(onClick = { onStateChange(GribMenuState.Wind) }) {
-                    Text("Vind Vektorer")
-                }
+                ListItem(
+                    headlineContent = { Text("Vind Vektorer") },
+                    leadingContent = { Icon(Icons.Default.Air, contentDescription = null) },
+                    trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
+                    modifier = Modifier.clickable { onStateChange(GribMenuState.Wind) }
+                )
 
-                TextButton(onClick = { onStateChange(GribMenuState.Current) }) {
-                    Text("Strøminnstillinger")
-                }
+                ListItem(
+                    headlineContent = { Text("Strøm Vektorer") },
+                    leadingContent = { Icon(Icons.Default.Water, contentDescription = null) },
+                    trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
+                    modifier = Modifier.clickable { onStateChange(GribMenuState.Current) }
+                )
 
-                LayerToggleRow("Drift", isDrift, { onToggleDrift() })
+                ListItem(
+                    headlineContent = { Text("Drift Vektorer") },
+                    leadingContent = { Icon(Icons.Default.DirectionsBoat, contentDescription = null) },
+                    trailingContent = {
+                        Switch(
+                            checked = isDrift,
+                            onCheckedChange = { onToggleDrift() }
+                        )
+                    }
+                )
 
-                TextButton(onClick = { onStateChange(GribMenuState.Wave) }) {
-                    Text("Bølgeinnstillinger")
-                }
+                ListItem(
+                    headlineContent = { Text("Bølger") },
+                    leadingContent = { Icon(Icons.Default.Waves, contentDescription = null) },
+                    trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
+                    modifier = Modifier.clickable { onStateChange(GribMenuState.Wave) }
+                )
 
-                TextButton(onClick = { onStateChange(GribMenuState.Precipitation) }) {
-                    Text("Regninnstillinger")
-                }
+                ListItem(
+                    headlineContent = { Text("Regn") },
+                    leadingContent = { Icon(Icons.Default.InvertColors, contentDescription = null) },
+                    trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
+                    modifier = Modifier.clickable { onStateChange(GribMenuState.Precipitation) }
+                )
             }
         }
+
     }
 }
 
