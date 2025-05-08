@@ -25,6 +25,10 @@ class CurrentViewModel(private val repository: CurrentRepository) : ViewModel() 
             fetchCurrentData()
         }
     }
+    fun deactivateLayer() {
+        _isLayerVisible.value = false
+        _currentData.value = null
+    }
 
     private fun fetchCurrentData(forceRefresh: Boolean = false) {
         viewModelScope.launch {

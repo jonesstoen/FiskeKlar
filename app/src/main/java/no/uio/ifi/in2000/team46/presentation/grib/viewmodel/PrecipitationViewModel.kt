@@ -32,6 +32,10 @@ class PrecipitationViewModel(
         _isLayerVisible.value = !_isLayerVisible.value
         if (_isLayerVisible.value) fetch()
     }
+    fun deactivateLayer() {
+        _isLayerVisible.value = false
+        _data.value = null
+    }
 
     private fun fetch() = viewModelScope.launch {
         // Fetch precipitation data from repository
