@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -105,6 +106,8 @@ fun MapScreen(
     // noen av verdiene som vi kunne brukt remembersavable på støtter ikke den funksjonaliteten derfor er de bare remember
     // ----------- State og permissions -----------
     val ctx = LocalContext.current
+    val isDark = isSystemInDarkTheme()
+    val styleUrl = mapViewModel.getStyleUrl(isDark)
 
     // Request location permission
     var hasLocationPermission by rememberSaveable { mutableStateOf(false) }
@@ -368,12 +371,12 @@ fun MapScreen(
             // 1) Kartcontainer
             MapViewContainer(
                 mapView = mapView,
-                styleUrl = mapViewModel.styleUrl,
+                styleUrl = styleUrl,
                 modifier = Modifier.fillMaxSize(),
                 onMapReady = { map, _ ->
                     Log.d("MapScreen", "onMapReady called")
                     mapLibreMap = map
-                    mapViewModel.initializeMap(map, ctx)
+                    mapViewModel.initializeMap(map, ctx,styleUrl)
                     
                     // Add listeners to detect when user is dragging the map
                     map.addOnCameraMoveStartedListener { reason ->

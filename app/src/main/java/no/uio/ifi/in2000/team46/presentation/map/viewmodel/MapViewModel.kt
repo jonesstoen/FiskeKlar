@@ -53,15 +53,20 @@ sealed class MapUiEvent {
     data class ShowAlertSnackbar(val message: String) : MapUiEvent()
 }
 
+
 class MapViewModel(
     private val locationRepository: LocationRepository,
     private val metAlertsRepository: MetAlertsRepository
 ) : ViewModel() {
 
     // ----- Konstanter og API‑nøkler -----
-    private val apiKey = "kPH7fJZHXa4Pj6d1oIuw"
-    val styleUrl: String =
-        "https://api.maptiler.com/maps/basic/style.json?key=$apiKey"
+
+    // API-nøkkel for MapTiler
+
+    // Returnerer korrekt stil basert på dark/light mode
+
+
+
 
     private val initialLat: Double = MapConstants.INITIAL_LAT
     private val initialLon: Double = MapConstants.INITIAL_LON
@@ -106,6 +111,12 @@ class MapViewModel(
 
     private var weatherUpdateJob: Job? = null
     private var map: MapLibreMap? = null
+
+    fun getStyleUrl(isDarkTheme: Boolean): String {
+        val apiKey = "kPH7fJZHXa4Pj6d1oIuw"
+        val style = if (isDarkTheme) "streets-v2-dark" else "basic"
+        return "https://api.maptiler.com/maps/$style/style.json?key=$apiKey"
+    }
 
     init {
         viewModelScope.launch {
@@ -225,7 +236,7 @@ class MapViewModel(
     }
 
     /** Setter stil og initial visning når kartet er klart. */
-    fun initializeMap(map: MapLibreMap, context: Context) {
+    fun initializeMap(map: MapLibreMap, context: Context, styleUrl: String) {
         this.map = map
         map.setStyle(styleUrl) { style ->
             try {
@@ -234,7 +245,7 @@ class MapViewModel(
                     initialLat, initialLon,
                     zoom = MapConstants.INITIAL_ZOOM
                 )
-                VesselIconHelper.addVesselIconsToStyle(context, style)
+                VesselIconHelper.addVesselIconsToStyle(context, map.style!!)
 
                 // Oppdater vær basert på brukerens posisjon hvis tilgjengelig
                 viewModelScope.launch {
