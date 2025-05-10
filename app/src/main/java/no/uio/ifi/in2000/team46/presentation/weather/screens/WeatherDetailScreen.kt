@@ -93,7 +93,7 @@ fun WeatherDetailScreen(
     }
 
     Scaffold(
-        containerColor = Background,
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             TopAppBar(
                 title = {
@@ -123,7 +123,7 @@ fun WeatherDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Background
+                    containerColor = MaterialTheme.colorScheme.background
                 )
             )
         },
@@ -140,7 +140,7 @@ fun WeatherDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Background)
+                .background(MaterialTheme.colorScheme.background)
         ) {
             if (isFromHomeScreen && searchViewModel != null && uiState.isSearchExpanded) {
                 val searchResults by searchViewModel.searchResults.collectAsState()
@@ -244,7 +244,7 @@ private fun DayForecast(
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
         )
     ) {
         Column(
@@ -302,7 +302,8 @@ private fun SixHourBlock(
         Text(
             text = "${block.startHour.toString().padStart(2, '0')}-${block.endHour.toString().padStart(2, '0')}",
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            color = MaterialTheme.colorScheme.onPrimaryContainer
         )
 
         // Værsymbol
@@ -453,7 +454,7 @@ private fun TimeRangeSelector(
     onTimeRangeSelected: (TimeRange) -> Unit
 ) {
     Surface(
-        color = Background,
+        color = MaterialTheme.colorScheme.background,
         modifier = Modifier.fillMaxWidth()
 ) {
     Row(
@@ -467,7 +468,7 @@ private fun TimeRangeSelector(
                 onClick = { onTimeRangeSelected(timeRange) },
                 colors = ButtonDefaults.filledTonalButtonColors(
                     containerColor = if (selectedTimeRange == timeRange) 
-                                MaterialTheme.colorScheme.primary
+                                MaterialTheme.colorScheme.primaryContainer
                     else MaterialTheme.colorScheme.surface
                 ),
                 modifier = Modifier
@@ -477,7 +478,7 @@ private fun TimeRangeSelector(
                     Text(
                         text = timeRange.title,
                         color = if (selectedTimeRange == timeRange)
-                            MaterialTheme.colorScheme.onPrimary
+                            MaterialTheme.colorScheme.onPrimaryContainer
                         else MaterialTheme.colorScheme.onSurface
                     )
                 }

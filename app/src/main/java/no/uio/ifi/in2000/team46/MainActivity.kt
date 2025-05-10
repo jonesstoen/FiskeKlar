@@ -18,7 +18,7 @@ import no.uio.ifi.in2000.team46.data.repository.UserRepository
 import no.uio.ifi.in2000.team46.presentation.favorites.viewmodel.FavoritesViewModel
 import no.uio.ifi.in2000.team46.presentation.map.utils.rememberMapViewWithLifecycle
 import no.uio.ifi.in2000.team46.presentation.navigation.AppNavHost
-import no.uio.ifi.in2000.team46.presentation.ui.theme.TEAM46Theme
+import no.uio.ifi.in2000.team46.presentation.ui.theme.AppTheme
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.fishlog.viewmodel.FishingLogViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
@@ -33,6 +33,7 @@ import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModelFactory
 import no.uio.ifi.in2000.team46.data.remote.api.WeatherService
 import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.OnboardingViewModel
+import no.uio.ifi.in2000.team46.data.local.datastore.dataStore
 
 class MainActivity : ComponentActivity() {
     // Hoist all your ViewModels here so they survive navigation
@@ -61,17 +62,13 @@ class MainActivity : ComponentActivity() {
         FishingLogViewModel.FishLogViewModelFactory(fishLogRepo, fishTypeRepo)
     }
     private val profileViewModel: ProfileViewModel by viewModels {
-        ProfileViewModelFactory(UserRepository(db.userDao()))
+        ProfileViewModelFactory(UserRepository(db.userDao()), dataStore)
     }
 
     private val favoritesViewModel: FavoritesViewModel by viewModels {
         FavoritesViewModel.Factory(
             FavoriteRepository(db.favoriteLocationDao()),
-            fishLogRepo,
-            db.favoriteLocationDao(),
-            db.fishingLogDao(),
-            db.processedSuggestionDao(),
-            db.savedSuggestionDao()
+            fishLogRepo
         )
     }
 
@@ -88,7 +85,7 @@ class MainActivity : ComponentActivity() {
         onboardingViewModel.checkFirstLaunch(this)
 
         setContent {
-            TEAM46Theme {
+            AppTheme(viewModel = profileViewModel) {
                 val navController = rememberNavController()
                 // Hoist your single MapView
                 val mapView = rememberMapViewWithLifecycle()

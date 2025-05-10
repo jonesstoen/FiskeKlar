@@ -61,6 +61,8 @@ import androidx.compose.ui.graphics.Color
 import no.uio.ifi.in2000.team46.domain.weather.WeatherDetails
 import no.uio.ifi.in2000.team46.presentation.map.screens.MapScreen
 import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.OnboardingViewModel
+import no.uio.ifi.in2000.team46.presentation.ui.theme.backgroundLight
+import no.uio.ifi.in2000.team46.presentation.profile.screens.ThemeSettingsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,11 +87,7 @@ fun AppNavHost(
     val favoriteRepo = FavoriteRepository(db.favoriteLocationDao())
     val favoritesViewModel = FavoritesViewModel(
         favoriteRepo,
-        fishLogRepo,
-        db.favoriteLocationDao(),
-        db.fishingLogDao(),
-        db.processedSuggestionDao(),
-        db.savedSuggestionDao()
+        fishLogRepo
     )
 
 
@@ -206,19 +204,18 @@ fun AppNavHost(
                     navController = navController,
                     onCancel = { navController.popBackStack() },
                     onSave = { date, time, location, fishType, weight, notes, imageUri, latitude, longitude, fishCount ->
-                        for (i in 1..fishCount) {
-                            fishLogViewModel.addEntry(
-                                date = date,
-                                time = time,
-                                location = location,
-                                fishType = fishType,
-                                weight = weight,
-                                notes = notes,
-                                imageUri = imageUri,
-                                latitude = latitude,
-                                longitude = longitude
-                            )
-                        }
+                        fishLogViewModel.addEntry(
+                            date = date,
+                            time = time,
+                            location = location,
+                            fishType = fishType,
+                            weight = weight,
+                            notes = notes,
+                            imageUri = imageUri,
+                            latitude = latitude,
+                            longitude = longitude,
+                            count = fishCount
+                        )
                         navController.popBackStack()
                     }
                 )
@@ -414,11 +411,20 @@ fun AppNavHost(
 
             composable("profile") {
                 ProfileScreen(
-                    viewModel         = profileViewModel,
-                    onNavigateToHome  = { navController.navigate("home") },
-                    onNavigateToAlerts = { navController.navigate("alerts") }
+                    viewModel = profileViewModel,
+                    onNavigateToHome = { navController.navigate("home") },
+                    onNavigateToAlerts = { navController.navigate("alerts") },
+                    onNavigateToTheme = { navController.navigate("theme_settings") }
                 )
             }
+
+            composable("theme_settings") {
+                ThemeSettingsScreen(
+                    viewModel = profileViewModel,
+                    onBack = { navController.navigateUp() }
+                )
+            }
+
             //Weather detail screen that appears on map
             composable(
                 route = "weather_detail/{temperature}/{feelsLike}/{highTemp}/{lowTemp}/{symbolCode}/{description}/{locationName}/{windSpeed}/{windDirection}/{latitude}/{longitude}",

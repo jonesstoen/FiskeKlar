@@ -30,6 +30,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -67,9 +68,9 @@ import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import no.uio.ifi.in2000.team46.presentation.favorites.viewmodel.FavoriteWithStats
 import no.uio.ifi.in2000.team46.presentation.favorites.viewmodel.FavoritesViewModel
 import no.uio.ifi.in2000.team46.presentation.map.utils.rememberMapViewWithLifecycle
-import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
+import androidx.compose.foundation.isSystemInDarkTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,20 +79,11 @@ fun FavoritesScreen(
     onNavigate: (String) -> Unit
 ) {
     // ----------- State og data -----------
-    var showNotificationsDialog by rememberSaveable { mutableStateOf(false) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val favoritesWithStats by viewModel.favoritesWithStats.collectAsState()
     val currentFilter by viewModel.filterType.collectAsState()
-    val suggestedLocations by viewModel.suggestedLocations.collectAsState()
-    val showInitialNotification by viewModel.showInitialNotification.collectAsState()
     var showDeleteAllDialog by rememberSaveable { mutableStateOf(false) }
     var userLocation by remember { mutableStateOf<android.location.Location?>(null) }
-    val savedSuggestions by viewModel.savedSuggestions.collectAsState()
-    val notificationCount by viewModel.notificationCount.collectAsState()
-
-    LaunchedEffect(Unit) {
-        viewModel.refreshSuggestions()
-    }
 
     // ----------- Filtrering for punkt og omraade -----------
     val filteredFavorites = favoritesWithStats.filter {
@@ -113,21 +105,6 @@ fun FavoritesScreen(
             TopAppBar(
                 title = { Text("Mine favorittsteder") },
                 actions = {
-                    BadgedBox(
-                        badge = {
-                            if (notificationCount > 0) {
-                                Badge { Text(notificationCount.toString()) }
-                            }
-                        }
-                    ) {
-                        IconButton(onClick = { showNotificationsDialog = true }) {
-                            Icon(
-                                imageVector = Icons.Default.NotificationsActive,
-                                contentDescription = "Varsler om foreslåtte favoritter",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                        }
-                    }
                     if (favoritesWithStats.isNotEmpty()) {
                         IconButton(onClick = { showDeleteAllDialog = true }) {
                             Icon(
@@ -144,7 +121,7 @@ fun FavoritesScreen(
             FloatingActionButton(
                 onClick = { onNavigate("addFavorite") },
                 containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White
+                contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
                 Icon(Icons.Default.Add, contentDescription = "Legg til favoritt")
             }
@@ -156,7 +133,6 @@ fun FavoritesScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-
             // ----------- Søkefelt og autocomplete -----------
             OutlinedTextField(
                 value = searchQuery,
@@ -197,7 +173,7 @@ fun FavoritesScreen(
                             ) {
                                 Text(fav.favorite.name, style = MaterialTheme.typography.bodyLarge)
                             }
-                            Divider()
+                            HorizontalDivider()
                         }
                     }
                 }
@@ -207,7 +183,8 @@ fun FavoritesScreen(
             // ----------- MiniMap (kartutsnitt) -----------
             MiniMap(
                 onMapClick = { onNavigate("map") },
-                userLocation = userLocation
+                userLocation = userLocation,
+                favorites = filteredFavorites
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -217,8 +194,7 @@ fun FavoritesScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(40.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(Color(0xFFDCE8F0)),
+                    .clip(RoundedCornerShape(8.dp)),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 FilterButton(
@@ -227,14 +203,18 @@ fun FavoritesScreen(
                     onClick = { viewModel.filterByType(null) },
                     modifier = Modifier.weight(1f)
                 )
-                VerticalDivider()
+                VerticalDivider(
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
+                )
                 FilterButton(
                     text = "Punkter",
                     selected = currentFilter == "Punkter",
                     onClick = { viewModel.filterByType("Punkter") },
                     modifier = Modifier.weight(1f)
                 )
-                VerticalDivider()
+                VerticalDivider(
+                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
+                )
                 FilterButton(
                     text = "Områder",
                     selected = currentFilter == "Områder",
@@ -275,75 +255,6 @@ fun FavoritesScreen(
         }
 
         // ----------- Dialoger -----------
-        if (showNotificationsDialog) {
-            AlertDialog(
-                onDismissRequest = {
-                    viewModel.markAllSuggestionsAsRead()
-                    showNotificationsDialog = false
-                },
-                title = { Text("Lagrede foreslåtte favorittlokasjoner") },
-                text = {
-                    Column {
-                        if (suggestedLocations.isEmpty() && savedSuggestions.isEmpty()) {
-                            Text("Ingen foreslåtte lokasjoner")
-                        } else {
-                            Text("Disse stedene er lagret som foreslåtte favoritter:")
-                            Spacer(modifier = Modifier.height(8.dp))
-                            savedSuggestions.forEach { location ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = location.name,
-                                            style = MaterialTheme.typography.bodyLarge
-                                        )
-                                        Text(
-                                            text = "${location.fishCount} fangster",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    Row {
-                                        TextButton(
-                                            onClick = {
-                                                showNotificationsDialog = false
-                                                onNavigate("addFavorite?name=${location.name}")
-                                            }
-                                        ) {
-                                            Text("Legg til som favoritt")
-                                        }
-                                        TextButton(
-                                            onClick = {
-                                                viewModel.removeSavedSuggestion(location.name)
-                                            }
-                                        ) {
-                                            Text("Fjern", color = Color.Red)
-                                        }
-                                    }
-                                }
-                                Divider(modifier = Modifier.padding(vertical = 8.dp))
-                            }
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            viewModel.markAllSuggestionsAsRead()
-                            showNotificationsDialog = false
-                        }
-                    ) {
-                        Text("Lukk")
-                    }
-                }
-            )
-        }
-
         if (showDeleteAllDialog) {
             AlertDialog(
                 onDismissRequest = { showDeleteAllDialog = false },
@@ -366,120 +277,6 @@ fun FavoritesScreen(
                 }
             )
         }
-
-        if (showInitialNotification && suggestedLocations.isNotEmpty()) {
-            AlertDialog(
-                onDismissRequest = {
-                    suggestedLocations.forEach { location ->
-                        viewModel.dismissSuggestion(location.name, saveForLater = false)
-                    }
-                },
-                title = { Text("Nye foreslåtte favorittlokasjoner") },
-                text = {
-                    Column {
-                        Text("Vi har oppdaget noen steder du fisker ofte:")
-                        Spacer(modifier = Modifier.height(8.dp))
-                        suggestedLocations.forEach { location ->
-                            Text("• ${location.name} (${location.fishCount} fangster)")
-                        }
-                        Text("\nVil du legge til disse som favoritter?")
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            val firstLocation = suggestedLocations.firstOrNull()
-                            if (firstLocation != null) {
-                                onNavigate("addFavorite?name=${firstLocation.name}")
-                                viewModel.dismissSuggestion(firstLocation.name, saveForLater = false)
-                            }
-                        }
-                    ) {
-                        Text("Legg til")
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            suggestedLocations.forEach {
-                                viewModel.dismissSuggestion(it.name, saveForLater = true)
-                                viewModel.increaseNotificationCount()
-                            }
-                        }
-                    ) {
-                        Text("Ikke nå")
-                    }
-                }
-            )
-        }
-
-        if (showNotificationsDialog) {
-            LaunchedEffect(showNotificationsDialog) {
-                viewModel.setBellOpened(true)
-                viewModel.resetNotificationCount()
-            }
-
-            AlertDialog(
-                onDismissRequest = { showNotificationsDialog = false },
-                title = { Text("Lagrede foreslåtte favorittlokasjoner") },
-                text = {
-                    Column {
-                        if (suggestedLocations.isEmpty() && savedSuggestions.isEmpty()) {
-                            Text("Ingen foreslåtte lokasjoner")
-                        } else {
-                            Text("Disse stedene er lagret som foreslåtte favoritter:")
-                            Spacer(modifier = Modifier.height(8.dp))
-                            savedSuggestions.forEach { location ->
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column {
-                                        Text(
-                                            text = location.name,
-                                            style = MaterialTheme.typography.bodyLarge
-                                        )
-                                        Text(
-                                            text = "${location.fishCount} fangster",
-                                            style = MaterialTheme.typography.bodyMedium,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    Row {
-                                        TextButton(
-                                            onClick = {
-                                                showNotificationsDialog = false
-                                                onNavigate("addFavorite?name=${location.name}")
-                                            }
-                                        ) {
-                                            Text("Legg til som favoritt")
-                                        }
-                                        TextButton(
-                                            onClick = {
-                                                viewModel.removeSavedSuggestion(location.name)
-                                            }
-                                        ) {
-                                            Text("Fjern", color = Color.Red)
-                                        }
-                                    }
-                                }
-                                Divider(modifier = Modifier.padding(vertical = 8.dp))
-                            }
-                        }
-                    }
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = { showNotificationsDialog = false }
-                    ) {
-                        Text("Lukk")
-                    }
-                }
-            )
-        }
     }
 }
 
@@ -497,13 +294,13 @@ fun FilterButton(
             .fillMaxHeight()
             .clickable(onClick = onClick)
             .background(
-                if (selected) Color(0xFF3B5F8A) else Color.Transparent
+                if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer
             ),
         contentAlignment = Alignment.Center
     ) {
         Text(
             text = text,
-            color = if (selected) Color.White else Color(0xFF3B5F8A),
+            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Medium
         )
@@ -527,7 +324,7 @@ fun FavoriteCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
             // Type-indikator (punkt eller område)
             if (isPoint) {
@@ -577,7 +374,7 @@ fun FavoriteCard(
                 } ?: ""
 
                 Text(
-                    text = "${favoriteWithStats.catchCount} fangster $lastCatchInfo",
+                    text = "${favoriteWithStats.catchCount} fisk $lastCatchInfo",
                     style = MaterialTheme.typography.bodyMedium,
                     color = Color.Gray
                 )
@@ -623,12 +420,14 @@ fun FavoriteCard(
 @Composable
 fun MiniMap(
     onMapClick: () -> Unit,
-    userLocation: android.location.Location?
+    userLocation: android.location.Location?,
+    favorites: List<FavoriteWithStats>
 ) {
     val mapView = rememberMapViewWithLifecycle()
     val context = LocalContext.current
     val locationRepository = remember { LocationRepository(context) }
     val scope = rememberCoroutineScope()
+    val isDarkMode = isSystemInDarkTheme()
 
     // State for user location
     var userLocation by remember { mutableStateOf<android.location.Location?>(null) }
@@ -660,16 +459,60 @@ fun MiniMap(
             modifier = Modifier.fillMaxSize()
         ) { view ->
             view.getMapAsync { map ->
-                map.setStyle("https://api.maptiler.com/maps/basic-v2/style.json?key=kPH7fJZHXa4Pj6d1oIuw") {
+                val styleUrl = if (isDarkMode) {
+                    "https://api.maptiler.com/maps/basic-v2-dark/style.json?key=kPH7fJZHXa4Pj6d1oIuw"
+                } else {
+                    "https://api.maptiler.com/maps/basic-v2/style.json?key=kPH7fJZHXa4Pj6d1oIuw"
+                }
+                map.setStyle(styleUrl) {
+                    // Legg til brukerens posisjon
                     userLocation?.let {
                         val userLatLng = LatLng(it.latitude, it.longitude)
-                        map.addMarker(
-                            MarkerOptions()
-                                .position(userLatLng)
-                                .title("Din posisjon")
-                        )
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(userLatLng, 12.0))
+                        val markerOptions = org.maplibre.android.annotations.MarkerOptions()
+                            .position(userLatLng)
+                            .title("Din posisjon")
+                        map.addMarker(markerOptions)
                     }
+
+                    // Legg til favorittsteder
+                    favorites.forEach { favoriteWithStats ->
+                        val favorite = favoriteWithStats.favorite
+                        if (favorite.locationType == "POINT") {
+                            // Legg til punkt
+                            val markerOptions = org.maplibre.android.annotations.MarkerOptions()
+                                .position(LatLng(favorite.latitude, favorite.longitude))
+                                .title(favorite.name)
+                            map.addMarker(markerOptions)
+                        } else {
+                            // Legg til område
+                            val points = favorite.areaPoints?.let { pointsJson ->
+                                try {
+                                    val jsonArray = org.json.JSONArray(pointsJson)
+                                    List(jsonArray.length()) { i ->
+                                        val point = jsonArray.getJSONObject(i)
+                                        LatLng(point.getDouble("lat"), point.getDouble("lng"))
+                                    }
+                                } catch (e: Exception) {
+                                    emptyList()
+                                }
+                            } ?: emptyList()
+
+                            if (points.isNotEmpty()) {
+                                val polygonOptions = org.maplibre.android.annotations.PolygonOptions()
+                                    .addAll(points)
+                                    .fillColor(0x334CAF50) // Grønn med 20% opacity
+                                    .strokeColor(0xFF4CAF50.toInt()) // Grønn
+                                map.addPolygon(polygonOptions)
+                            }
+                        }
+                    }
+
+                    // Flytt kamera til brukerens posisjon eller første favoritt
+                    val centerLatLng = userLocation?.let { LatLng(it.latitude, it.longitude) }
+                        ?: favorites.firstOrNull()?.favorite?.let { LatLng(it.latitude, it.longitude) }
+                        ?: LatLng(59.9139, 10.7522) // Oslo som fallback
+
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(centerLatLng, 10.0))
                 }
             }
         }

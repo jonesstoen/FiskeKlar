@@ -53,7 +53,7 @@ fun FavoriteDetailScreen(
             favorite = favoriteLocation
             if (favoriteLocation != null) {
                 viewModel.getFishingLogsForLocation(favoriteLocation.name).collectLatest { logs ->
-                    fishingLogs = logs
+                    fishingLogs = logs.filter { it.count > 0 }
                 }
             }
         }
@@ -143,7 +143,7 @@ fun FavoriteDetailScreen(
                 }
             }
         },
-        containerColor = Color(0xFFF7F7FA)
+        containerColor = MaterialTheme.colorScheme.background
     ) { paddingValues ->
         favorite?.let { favoriteLocation ->
             Column(
@@ -191,7 +191,10 @@ fun FavoriteDetailScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp)
                         .shadow(2.dp, RoundedCornerShape(16.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFE9E9F2))
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
                 ) {
                     Column(modifier = Modifier.padding(18.dp)) {
                         Row(
@@ -214,11 +217,14 @@ fun FavoriteDetailScreen(
                                 Icon(
                                     Icons.Default.Edit,
                                     contentDescription = "Rediger notater",
-                                    tint = Color(0xFF3B5F8A)
+                                    tint = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                             }
                         }
-                        Divider(modifier = Modifier.padding(vertical = 8.dp))
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer)
                         if (isEditingNotes) {
                             OutlinedTextField(
                                 value = notesEdit,
@@ -248,7 +254,9 @@ fun FavoriteDetailScreen(
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp)
                         .shadow(2.dp, RoundedCornerShape(16.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF2F7F2))
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer)
                 ) {
                     Column(modifier = Modifier.padding(18.dp)) {
                         Text(
@@ -256,19 +264,25 @@ fun FavoriteDetailScreen(
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
-                        Divider(modifier = Modifier.padding(vertical = 8.dp))
+                        HorizontalDivider(
+                            modifier = Modifier
+                                .padding(vertical = 8.dp),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer)
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFF3B5F8A), modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
-                                Text("Antall fangster:")
+                                Text("Totalt antall fisk:")
                             }
                             Text(
-                                text = "${fishingLogs.size}",
+                                text = "${fishingLogs.sumOf { it.count }}",
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -279,7 +293,10 @@ fun FavoriteDetailScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFF3B5F8A), modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text("Beste fangst:")
                             }
@@ -296,7 +313,10 @@ fun FavoriteDetailScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFF3B5F8A), modifier = Modifier.size(18.dp))
+                                Icon(Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(18.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text("Sist fanget:")
                             }
@@ -315,21 +335,23 @@ fun FavoriteDetailScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF7F9FF)),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer),
                     shape = RoundedCornerShape(16.dp),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
                     Column(modifier = Modifier.padding(18.dp)) {
                         Text(
-                            text = "Fangststatistikk",
+                            text = "Fangststatistikk (antall)",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(bottom = 4.dp)
                         )
                         val grouped = fishingLogs.groupBy { it.fishType }
-                        val data = grouped.mapValues { it.value.size }
+                        val data = grouped.mapValues { it.value.sumOf { log -> log.count } }
                         if (data.isEmpty()) {
-                            Text("Ingen fangster registrert på dette stedet.")
+                            Text("Ingen fisk registrert på dette stedet.")
                         } else {
                             HorizontalBarChart(
                                 data = data,
@@ -384,8 +406,9 @@ fun HorizontalBarChart(
     barColor: Color = MaterialTheme.colorScheme.primary
 ) {
     val max = data.values.maxOrNull() ?: 1
+    val sortedData = data.toList().sortedByDescending { it.second }
     Column(modifier = modifier) {
-        data.forEach { (label, value) ->
+        sortedData.forEach { (label, value) ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(vertical = 8.dp)

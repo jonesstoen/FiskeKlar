@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.fishlog.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -36,9 +37,12 @@ class FishingLogViewModel(
         notes: String?,
         imageUri: String?,
         latitude: Double,
-        longitude: Double
+        longitude: Double,
+        count: Int
     ) {
         viewModelScope.launch {
+            Log.d("FishingLog", "Attempting to save fishing log entry")
+            Log.d("FishingLog", "location=$location, fishType=$fishType, weight=$weight, count=$count")
             val entry = FishingLog(
                 date = date.toString(),
                 time = time.toString(),
@@ -48,9 +52,12 @@ class FishingLogViewModel(
                 notes = notes,
                 imageUri = imageUri,
                 latitude = latitude,
-                longitude = longitude
+                longitude = longitude,
+                count = count
             )
+            Log.d("FishingLog", "Created FishingLog entry: $entry")
             fishLogRepo.insert(entry)
+            Log.d("FishingLog", "Successfully saved fishing log entry")
         }
     }
 

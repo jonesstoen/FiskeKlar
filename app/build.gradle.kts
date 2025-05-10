@@ -113,4 +113,7 @@ dependencies {
     //coil for picture handling
     implementation("io.coil-kt:coil-compose:2.4.0")
 
+    //For datastoring theme settings
+    implementation (libs.androidx.datastore.preferences)
+
 }

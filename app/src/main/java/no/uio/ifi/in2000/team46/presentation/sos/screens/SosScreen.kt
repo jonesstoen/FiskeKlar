@@ -1,11 +1,11 @@
 package no.uio.ifi.in2000.team46.presentation.sos.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.DirectionsBoat
 import androidx.compose.material.icons.filled.LocalFireDepartment
 import androidx.compose.material.icons.filled.LocalHospital
@@ -40,12 +40,14 @@ import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import no.uio.ifi.in2000.team46.R
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun SosScreen(
     aisViewModel: AisViewModel = viewModel(),
@@ -103,8 +105,8 @@ fun SosScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = Color.White
-    ) { paddingValues ->
+        containerColor = MaterialTheme.colorScheme.background
+    ) { it: PaddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -123,7 +125,7 @@ fun SosScreen(
                 Text("EMERGENCY", color = Color.White, fontSize = 28.sp, fontWeight = FontWeight.Bold)
                 if (onBack != null) {
                     IconButton(onClick = onBack, modifier = Modifier.align(Alignment.CenterStart)) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Tilbake", tint = Color.White)
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Tilbake", tint = Color.White)
                     }
                 }
             }
@@ -205,7 +207,7 @@ fun SosScreen(
                 "Trykk på et nødnummer for å ringe i nødstilfelle",
                 fontWeight = FontWeight.Medium,
                 fontSize = 16.sp,
-                color = Color(0xFFD32F2F),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
                 modifier = Modifier
                     .padding(top = 16.dp, bottom = 8.dp)
                     .fillMaxWidth(),
@@ -218,7 +220,7 @@ fun SosScreen(
                     .padding(horizontal = 8.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(20.dp),
                 elevation = CardDefaults.cardElevation(8.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F8F8))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
             ) {
                 Column {
                     val rsLogo: Painter = painterResource(id = R.drawable.rs_logo)
@@ -264,7 +266,7 @@ fun SosScreen(
                 text = "Din nåværende posisjon",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 16.dp)
+                modifier = Modifier.padding(horizontal = 16.dp,  vertical = 14.dp)
             )
             Card(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),

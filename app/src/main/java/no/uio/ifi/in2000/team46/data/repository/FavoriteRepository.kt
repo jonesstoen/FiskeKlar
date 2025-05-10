@@ -13,8 +13,16 @@ class FavoriteRepository (
         return favoriteLocationDao.getFavoriteById(id)
     }
 
+    fun getAllFavoritesFlow(): Flow<List<FavoriteLocation>> {
+        return favoriteLocationDao.getAllFavoritesFlow()
+    }
+
     suspend fun insertFavorite(favorite: FavoriteLocation) {
         favoriteLocationDao.insert(favorite)
+    }
+
+    suspend fun updateFavorite(favorite: FavoriteLocation) {
+        favoriteLocationDao.update(favorite)
     }
 
     suspend fun deleteFavorite(favorite: FavoriteLocation) {

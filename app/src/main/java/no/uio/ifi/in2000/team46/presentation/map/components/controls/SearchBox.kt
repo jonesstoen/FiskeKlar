@@ -123,7 +123,7 @@ fun SearchBox(
                     bottomStart = 0.dp,
                     bottomEnd = 0.dp
                 ) else RoundedCornerShape(24.dp),
-                color = Color.White,
+                color = MaterialTheme.colorScheme.primaryContainer,
                 modifier = Modifier.clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
@@ -183,7 +183,7 @@ fun SearchBox(
                                         Text(
                                             text = "Søk etter sted...",
                                             style = MaterialTheme.typography.bodyLarge,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                            color = MaterialTheme.colorScheme.onPrimaryContainer
                                         )
                                     }
                                     innerTextField()

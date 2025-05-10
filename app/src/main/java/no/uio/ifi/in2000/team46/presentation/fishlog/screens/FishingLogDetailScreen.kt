@@ -158,6 +158,10 @@ fun FishingLogDetailScreen(
                             Icon(Icons.Default.Scale, contentDescription = null)
                             Spacer(Modifier.width(8.dp))
                             Text("${"%.1f".format(entry.weight)} kg", style = MaterialTheme.typography.bodyLarge)
+                            if (entry.count > 0) {
+                                Spacer(Modifier.width(16.dp))
+                                Text("(${entry.count} stk)", style = MaterialTheme.typography.bodyLarge)
+                            }
                         }
                     }
 

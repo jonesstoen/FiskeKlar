@@ -1,9 +1,9 @@
 package no.uio.ifi.in2000.team46.presentation.favorites.screen
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -27,8 +26,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -231,7 +228,7 @@ fun AddFavoriteScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
-                    .background(Color(0xFFF0F0F0), RoundedCornerShape(25.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(25.dp))
             ) {
                 listOf("POINT" to "Punkt", "AREA" to "Område").forEach { (value, label) ->
                     Box(
@@ -239,7 +236,7 @@ fun AddFavoriteScreen(
                             .weight(1f)
                             .fillMaxHeight()
                             .background(
-                                if (locationType == value) Color(0xFF3B5F8A) else Color.Transparent,
+                                if (locationType == value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer,
                                 RoundedCornerShape(25.dp)
                             )
                             .clickable { locationType = value },
@@ -247,7 +244,7 @@ fun AddFavoriteScreen(
                     ) {
                         Text(
                             label,
-                            color = if (locationType == value) Color.White else Color(0xFF3B5F8A),
+                            color = if (locationType == value) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -275,7 +272,7 @@ fun AddFavoriteScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 4.dp),
-                    color = Color(0xFFE3F2FD),
+                    color = MaterialTheme.colorScheme.primaryContainer,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(
@@ -286,7 +283,8 @@ fun AddFavoriteScreen(
                         Text(
                             "Gi området et navn så du enkelt finner det igjen.",
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         IconButton(onClick = { showNameInfo = false }) {
                             Icon(Icons.Default.Close, contentDescription = "Lukk info")
@@ -325,7 +323,7 @@ fun AddFavoriteScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 4.dp),
-                    color = Color(0xFFE3F2FD),
+                    color = MaterialTheme.colorScheme.primaryContainer,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(
@@ -339,7 +337,8 @@ fun AddFavoriteScreen(
                             else 
                                 "Marker 3–5 punkter på kartet for å tegne inn området du ønsker å lagre.",
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         IconButton(onClick = { showPositionInfo = false }) {
                             Icon(Icons.Default.Close, contentDescription = "Lukk info")
@@ -352,19 +351,23 @@ fun AddFavoriteScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(200.dp)
-                    .background(Color(0xFFACD1E6), RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(8.dp))
                     .clickable {
                         saveCurrentState()
                         navController.navigate("mapPicker/$locationType")
                     },
                 contentAlignment = Alignment.Center
             ) {
-                Text("Trykk for å velge posisjon", color = Color(0xFF3B5F8A), fontWeight = FontWeight.Bold)
+                Text("Trykk for å velge posisjon", color = MaterialTheme.colorScheme.onPrimaryContainer, fontWeight = FontWeight.Bold)
             }
             Spacer(modifier = Modifier.height(8.dp))
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = Color(0xFFF5F5F5),
+                color = if (isSystemInDarkTheme()) {
+                    MaterialTheme.colorScheme.surfaceBright
+                } else {
+                    MaterialTheme.colorScheme.surfaceDim
+                },
                 shape = RoundedCornerShape(8.dp)
             ) {
                 Text(
@@ -384,7 +387,8 @@ fun AddFavoriteScreen(
                         String.format("%.4f° N, %.4f° E", latitude, longitude)
                     },
                     modifier = Modifier.padding(16.dp),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
@@ -409,7 +413,7 @@ fun AddFavoriteScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 4.dp),
-                    color = Color(0xFFE3F2FD),
+                    color = MaterialTheme.colorScheme.primaryContainer,
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Row(
@@ -420,7 +424,8 @@ fun AddFavoriteScreen(
                         Text(
                             "Legg til informasjon som dybde, strømforhold, fisketyper eller andre observasjoner dersom du ønsker det",
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                         IconButton(onClick = { showNotesInfo = false }) {
                             Icon(Icons.Default.Close, contentDescription = "Lukk info")
@@ -457,8 +462,8 @@ fun AddFavoriteScreen(
                     },
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color(0xFF3B5F8A)
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 ) {
                     Text("Avbryt")
@@ -484,45 +489,17 @@ fun AddFavoriteScreen(
                             savedStateHandle?.remove<String>("savedNotes")
                             savedStateHandle?.remove<List<String>>("savedFishTypes")
                             onSave()
-                            viewModel.removeSavedSuggestion(name)
                         }
                     },
-                    enabled = name.isNotBlank() && (pickedPoint != null || pickedArea != null)
+                    enabled = name.isNotBlank() && (pickedPoint != null || pickedArea != null),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    )
                 ) {
                     Text("Lagre")
                 }
             }
-        }
-    }
-}
-
-// =====================
-// UI-KOMPONENTER
-// =====================
-
-@Composable
-fun FishTypeChip(
-    name: String,
-    selected: Boolean,
-    onToggle: () -> Unit
-) {
-    Surface(
-        onClick = onToggle,
-        color = if (selected) Color(0xFFDCE8F0) else Color.White,
-        shape = RoundedCornerShape(4.dp),
-        border = BorderStroke(1.dp, if (selected) Color(0xFF3B5F8A) else Color(0xFFA7BFD1))
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = selected,
-                onCheckedChange = { onToggle() },
-                colors = CheckboxDefaults.colors(checkedColor = Color(0xFF3B5F8A))
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(name)
         }
     }
 }

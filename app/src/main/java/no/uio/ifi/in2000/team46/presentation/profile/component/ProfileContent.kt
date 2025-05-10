@@ -26,7 +26,8 @@ fun ProfileContent(
     modifier: Modifier = Modifier,
     user: User,
     onClearUser: () -> Unit,
-    onEditUser: () -> Unit
+    onEditUser: () -> Unit,
+    onNavigateToTheme: () -> Unit
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
@@ -167,6 +168,11 @@ fun ProfileContent(
         item {
             SettingsItem("Endre passord", Icons.Default.Lock)
             SettingsItem("Varslingsinnstillinger", Icons.Default.Notifications)
+            SettingsItem(
+                title = "Temainnstillinger",
+                icon = Icons.Default.Palette,
+                onClick = onNavigateToTheme
+            )
         }
     }
 
@@ -221,11 +227,15 @@ fun StatItem(value: String, label: String, icon: IconType) {
 }
 
 @Composable
-fun SettingsItem(title: String, icon: ImageVector) {
+fun SettingsItem(
+    title: String, 
+    icon: ImageVector,
+    onClick: () -> Unit = { /* Default empty click handler */ }
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { /* Handle click */ } //TODO: Handle click action
+            .clickable(onClick = onClick)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

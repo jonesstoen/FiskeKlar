@@ -26,7 +26,8 @@ import android.net.Uri
 fun ProfileScreen(
     viewModel: ProfileViewModel,
     onNavigateToHome: () -> Unit,
-    onNavigateToAlerts: () -> Unit
+    onNavigateToAlerts: () -> Unit,
+    onNavigateToTheme: () -> Unit
 ) {
     val user by viewModel.user.collectAsState()
     var isEditing by remember { mutableStateOf(false) }
@@ -55,13 +56,13 @@ fun ProfileScreen(
                 ProfileContent(
                     modifier    = Modifier
                         .fillMaxSize(),
-
                     user        = user!!,
                     onClearUser = {
                         viewModel.clearUser()
                         isEditing = true
                     },
-                    onEditUser  = { isEditing = true }
+                    onEditUser  = { isEditing = true },
+                    onNavigateToTheme = onNavigateToTheme
                 )
             }
         }

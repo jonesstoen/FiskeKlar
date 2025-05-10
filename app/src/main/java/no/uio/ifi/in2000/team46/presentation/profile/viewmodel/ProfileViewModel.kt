@@ -7,15 +7,26 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.stateIn
 import no.uio.ifi.in2000.team46.data.repository.UserRepository
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.data.local.database.entities.User
 import java.time.LocalDate
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import kotlinx.coroutines.flow.map
 
 class ProfileViewModel(
-    private val userRepository: UserRepository
+    private val userRepository: UserRepository,
+    private val dataStore: DataStore<Preferences>
 ) : ViewModel() {
+
+    companion object {
+        private val THEME_KEY = stringPreferencesKey("theme")
+    }
 
     val user: StateFlow<User?> = userRepository.getCurrentUser()
         .stateIn(
@@ -23,6 +34,24 @@ class ProfileViewModel(
             started = SharingStarted.WhileSubscribed(),
             initialValue = null
         )
+
+    val theme: StateFlow<String> = dataStore.data
+        .map { preferences -> 
+            preferences[THEME_KEY] ?: "system"
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = "system"
+        )
+
+    fun setTheme(newTheme: String) {
+        viewModelScope.launch {
+            dataStore.edit { preferences ->
+                preferences[THEME_KEY] = newTheme
+            }
+        }
+    }
 
     fun saveUser(name: String, username: String, imageUri: String?) {
         viewModelScope.launch {
@@ -53,8 +82,11 @@ class ProfileViewModel(
     }
 }
 
-class ProfileViewModelFactory(private val repo: UserRepository) : ViewModelProvider.Factory {
+class ProfileViewModelFactory(
+    private val repo: UserRepository,
+    private val dataStore: DataStore<Preferences>
+) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return ProfileViewModel(repo) as T
+        return ProfileViewModel(repo, dataStore) as T
     }
 }
