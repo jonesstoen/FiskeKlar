@@ -1,8 +1,11 @@
 package no.uio.ifi.in2000.team46.presentation.map.components.layermenu
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -11,20 +14,14 @@ import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.CurrentViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModel
-import androidx.compose.foundation.clickable
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.Switch
 
-
+// defines all sub-navigation options for GRIB layers
 sealed class GribMenuState {
-    object Main : GribMenuState()
-    object Wind : GribMenuState()
-    object Current : GribMenuState()
-    object Wave : GribMenuState()
-    object Precipitation : GribMenuState()
+    data object Main : GribMenuState()
+    data object Wind : GribMenuState()
+    data object Current : GribMenuState()
+    data object Wave : GribMenuState()
+    data object Precipitation : GribMenuState()
 }
 
 @Composable
@@ -45,15 +42,20 @@ fun GribLayerMenu(
     gribViewModel: GribViewModel,
     waveViewModel: WaveViewModel,
     currentViewModel: CurrentViewModel,
-    precipitationViewModel: PrecipitationViewModel
+    precipitationViewModel: PrecipitationViewModel,
+    onShowWindSliders: () -> Unit
 ) {
+    // uses ViewModel to mutate menu navigation state
+    fun goTo(state: GribMenuState) = gribViewModel.setGribMenuState(state)
+
     when (state) {
         is GribMenuState.Wind -> {
             WindLayerSettingsMenu(
                 isChecked = isWind,
                 onToggleLayer = onToggleWind,
                 gribViewModel = gribViewModel,
-                onBack = { onStateChange(GribMenuState.Main) }
+                onBack = { goTo(GribMenuState.Main) },
+                onShowSliders = onShowWindSliders
             )
         }
 
@@ -64,7 +66,7 @@ fun GribLayerMenu(
                 threshold = waveThreshold,
                 onToggle = onToggleWave,
                 onThresholdChange = { waveViewModel.setWaveThreshold(it) },
-                onBack = { onStateChange(GribMenuState.Main) }
+                onBack = { goTo(GribMenuState.Main) }
             )
         }
 
@@ -75,7 +77,7 @@ fun GribLayerMenu(
                 threshold = currentThreshold,
                 onToggle = onToggleCurrent,
                 onThresholdChange = { currentViewModel.setCurrentThreshold(it) },
-                onBack = { onStateChange(GribMenuState.Main) }
+                onBack = { goTo(GribMenuState.Main) }
             )
         }
 
@@ -89,12 +91,16 @@ fun GribLayerMenu(
                     else precipitationViewModel.deactivateLayer()
                 },
                 onThresholdChange = { precipitationViewModel.setPrecipThreshold(it) },
-                onBack = { onStateChange(GribMenuState.Main) }
+                onBack = { goTo(GribMenuState.Main) }
             )
         }
 
+        // main entry screen for GRIB menu options
         GribMenuState.Main -> {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(
+                Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 TextButton(onClick = onBack) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     Spacer(Modifier.width(4.dp))
@@ -105,14 +111,14 @@ fun GribLayerMenu(
                     headlineContent = { Text("Vind Vektorer") },
                     leadingContent = { Icon(Icons.Default.Air, contentDescription = null) },
                     trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
-                    modifier = Modifier.clickable { onStateChange(GribMenuState.Wind) }
+                    modifier = Modifier.clickable { goTo(GribMenuState.Wind) }
                 )
 
                 ListItem(
                     headlineContent = { Text("Strøm Vektorer") },
                     leadingContent = { Icon(Icons.Default.Water, contentDescription = null) },
                     trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
-                    modifier = Modifier.clickable { onStateChange(GribMenuState.Current) }
+                    modifier = Modifier.clickable { goTo(GribMenuState.Current) }
                 )
 
                 ListItem(
@@ -130,18 +136,16 @@ fun GribLayerMenu(
                     headlineContent = { Text("Bølger") },
                     leadingContent = { Icon(Icons.Default.Waves, contentDescription = null) },
                     trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
-                    modifier = Modifier.clickable { onStateChange(GribMenuState.Wave) }
+                    modifier = Modifier.clickable { goTo(GribMenuState.Wave) }
                 )
 
                 ListItem(
                     headlineContent = { Text("Regn") },
                     leadingContent = { Icon(Icons.Default.InvertColors, contentDescription = null) },
                     trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
-                    modifier = Modifier.clickable { onStateChange(GribMenuState.Precipitation) }
+                    modifier = Modifier.clickable { goTo(GribMenuState.Precipitation) }
                 )
             }
         }
-
     }
 }
-

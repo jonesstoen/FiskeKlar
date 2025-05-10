@@ -78,6 +78,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.*
+import no.uio.ifi.in2000.team46.presentation.grib.components.WindOverlaySliders
+import no.uio.ifi.in2000.team46.presentation.map.components.layermenu.GribMenuState
 import no.uio.ifi.in2000.team46.presentation.onboarding.screens.MapOnboardingScreen
 import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.MapOnboardingViewModel
 
@@ -108,6 +110,8 @@ fun MapScreen(
     val ctx = LocalContext.current
     val isDark = isSystemInDarkTheme()
     val styleUrl = mapViewModel.getStyleUrl(isDark)
+    var isLayerMenuExpanded by remember { mutableStateOf(false) }
+
 
     // Request location permission
     var hasLocationPermission by rememberSaveable { mutableStateOf(false) }
@@ -471,6 +475,8 @@ fun MapScreen(
                     waveViewModel = waveViewModel,
                     precipitationViewModel = precipitationViewModel,
                     hasLocationPermission = hasLocationPermission,
+                    isLayerMenuExpanded = isLayerMenuExpanded,
+                    onLayerMenuExpandedChange = { isLayerMenuExpanded = it },
                     onRequestPermission = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
                     navController = navController,
                     onSearchResultSelected = { feature ->
@@ -492,9 +498,26 @@ fun MapScreen(
                             mapViewModel.clearSelectedLocation()  // Nullstill valgt posisjon
                             mapViewModel.updateWeatherForLocation(location.latitude, location.longitude, explicit = false)
                         }
+                    },
+                    onShowWindSliders = { gribViewModel.setShowWindSliders(true) }
+
+                )
+            }
+            val showWindSliders by gribViewModel.showWindSliders.collectAsState()
+            val gribMenuState by gribViewModel.gribMenuState.collectAsState()
+
+            if (isWindLayerVisible && showWindSliders) {
+                WindOverlaySliders(
+                    gribViewModel = gribViewModel,
+                    onClose = {
+                        gribViewModel.setShowWindSliders(false)
+                        gribViewModel.setGribMenuState(GribMenuState.Wind)
+                        isLayerMenuExpanded = true
                     }
                 )
             }
+
+
 
             // Legg til hjelpeknapp i øvre høyre hjørne
             IconButton(

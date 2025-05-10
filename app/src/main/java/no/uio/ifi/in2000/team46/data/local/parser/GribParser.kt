@@ -31,45 +31,53 @@ class GribParser {
         val vectors = mutableListOf<Vector>()
         val ncfile = NetcdfFiles.open(file.absolutePath)
 
-        val uVar = ncfile.findVariable(uComponentName)
-            ?: throw IllegalArgumentException("Fant ikke $uComponentName")
-        val vVar = ncfile.findVariable(vComponentName)
-            ?: throw IllegalArgumentException("Fant ikke $vComponentName")
-        val latVar = ncfile.findVariable("lat")
-            ?: throw IllegalArgumentException("Fant ikke lat")
-        val lonVar = ncfile.findVariable("lon")
-            ?: throw IllegalArgumentException("Fant ikke lon")
+        val uVar = ncfile.findVariable(uComponentName) ?: error("Fant ikke $uComponentName")
+        val vVar = ncfile.findVariable(vComponentName) ?: error("Fant ikke $vComponentName")
+        val latVar = ncfile.findVariable("lat") ?: error("Fant ikke lat")
+        val lonVar = ncfile.findVariable("lon") ?: error("Fant ikke lon")
+        val timeVar = ncfile.findVariable("time") ?: error("Fant ikke time")
 
         val uData = uVar.read() as ArrayFloat.D4
         val vData = vVar.read() as ArrayFloat.D4
         val lats = latVar.read().reduce().storage as FloatArray
         val lons = lonVar.read().reduce().storage as FloatArray
+        val timeArray = timeVar.read().reduce().storage
+        val timeUnits = timeVar.getUnitsString()
+        val calendarDateUnit = CalendarDateUnit.of(Calendar.gregorian.toString(), timeUnits)
 
         val index = uData.index as Index4D
-        val timeIndex = 0
         val heightIndex = 0
 
-        for (iLat in 0 until lats.size) {
-            for (iLon in 0 until lons.size) {
-                index.set(timeIndex, heightIndex, iLat, iLon)
-                val u = uData.getFloat(index)
-                val v = vData.getFloat(index)
-                val speed = sqrt(u * u + v * v).toDouble()
-                val direction = (Math.toDegrees(atan2(u.toDouble(), v.toDouble())) + 360) % 360
+        val timeSteps = when (timeArray) {
+            is FloatArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it.toDouble()).millis }
+            is DoubleArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it).millis }
+            else -> throw IllegalArgumentException("Ukjent time-array-type")
+        }
 
-                // check if the variables are correctly defined
-                if (speed.isFinite() && direction.isFinite()) {
-                    val vector = when (vectorType) {
-                        VectorType.WIND -> WindVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction)
-                        VectorType.CURRENT -> CurrentVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction)
+        for ((timeIndex, timestamp) in timeSteps.withIndex()) {
+            for (iLat in lats.indices) {
+                for (iLon in lons.indices) {
+                    index.set(timeIndex, heightIndex, iLat, iLon)
+                    val u = uData.getFloat(index)
+                    val v = vData.getFloat(index)
+                    val speed = sqrt(u * u + v * v).toDouble()
+                    val direction = (Math.toDegrees(atan2(u.toDouble(), v.toDouble())) + 360) % 360
+
+                    if (speed.isFinite() && direction.isFinite()) {
+                        val vector = when (vectorType) {
+                            VectorType.WIND -> WindVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction, timestamp)
+                            VectorType.CURRENT -> CurrentVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction)
+                        }
+                        vectors += vector
                     }
-                    vectors.add(vector)
                 }
             }
         }
+
         ncfile.close()
         return vectors
     }
+
     fun parseWaveFile(file: File): List<WaveVector> {
         val ncfile = NetcdfFiles.open(file.absolutePath)
 
@@ -206,21 +214,31 @@ class GribParser {
         ncfile.variables.forEach { variable ->
             Log.d("GribParser", "Navn: ${variable.fullName}, Dimensions: ${variable.dimensionsString}")
         }
+
         val timeVar = ncfile.findVariable("time")
         if (timeVar != null) {
             val timeArray = timeVar.read().reduce().storage
             val timeUnits = timeVar.getUnitsString()
             val calendarDateUnit = CalendarDateUnit.of(Calendar.gregorian.toString(), timeUnits)
 
+            Log.d("GribParser", "Enheter: $timeUnits")
+            Log.d("GribParser", "Antall tidspunkter: ${timeVar.shape.joinToString()}")
 
-            val timeValue = when (timeArray) {
-                is FloatArray -> timeArray[0].toDouble()
-                is DoubleArray -> timeArray[0]
-                else -> throw IllegalArgumentException("Ukjent type for time-array: ${timeArray::class.java}")
+            when (timeArray) {
+                is FloatArray -> timeArray.forEachIndexed { i, v ->
+                    val millis = calendarDateUnit.makeCalendarDate(v.toDouble()).millis
+                    Log.d("GribParser", "[$i] = $v -> $millis")
+                }
+                is DoubleArray -> timeArray.forEachIndexed { i, v ->
+                    val millis = calendarDateUnit.makeCalendarDate(v).millis
+                    Log.d("GribParser", "[$i] = $v -> $millis")
+                }
+                else -> Log.w("GribParser", "Ukjent type for time-array: ${timeArray::class.java}")
             }
-            val timestamp = calendarDateUnit.makeCalendarDate(timeValue).millis
-            Log.d("GribParser", "Første timestamp: $timestamp ms ($timeUnits)")
+        } else {
+            Log.w("GribParser", "Fant ikke variabelen 'time'")
         }
+
         ncfile.close()
     }
 }

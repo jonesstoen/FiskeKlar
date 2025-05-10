@@ -1,10 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.map.components.layermenu
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -35,12 +31,15 @@ fun LayerFilterButton(
     driftViewModel: DriftViewModel,
     waveViewModel: WaveViewModel,
     precipitationViewModel: PrecipitationViewModel,
+    isExpanded: Boolean,
+    onExpandedChange: (Boolean) -> Unit,
+    onShowWindSliders: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var expanded by remember { mutableStateOf(false) }
     var selectedCategory by remember { mutableStateOf(LayerCategory.NONE) }
-    var gribMenuState by remember { mutableStateOf<GribMenuState>(GribMenuState.Main) }
 
+    // viewmodel state
+    val gribMenuState by gribViewModel.gribMenuState.collectAsState()
     val isAisLayerVisible by aisViewModel.isLayerVisible.collectAsState()
     val isMetAlertsLayerVisible by metAlertsViewModel.isLayerVisible.collectAsState()
     val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
@@ -50,9 +49,19 @@ fun LayerFilterButton(
     val isPrecipitationVisible by precipitationViewModel.isLayerVisible.collectAsState()
     val selectedVesselTypes by aisViewModel.selectedVesselTypes.collectAsState()
     val isLoading by aisViewModel.isLoading.collectAsState()
+    val showSliders by gribViewModel.showWindSliders.collectAsState()
+
+    // hold the latest reference to the expanded callback for use in LaunchedEffect
+    val onExpandedChangeState = rememberUpdatedState(onExpandedChange)
+
+    // close menu automatically when sliders are shown
+    LaunchedEffect(showSliders) {
+        if (showSliders) onExpandedChangeState.value(false)
+    }
 
     Box(modifier = modifier) {
-        if (expanded) {
+        // full-screen overlay for closing menu by clicking outside
+        if (isExpanded) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -61,20 +70,24 @@ fun LayerFilterButton(
                         indication = null,
                         interactionSource = remember { MutableInteractionSource() }
                     ) {
-                        expanded = false
+                        onExpandedChange(false)
                     }
             )
         }
 
+        // floating toggle button
         FloatingActionButton(
-            onClick = { expanded = !expanded },
-            modifier = Modifier.align(Alignment.BottomStart).zIndex(2f)
+            onClick = { onExpandedChange(!isExpanded) },
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .zIndex(2f)
         ) {
             Icon(imageVector = Icons.Default.Layers, contentDescription = "Filter Layers")
         }
 
+        // animated filter menu panel
         AnimatedVisibility(
-            visible = expanded,
+            visible = isExpanded,
             enter = fadeIn() + expandVertically(),
             exit = fadeOut() + shrinkVertically(),
             modifier = Modifier
@@ -124,7 +137,7 @@ fun LayerFilterButton(
 
                     LayerCategory.GRIB -> GribLayerMenu(
                         state = gribMenuState,
-                        onStateChange = { gribMenuState = it },
+                        onStateChange = { gribViewModel.setGribMenuState(it) }, // uses viewmodel to mutate state
                         isWind = isWindLayerVisible,
                         isCurrent = isCurrentLayerVisible,
                         isDrift = isDriftLayerVisible,
@@ -139,6 +152,7 @@ fun LayerFilterButton(
                         waveViewModel = waveViewModel,
                         currentViewModel = currentViewModel,
                         precipitationViewModel = precipitationViewModel,
+                        onShowWindSliders = onShowWindSliders,
                         onBack = { selectedCategory = LayerCategory.NONE }
                     )
                 }
