@@ -43,7 +43,8 @@ fun GribLayerMenu(
     waveViewModel: WaveViewModel,
     currentViewModel: CurrentViewModel,
     precipitationViewModel: PrecipitationViewModel,
-    onShowWindSliders: () -> Unit
+    onShowWindSliders: () -> Unit,
+    onShowCurrentSliders: () -> Unit
 ) {
     // uses ViewModel to mutate menu navigation state
     fun goTo(state: GribMenuState) = gribViewModel.setGribMenuState(state)
@@ -77,7 +78,8 @@ fun GribLayerMenu(
                 threshold = currentThreshold,
                 onToggle = onToggleCurrent,
                 onThresholdChange = { currentViewModel.setCurrentThreshold(it) },
-                onBack = { goTo(GribMenuState.Main) }
+                onBack = { goTo(GribMenuState.Main) },
+                onShowSliders = onShowCurrentSliders
             )
         }
 

@@ -66,7 +66,8 @@ class GribParser {
                     if (speed.isFinite() && direction.isFinite()) {
                         val vector = when (vectorType) {
                             VectorType.WIND -> WindVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction, timestamp)
-                            VectorType.CURRENT -> CurrentVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction)
+                            VectorType.CURRENT -> CurrentVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction, timestamp)
+
                         }
                         vectors += vector
                     }

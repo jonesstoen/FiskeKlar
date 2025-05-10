@@ -78,6 +78,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.*
+import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.grib.components.WindOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.map.components.layermenu.GribMenuState
 import no.uio.ifi.in2000.team46.presentation.onboarding.screens.MapOnboardingScreen
@@ -452,6 +453,7 @@ fun MapScreen(
             }
 
             val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
+            val isCurrentLayerVisible by currentViewModel.isLayerVisible.collectAsState()
 
             LegendToggle(
                 isLayerVisible = isWindLayerVisible,
@@ -499,7 +501,11 @@ fun MapScreen(
                             mapViewModel.updateWeatherForLocation(location.latitude, location.longitude, explicit = false)
                         }
                     },
-                    onShowWindSliders = { gribViewModel.setShowWindSliders(true) }
+                    onShowWindSliders = { gribViewModel.setShowWindSliders(true) },
+                    onShowCurrentSliders = {
+                        isLayerMenuExpanded = false
+                        currentViewModel.setShowCurrentSliders(true)
+                    }
 
                 )
             }
@@ -512,6 +518,19 @@ fun MapScreen(
                     onClose = {
                         gribViewModel.setShowWindSliders(false)
                         gribViewModel.setGribMenuState(GribMenuState.Wind)
+                        isLayerMenuExpanded = true
+                    }
+                )
+            }
+
+            val showCurrentSliders by currentViewModel.showCurrentSliders.collectAsState()
+
+            if (isCurrentLayerVisible && showCurrentSliders) {
+                CurrentOverlaySliders(
+                    currentViewModel = currentViewModel,
+                    onClose = {
+                        currentViewModel.setShowCurrentSliders(false)
+                        gribViewModel.setGribMenuState(GribMenuState.Current)
                         isLayerMenuExpanded = true
                     }
                 )
