@@ -16,9 +16,10 @@ fun CurrentLayerSettings(
     threshold: Double,
     onToggle: (Boolean) -> Unit,
     onThresholdChange: (Double) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onShowSliders: () -> Unit
 ) {
-    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         TextButton(onClick = onBack) {
             Icon(Icons.Default.ArrowBack, contentDescription = null)
             Spacer(Modifier.width(4.dp))
@@ -27,12 +28,13 @@ fun CurrentLayerSettings(
 
         LayerToggleRow("Vis strøm", isChecked, onToggle)
 
-        Text("Terskel for varsling: ${threshold} knop")
-        Slider(
-            value = threshold.toFloat(),
-            onValueChange = { onThresholdChange(it.toDouble()) },
-            valueRange = 0f..5f,
-            steps = 9
-        )
+        Button(
+            onClick = onShowSliders,
+            enabled = isChecked,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Åpne strømkontroller")
+        }
     }
 }
+

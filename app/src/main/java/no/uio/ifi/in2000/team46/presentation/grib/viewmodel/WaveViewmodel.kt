@@ -22,6 +22,29 @@ class WaveViewModel(private val repo: WaveRepository) : ViewModel() {
     //treshold
     private val _waveThreshold = MutableStateFlow(4.0)
     val waveThreshold: StateFlow<Double> = _waveThreshold
+    //show sliders
+    private val _showWaveSliders = MutableStateFlow(false)
+    val showWaveSliders: StateFlow<Boolean> = _showWaveSliders
+
+    fun setShowWaveSliders(show: Boolean) {
+        _showWaveSliders.value = show
+    }
+
+    private val _selectedTimestamp = MutableStateFlow<Long?>(null)
+    val selectedTimestamp: StateFlow<Long?> = _selectedTimestamp
+
+    val filteredWaveVectors: StateFlow<List<WaveVector>> = combine(
+        waveData,
+        selectedTimestamp
+    ) { result, selectedTime ->
+        if (result is Result.Success && selectedTime != null) {
+            result.data.filter { it.timestamp == selectedTime }
+        } else emptyList()
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    fun setSelectedTimestamp(timestamp: Long) {
+        _selectedTimestamp.value = timestamp
+    }
 
     fun toggleLayer() {
         _visible.value = !_visible.value
@@ -44,6 +67,11 @@ class WaveViewModel(private val repo: WaveRepository) : ViewModel() {
         if (result is Result.Success) {
             Log.d("WaveViewModel", "Antall bølgevektorer: ${result.data.size}")
             Log.d("WaveViewModel", "Første 5: ${result.data.take(5)}")
+
+            val firstTimestamp = result.data.firstOrNull()?.timestamp
+            if (firstTimestamp != null) {
+                _selectedTimestamp.value = firstTimestamp
+            }
         }
         _waves.value = result
     }

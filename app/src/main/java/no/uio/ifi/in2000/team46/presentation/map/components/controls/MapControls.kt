@@ -48,28 +48,29 @@ fun MapControls(
     precipitationViewModel: PrecipitationViewModel,
     hasLocationPermission: Boolean,
     onRequestPermission: () -> Unit,
+    isLayerMenuExpanded: Boolean,
+    onLayerMenuExpandedChange: (Boolean) -> Unit,
     navController: NavController,
     onSearchResultSelected: (Feature) -> Unit,
+    onShowWindSliders: () -> Unit,
+    onShowCurrentSliders: () -> Unit,
+    onShowWaveSliders: () -> Unit,
     onUserLocationSelected: (Location) -> Unit
 ) {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    val weatherService = remember { WeatherService() }
     val temperature by mapViewModel.temperature.collectAsState()
     val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
-    val locationName = mapViewModel.locationName.collectAsState().value
     var isSearchExpanded by remember { mutableStateOf(false) }
 
-    //updating the weather when the marker moves
+    // update weather whenever camera moves
     LaunchedEffect(map.cameraPosition.target) {
-        val target = map.cameraPosition.target
-        if (target != null) {
-            mapViewModel.updateWeatherForLocation(target.latitude, target.longitude)
+        map.cameraPosition.target?.let {
+            mapViewModel.updateWeatherForLocation(it.latitude, it.longitude)
         }
     }
 
     Box(Modifier.fillMaxSize()) {
-        // search button
+        // search input or button in top-left
         Box(modifier = Modifier.align(Alignment.TopStart).padding(16.dp)) {
             if (isSearchExpanded) {
                 SearchBox(
@@ -78,9 +79,8 @@ fun MapControls(
                     searchResults = searchViewModel.searchResults.collectAsState().value,
                     isSearching = searchViewModel.isSearching.collectAsState().value,
                     onSearch = { query ->
-                        val target = map.cameraPosition.target
-                        if (target != null) {
-                            searchViewModel.search(query, focusLat = target.latitude, focusLon = target.longitude)
+                        map.cameraPosition.target?.let {
+                            searchViewModel.search(query, focusLat = it.latitude, focusLon = it.longitude)
                         }
                     },
                     onResultSelected = { feature ->
@@ -89,7 +89,7 @@ fun MapControls(
                             mapViewModel.zoomToLocation(map, coords[1], coords[0], zoom = 15.0)
                             searchViewModel.clearResults()
                             onSearchResultSelected(feature)
-                            isSearchExpanded = false // collapse after selection
+                            isSearchExpanded = false
                             map.uiSettings.setAllGesturesEnabled(true)
                         }
                     },
@@ -106,19 +106,15 @@ fun MapControls(
                         .size(48.dp)
                         .background(
                             color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = RoundedCornerShape(12.dp))
+                            shape = RoundedCornerShape(12.dp)
+                        )
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Åpne søk",
-
-                    )
+                    Icon(Icons.Default.Search, contentDescription = "Open Search")
                 }
             }
         }
 
-
-        //zoom and filter buttons
+        // zoom and layer buttons in bottom-left
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
@@ -144,13 +140,23 @@ fun MapControls(
                     driftViewModel = driftViewModel,
                     waveViewModel = waveViewModel,
                     precipitationViewModel = precipitationViewModel,
+                    isExpanded = isLayerMenuExpanded,
+                    onExpandedChange = onLayerMenuExpandedChange,
+                    onShowWindSliders = {
+                        // hide menu before opening wind sliders
+                        onLayerMenuExpandedChange(false)
+                        onShowWindSliders()
+                    },
+                    onShowWaveSliders = {
+                        onLayerMenuExpandedChange(false)
+                        onShowWaveSliders()
+                    },
+                    onShowCurrentSliders = onShowCurrentSliders,
                 )
             }
         }
 
-
-
-        //weather display and location button in the right corner
+        // weather + location button in bottom-right
         Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -162,7 +168,7 @@ fun MapControls(
                 symbolCode = weatherSymbol,
                 mapViewModel = mapViewModel,
                 navController = navController,
-                weatherService = weatherService,
+                weatherService = remember { WeatherService() },
                 modifier = Modifier.padding(4.dp)
             )
             zoomToLocationButton(
@@ -171,10 +177,10 @@ fun MapControls(
                     .padding(end = 16.dp)
             ) {
                 if (hasLocationPermission) {
-                    val location = mapViewModel.userLocation.value
-                    if (location != null) {
+                    mapViewModel.userLocation.value?.let { location ->
                         mapViewModel.clearSelectedLocation()
                         mapViewModel.zoomToUserLocation(map, context)
+                        onUserLocationSelected(location)
                     }
                 } else {
                     onRequestPermission()
@@ -183,6 +189,7 @@ fun MapControls(
         }
     }
 }
+
 
 
 

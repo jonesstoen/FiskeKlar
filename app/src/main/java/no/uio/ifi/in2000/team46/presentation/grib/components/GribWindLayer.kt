@@ -15,8 +15,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import no.uio.ifi.in2000.team46.R
-import no.uio.ifi.in2000.team46.data.repository.Result
-import no.uio.ifi.in2000.team46.domain.grib.WindVector
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.GribViewModel
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
@@ -36,27 +34,23 @@ fun GribWindLayer(
     filterVectors: Boolean = false
 ) {
     val isVisible by gribViewModel.isLayerVisible.collectAsState()
-    val windResult by gribViewModel.windData.collectAsState(initial = null)
     val threshold by gribViewModel.windThreshold.collectAsState()
+    val filteredVectors by gribViewModel.filteredWindVectors.collectAsState()
 
-    // observe zoom level in a reactive way using polling
     val zoomState = remember { mutableStateOf(0.0) }
     LaunchedEffect(map, isVisible) {
         while (isVisible) {
             zoomState.value = map.cameraPosition.zoom
-            delay(200) // poll zoom 5 times per second
+            delay(200)
         }
     }
 
-    if (isVisible && windResult is Result.Success) {
-        val windData = (windResult as Result.Success<List<WindVector>>).data
-
-        LaunchedEffect(windData, threshold, zoomState.value) {
+    if (isVisible && filteredVectors.isNotEmpty()) {
+        LaunchedEffect(filteredVectors, threshold, zoomState.value) {
             map.getStyle { style ->
                 val sourceId = "wind_source"
                 val layerId = "wind_layer"
 
-                // map wind speed thresholds to drawable icons (based on beaufort scale)
                 val iconMap = mapOf(
                     0.2 to R.drawable.symbol_wind_speed_00,
                     1.5 to R.drawable.symbol_wind_speed_15,
@@ -73,7 +67,6 @@ fun GribWindLayer(
                     Double.MAX_VALUE to R.drawable.symbol_wind_speed_max
                 )
 
-                // register both normal and red alert icons
                 iconMap.forEach { (_, resId) ->
                     val baseName = mapView.context.resources.getResourceEntryName(resId)
                     if (style.getImage(baseName) == null) {
@@ -89,25 +82,20 @@ fun GribWindLayer(
                     }
                 }
 
-                // dynamically adjust filter level based on zoom
                 val dynamicStep = when {
-                    zoomState.value >= 7.5 -> 1 // no filtering when zoomed in
+                    zoomState.value >= 7.5 -> 1
                     zoomState.value >= 6.5 -> 3
                     zoomState.value >= 5.0 -> 5
                     else                   -> 8
                 }
 
-
-                val filteredData = if (filterVectors) {
-                    windData.filterIndexed { index, _ -> index % dynamicStep == 0 }
+                val dataToDraw = if (filterVectors) {
+                    filteredVectors.filterIndexed { index, _ -> index % dynamicStep == 0 }
                 } else {
-                    windData
+                    filteredVectors
                 }
-                Log.d("GribWindLayer", "zoom=${zoomState.value}, step=$dynamicStep, filtered=${filteredData.size}")
 
-
-                // convert wind vectors to geojson features with icon selection
-                val features = filteredData.mapNotNull { v ->
+                val features = dataToDraw.mapNotNull { v ->
                     Feature.fromGeometry(Point.fromLngLat(v.lon, v.lat)).apply {
                         addNumberProperty("direction", v.direction)
                         addNumberProperty("speed", v.speed)
@@ -116,7 +104,7 @@ fun GribWindLayer(
                 }
 
                 val featureCollection = FeatureCollection.fromFeatures(features.toTypedArray())
-                Log.d("GribWindLayer", "number of wind vectors: ${features.size}")
+                Log.d("GribWindLayer", "Antall vektorer som vises: ${features.size}")
 
                 val existingSource = style.getSourceAs<GeoJsonSource>(sourceId)
                 if (existingSource != null) {
@@ -150,7 +138,6 @@ fun GribWindLayer(
         }
     }
 
-    // remove layer when visibility is false
     LaunchedEffect(isVisible) {
         if (!isVisible) {
             map.getStyle { style ->
@@ -160,7 +147,6 @@ fun GribWindLayer(
         }
     }
 
-    // show hint if zoom level is too low for meaningful detail
     AnimatedVisibility(
         visible = isVisible && zoomState.value < 7.0,
         enter = fadeIn(),
@@ -187,7 +173,6 @@ fun GribWindLayer(
     }
 }
 
-// selects icon name based on wind speed and threshold
 private fun selectIcon(
     speed: Double,
     threshold: Double,

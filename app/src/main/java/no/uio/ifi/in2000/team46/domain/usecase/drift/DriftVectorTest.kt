@@ -3,7 +3,7 @@ package no.uio.ifi.in2000.team46.domain.usecase.drift
 import no.uio.ifi.in2000.team46.domain.grib.CurrentVector
 import no.uio.ifi.in2000.team46.domain.grib.WindVector
 
-
+/*
 fun main() {
     val windVectors = listOf(
         WindVector(lon = 10.0, lat = 60.0, speed = 5.0, direction = 90.0), // østlig vind
@@ -22,3 +22,4 @@ fun main() {
         println("Lon: ${drift.lon}, Lat: ${drift.lat}, Speed: ${"%.2f".format(drift.speed)}, Direction: ${"%.2f".format(drift.direction)}")
     }
 }
+*/

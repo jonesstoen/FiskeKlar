@@ -5,4 +5,5 @@ data class WindVector(
     override val lat: Double,
     override val speed: Double,
     override val direction: Double,
+    val timestamp: Long,
 ) : Vector

@@ -15,6 +15,7 @@ import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
 import com.google.gson.JsonObject
+import org.maplibre.android.style.layers.SymbolLayer
 
 @Composable
 fun GribWaveLayer(
@@ -23,31 +24,25 @@ fun GribWaveLayer(
     mapView: MapView
 ) {
     val isVisible by waveViewModel.isLayerVisible.collectAsState()
-    val waveResult by waveViewModel.waveData.collectAsState()
     val threshold by waveViewModel.waveThreshold.collectAsState()
+    val filteredWaves by waveViewModel.filteredWaveVectors.collectAsState()
 
-    LaunchedEffect(isVisible, waveResult, threshold) {
+    LaunchedEffect(isVisible, filteredWaves, threshold) {
         map.getStyle { style ->
-            if (!isVisible || waveResult !is Result.Success) {
-                style.getLayer("wave_circle_layer")?.let { style.removeLayer(it) }
-                style.getSource("wave_source")?.let { style.removeSource(it) }
-                Log.d("GribWaveLayer", "Layer hidden or no data, removed existing layers/sources.")
+            // Remove existing layers and sources if they exist
+            style.getLayer("wave_text_layer")?.let { style.removeLayer(it) }
+            style.getLayer("wave_circle_layer")?.let { style.removeLayer(it) }
+            style.getSource("wave_source")?.let { style.removeSource(it) }
+
+            if (!isVisible || filteredWaves.isEmpty()) {
+                Log.d("GribWaveLayer", "Layer hidden or no data, cleaned up.")
                 return@getStyle
             }
 
-            val waves = (waveResult as Result.Success<List<WaveVector>>).data
-            Log.d("GribWaveLayer", "Aktiv terskelverdi: $threshold")
-            Log.d("GribWaveLayer", "Received wave vectors: size=${waves.size}")
-
-            val featureCollection = waves.toFeatureCollection().also {
-                Log.d("GribWaveLayer", "Created GeoJSON FeatureCollection with ${it.features()?.size ?: 0} features.")
-            }
-
-            style.getLayer("wave_circle_layer")?.let { style.removeLayer(it) }
-            style.getSource("wave_source")?.let { style.removeSource(it) }
+            val featureCollection = filteredWaves.toFeatureCollection()
             style.addSource(GeoJsonSource("wave_source", featureCollection))
 
-            // draw layer with radius and conditional coloring
+
             val circleLayer = CircleLayer("wave_circle_layer", "wave_source").withProperties(
                 circleRadius(
                     interpolate(
@@ -60,30 +55,39 @@ fun GribWaveLayer(
                     )
                 ),
                 circleOpacity(literal(0.8f)),
-
-                // color: red if height > threshold, else use step scale
                 circleColor(
                     switchCase(
                         gt(get("height"), literal(threshold)),
-                        color(0xFFB2182B.toInt()),  // red if over threshold
+                        color(0xFFB2182B.toInt()),
                         step(
                             get("height"),
-                            color(0xFF2166AC.toInt()),               // <= 0m
-                            literal(1.0), color(0xFF4393C3.toInt()),  // >= 1m
-                            literal(2.0), color(0xFF92C5DE.toInt()),  // >= 2m
-                            literal(3.0), color(0xFFF4A582.toInt()),  // >= 3m
-                            literal(5.0), color(0xFFFFA500.toInt()),  // >= 5m
-                            literal(8.0), color(0xFFB2182B.toInt())   // >= 8m
+                            color(0xFF2166AC.toInt()),
+                            literal(1.0), color(0xFF4393C3.toInt()),
+                            literal(2.0), color(0xFF92C5DE.toInt()),
+                            literal(3.0), color(0xFFF4A582.toInt()),
+                            literal(5.0), color(0xFFFFA500.toInt()),
+                            literal(8.0), color(0xFFB2182B.toInt())
                         )
                     )
                 )
-
             )
 
+            val textLayer = SymbolLayer("wave_text_layer", "wave_source").withProperties(
+                textField(concat(get("heightLabel"), literal(" m"))),
+                textSize(10f),
+                textColor(color(0xFF000000.toInt())),
+                textHaloColor(color(0xFFFFFFFF.toInt())),
+                textHaloWidth(1f),
+                textAnchor("top"),
+                textOffset(arrayOf(0f, 1.2f)),
+            ).withFilter(gte(zoom(), literal(8)))
+
             style.addLayer(circleLayer)
-            Log.d("GribWaveLayer", "Added CircleLayer 'wave_circle_layer' to style.")
+            style.addLayerAbove(textLayer, "wave_circle_layer")
+            Log.d("GribWaveLayer", "Added wave layers to style.")
         }
     }
+
 }
 
 // convert wave data to geojson
@@ -91,7 +95,10 @@ private fun List<WaveVector>.toFeatureCollection(): FeatureCollection {
     val features = mapNotNull { w ->
         try {
             val point = Point.fromLngLat(w.lon, w.lat)
-            val props = JsonObject().apply { addProperty("height", w.height.toFloat()) }
+            val props = JsonObject().apply {
+                addProperty("height", w.height.toFloat()) // behold som tall til farger
+                addProperty("heightLabel", String.format("%.1f", w.height)) // ny string-verdi til tekst
+            }
             Feature.fromGeometry(point, props)
         } catch (e: Exception) {
             Log.w("GribWaveLayer", "Skipping invalid point: $w", e)

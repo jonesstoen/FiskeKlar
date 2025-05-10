@@ -19,15 +19,14 @@ import no.uio.ifi.in2000.team46.domain.weather.HourlyForecast
  */
 class WeatherService {
     companion object {
-        private const val BASE_URL = "https://api.met.no/weatherapi/locationforecast/2.0"
+        private const val BASE_URL = "https://in2000.api.met.no/weatherapi/locationforecast/2.0"
         private const val USER_AGENT = "MetAlerts/1.0"
         private const val TIMEOUT = 5000 // 5 seconds
     }
-
     suspend fun getWeatherData(latitude: Double, longitude: Double): WeatherData {
         return withContext(Dispatchers.IO) {
             try {
-                val url = URL("https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=$latitude&lon=$longitude")
+                val url = URL("https://in2000.api.met.no/weatherapi/locationforecast/2.0/compact?lat=$latitude&lon=$longitude")
                 val connection = createConnection(url)
                 val response = connection.inputStream.bufferedReader().use { it.readText() }
                 val jsonObject = JSONObject(response)
@@ -64,7 +63,7 @@ class WeatherService {
     suspend fun getDetailedForecast(latitude: Double, longitude: Double): List<DailyForecast> {
         return withContext(Dispatchers.IO) {
             try {
-                val url = URL("https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=$latitude&lon=$longitude")
+                val url = URL("https://in2000.api.met.no/weatherapi/locationforecast/2.0/complete?lat=$latitude&lon=$longitude")
                 val connection = createConnection(url)
                 val response = connection.inputStream.bufferedReader().use { it.readText() }
                 val jsonObject = JSONObject(response)
