@@ -67,7 +67,8 @@ fun GribLayerMenu(
                 threshold = waveThreshold,
                 onToggle = onToggleWave,
                 onThresholdChange = { waveViewModel.setWaveThreshold(it) },
-                onBack = { goTo(GribMenuState.Main) }
+                onBack = { goTo(GribMenuState.Main) },
+                onShowSliders = { waveViewModel.setShowWaveSliders(true) }
             )
         }
 

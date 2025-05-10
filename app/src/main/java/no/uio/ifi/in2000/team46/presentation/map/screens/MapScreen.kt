@@ -79,6 +79,7 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.*
 import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentOverlaySliders
+import no.uio.ifi.in2000.team46.presentation.grib.components.WaveOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.grib.components.WindOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.map.components.layermenu.GribMenuState
 import no.uio.ifi.in2000.team46.presentation.onboarding.screens.MapOnboardingScreen
@@ -505,6 +506,10 @@ fun MapScreen(
                     onShowCurrentSliders = {
                         isLayerMenuExpanded = false
                         currentViewModel.setShowCurrentSliders(true)
+                    },
+                    onShowWaveSliders = {
+                        isLayerMenuExpanded = false
+                        waveViewModel.setShowWaveSliders(true)
                     }
 
                 )
@@ -531,6 +536,18 @@ fun MapScreen(
                     onClose = {
                         currentViewModel.setShowCurrentSliders(false)
                         gribViewModel.setGribMenuState(GribMenuState.Current)
+                        isLayerMenuExpanded = true
+                    }
+                )
+            }
+            val showWaveSliders by waveViewModel.showWaveSliders.collectAsState()
+
+            if (isWaveVisible && showWaveSliders) {
+                WaveOverlaySliders(
+                    waveViewModel = waveViewModel,
+                    onClose = {
+                        waveViewModel.setShowWaveSliders(false)
+                        gribViewModel.setGribMenuState(GribMenuState.Wave)
                         isLayerMenuExpanded = true
                     }
                 )

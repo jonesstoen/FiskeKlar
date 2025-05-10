@@ -35,6 +35,7 @@ fun LayerFilterButton(
     onExpandedChange: (Boolean) -> Unit,
     onShowWindSliders: () -> Unit,
     onShowCurrentSliders: () -> Unit,
+    onShowWaveSliders: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedCategory by remember { mutableStateOf(LayerCategory.NONE) }
@@ -58,6 +59,10 @@ fun LayerFilterButton(
     // close menu automatically when sliders are shown
     LaunchedEffect(showSliders) {
         if (showSliders) onExpandedChangeState.value(false)
+    }
+    val showWaveSliders by waveViewModel.showWaveSliders.collectAsState()
+    LaunchedEffect(showWaveSliders) {
+        if (showWaveSliders) onExpandedChangeState.value(false)
     }
 
     Box(modifier = modifier) {

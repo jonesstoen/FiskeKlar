@@ -82,7 +82,6 @@ class GribParser {
     fun parseWaveFile(file: File): List<WaveVector> {
         val ncfile = NetcdfFiles.open(file.absolutePath)
 
-        // bruk de faktiske navnene fra Logcat
         val swhName = "Significant_height_of_combined_wind_waves_and_swell_height_above_ground"
         val dirName = "VAR88-0-140-230_height_above_ground"
 
@@ -92,38 +91,52 @@ class GribParser {
             ?: error("Fant ikke $dirName i GRIB-filen")
         val latVar = ncfile.findVariable("lat") ?: error("Fant ikke lat")
         val lonVar = ncfile.findVariable("lon") ?: error("Fant ikke lon")
+        val timeVar = ncfile.findVariable("time") ?: error("Fant ikke time")
 
         val swhData = swhVar.read() as ArrayFloat.D4
         val mwdData = mwdVar.read() as ArrayFloat.D4
-        val lats    = latVar.read().reduce().storage as FloatArray
-        val lons    = lonVar.read().reduce().storage as FloatArray
+        val lats = latVar.read().reduce().storage as FloatArray
+        val lons = lonVar.read().reduce().storage as FloatArray
+
+        val timeUnits = timeVar.unitsString
+        val calendarDateUnit = CalendarDateUnit.of(Calendar.gregorian.toString(), timeUnits)
+        val timeArray = timeVar.read().reduce().storage
+
+        val timeSteps = when (timeArray) {
+            is FloatArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it.toDouble()).millis }
+            is DoubleArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it).millis }
+            else -> throw IllegalArgumentException("Ukjent time-array-type: ${timeArray::class.java}")
+        }
 
         val idx = swhData.index as Index4D
-        val timeIndex  = 0
         val levelIndex = 0
 
         val waves = mutableListOf<WaveVector>()
-        for (iLat in lats.indices) {
-            for (iLon in lons.indices) {
-                idx.set(timeIndex, levelIndex, iLat, iLon)
-                val height = swhData.getFloat(idx).toDouble()
-                val fromDir = mwdData.getFloat(idx).toDouble()
-                // meteorologisk konvensjon: retningen bølgene kommer fra
-                val toDir = (fromDir + 180) % 360
+        for ((timeIndex, timestamp) in timeSteps.withIndex()) {
+            for (iLat in lats.indices) {
+                for (iLon in lons.indices) {
+                    idx.set(timeIndex, levelIndex, iLat, iLon)
+                    val height = swhData.getFloat(idx).toDouble()
+                    val fromDir = mwdData.getFloat(idx).toDouble()
+                    val toDir = (fromDir + 180) % 360
 
-                if (height.isFinite() && toDir.isFinite()) {
-                    waves += WaveVector(
-                        lon       = lons[iLon].toDouble(),
-                        lat       = lats[iLat].toDouble(),
-                        height    = height,
-                        direction = toDir
-                    )
+                    if (height.isFinite() && toDir.isFinite()) {
+                        waves += WaveVector(
+                            lon = lons[iLon].toDouble(),
+                            lat = lats[iLat].toDouble(),
+                            height = height,
+                            direction = toDir,
+                            timestamp = timestamp
+                        )
+                    }
                 }
             }
         }
+
         ncfile.close()
         return waves
     }
+
 
 
 

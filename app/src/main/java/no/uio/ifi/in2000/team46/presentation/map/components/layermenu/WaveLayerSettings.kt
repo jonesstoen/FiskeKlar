@@ -14,7 +14,8 @@ fun WaveLayerSettings(
     threshold: Double,
     onToggle: (Boolean) -> Unit,
     onThresholdChange: (Double) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onShowSliders: () -> Unit
 ) {
     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
         TextButton(onClick = onBack) {
@@ -25,12 +26,12 @@ fun WaveLayerSettings(
 
         LayerToggleRow("Vis bølger", isChecked, onToggle)
 
-        Text("Terskel for varsling: ${threshold.toInt()} m")
-        Slider(
-            value = threshold.toFloat(),
-            onValueChange = { onThresholdChange(it.toDouble()) },
-            valueRange = 0f..10f,
-            steps = 9
-        )
+        Button(
+            onClick = onShowSliders,
+            enabled = isChecked,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Åpne bølgekontroller")
+        }
     }
 }

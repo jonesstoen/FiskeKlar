@@ -54,6 +54,7 @@ fun MapControls(
     onSearchResultSelected: (Feature) -> Unit,
     onShowWindSliders: () -> Unit,
     onShowCurrentSliders: () -> Unit,
+    onShowWaveSliders: () -> Unit,
     onUserLocationSelected: (Location) -> Unit
 ) {
     val context = LocalContext.current
@@ -145,6 +146,10 @@ fun MapControls(
                         // hide menu before opening wind sliders
                         onLayerMenuExpandedChange(false)
                         onShowWindSliders()
+                    },
+                    onShowWaveSliders = {
+                        onLayerMenuExpandedChange(false)
+                        onShowWaveSliders()
                     },
                     onShowCurrentSliders = onShowCurrentSliders,
                 )

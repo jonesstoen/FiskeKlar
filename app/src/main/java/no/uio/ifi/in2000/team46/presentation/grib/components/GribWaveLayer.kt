@@ -24,25 +24,24 @@ fun GribWaveLayer(
     mapView: MapView
 ) {
     val isVisible by waveViewModel.isLayerVisible.collectAsState()
-    val waveResult by waveViewModel.waveData.collectAsState()
     val threshold by waveViewModel.waveThreshold.collectAsState()
+    val filteredWaves by waveViewModel.filteredWaveVectors.collectAsState()
 
-    LaunchedEffect(isVisible, waveResult, threshold) {
+    LaunchedEffect(isVisible, filteredWaves, threshold) {
         map.getStyle { style ->
-            // Rydd opp alltid først!
+            // Remove existing layers and sources if they exist
             style.getLayer("wave_text_layer")?.let { style.removeLayer(it) }
             style.getLayer("wave_circle_layer")?.let { style.removeLayer(it) }
             style.getSource("wave_source")?.let { style.removeSource(it) }
 
-            if (!isVisible || waveResult !is Result.Success) {
+            if (!isVisible || filteredWaves.isEmpty()) {
                 Log.d("GribWaveLayer", "Layer hidden or no data, cleaned up.")
                 return@getStyle
             }
 
-            val waves = (waveResult as Result.Success<List<WaveVector>>).data
-            val featureCollection = waves.toFeatureCollection()
-
+            val featureCollection = filteredWaves.toFeatureCollection()
             style.addSource(GeoJsonSource("wave_source", featureCollection))
+
 
             val circleLayer = CircleLayer("wave_circle_layer", "wave_source").withProperties(
                 circleRadius(
