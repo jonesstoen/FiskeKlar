@@ -50,8 +50,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddFishingEntryScreen(
@@ -97,6 +98,7 @@ fun AddFishingEntryScreen(
     var showAreaDropdown by remember { mutableStateOf(false) }
     var selectedFavorite by remember { mutableStateOf<FavoriteLocation?>(null) }
     var gotCatch by remember { mutableStateOf(true) }
+    var tmpUri by remember { mutableStateOf<android.net.Uri?>(null) }
 
     // Hent brukerposisjon
     LaunchedEffect(Unit) {
@@ -117,7 +119,17 @@ fun AddFishingEntryScreen(
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (!success) imageUri = null
+        if (success) {
+            imageUri = tmpUri
+        } else {
+            tmpUri = null
+            imageUri = null
+        }
+    }
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        imageUri = uri
     }
 
     // Gjenopprett tilstanden når vi kommer tilbake
@@ -285,7 +297,7 @@ fun AddFishingEntryScreen(
                                         }
                                     )
                                 }
-                                Divider()
+                                HorizontalDivider()
                                 DropdownMenuItem(
                                     text = { Text("Nytt sted") },
                                     onClick = {
@@ -368,7 +380,7 @@ fun AddFishingEntryScreen(
                         Text("Nei")
                         Switch(
                             checked = gotCatch,
-                            onCheckedChange = { 
+                            onCheckedChange = {
                                 gotCatch = it
                                 if (!it) {
                                     fishType = ""
@@ -428,7 +440,11 @@ fun AddFishingEntryScreen(
                         FishTypeDropdown(
                             fishTypes = fishTypes.map { it.name },
                             selected = fishType,
-                            onSelect = { if (gotCatch) fishType = it }
+                            onSelect = { if (gotCatch) fishType = it },
+                            onAddNew = { newType ->
+                                viewModel.addFishType(newType)
+                                fishType = newType
+                            }
                         )
                     }
                 }
@@ -524,33 +540,71 @@ fun AddFishingEntryScreen(
                     )
                 }
 
-                Button(
-                    onClick = {
-                        val tmpFile = File.createTempFile("fangst_", ".jpg", context.cacheDir).apply {
-                            createNewFile(); deleteOnExit()
-                        }
-                        val tmpUri = FileProvider.getUriForFile(
-                            context,
-                            "${context.packageName}.provider",
-                            tmpFile
-                        )
-                        imageUri = tmpUri
-                        takePictureLauncher.launch(tmpUri)
-                    },
-                    modifier = Modifier.fillMaxWidth()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Legg til bilde")
-                }
+                    Button(
+                        onClick = {
+                            val tmpFile = File.createTempFile("fangst_", ".jpg", context.cacheDir).apply {
+                                createNewFile()
+                                deleteOnExit()
+                            }
+                            val uri = FileProvider.getUriForFile(
+                                context,
+                                "${context.packageName}.provider",
+                                tmpFile
+                            )
+                            tmpUri = uri
+                            takePictureLauncher.launch(uri)
 
-                imageUri?.let {
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Ta bilde")
+                    }
+
+                    Button(
+                        onClick = {
+                            pickImageLauncher.launch("image/*")
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Velg fra galleri")
+                    }
+                }
+                if (imageUri != null) {
+                    Text("Valgt bilde:", style = MaterialTheme.typography.titleMedium)
                     AsyncImage(
-                        model = it,
-                        contentDescription = "Forhåndsvisning av fangstbilde",
+                        model = imageUri,
+                        contentDescription = "Valgt bilde",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(200.dp)
+                            .height(180.dp)
+                            .clip(RoundedCornerShape(8.dp))
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = {
+                            // try to delete temp camera image if its from our app cache
+                            imageUri?.let { uri ->
+                                if (uri.toString().contains("fangst_")) {
+                                    val file = File(uri.path ?: "")
+                                    if (file.exists()) file.delete()
+                                }
+                            }
+                            imageUri = null
+                            tmpUri = null
+                        },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text("Fjern bilde")
+                    }
+                } else {
+                    Text("Ingen bilde valgt", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
                 }
+
+
 
                 Spacer(modifier = Modifier.weight(1f))
             }

@@ -12,4 +12,8 @@ class FishTypeRepository(
     val allTypes: Flow<List<FishType>> =
         dao.getAll()                     // Flow<List<FishType>>
             .map { list -> list.sortedBy { it.name } }
+
+    suspend fun insert(fishType: FishType) {
+        dao.insertAll(listOf(fishType))
+    }
 }

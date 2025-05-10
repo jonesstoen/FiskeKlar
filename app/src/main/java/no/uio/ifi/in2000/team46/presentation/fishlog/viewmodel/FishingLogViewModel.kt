@@ -66,6 +66,11 @@ class FishingLogViewModel(
             fishLogRepo.delete(entry)
         }
     }
+    fun addFishType(name: String) {
+        viewModelScope.launch {
+            fishTypeRepo.insert(FishType(name = name))
+        }
+    }
 
     fun deleteAllLogs() {
         viewModelScope.launch {
