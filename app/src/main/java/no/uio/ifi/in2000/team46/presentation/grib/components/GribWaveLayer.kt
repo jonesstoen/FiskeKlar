@@ -57,16 +57,19 @@ fun GribWaveLayer(
                 circleOpacity(literal(0.8f)),
                 circleColor(
                     switchCase(
+                        // Rødt for alle punkter over terskel
                         gt(get("height"), literal(threshold)),
                         color(0xFFB2182B.toInt()),
+
+                        // Ellers gradvis fra lyseblå til lilla
                         step(
                             get("height"),
-                            color(0xFF2166AC.toInt()),
-                            literal(1.0), color(0xFF4393C3.toInt()),
-                            literal(2.0), color(0xFF92C5DE.toInt()),
-                            literal(3.0), color(0xFFF4A582.toInt()),
-                            literal(5.0), color(0xFFFFA500.toInt()),
-                            literal(8.0), color(0xFFB2182B.toInt())
+                            color(0xFFADD8E6.toInt()),  // 0–1 m: LightBlue
+                            literal(1.0), color(0xFF6495ED.toInt()), // 1–2 m: CornflowerBlue
+                            literal(2.0), color(0xFF4169E1.toInt()), // 2–3 m: RoyalBlue
+                            literal(3.0), color(0xFF27408B.toInt()), // 3–5 m: DarkSlateBlue
+                            literal(5.0), color(0xFF00008B.toInt()), // 5–8 m: DarkBlue
+                            literal(8.0), color(0xFF800080.toInt())  // ≥ 8 m: Purple
                         )
                     )
                 )
