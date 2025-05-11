@@ -41,6 +41,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -246,14 +247,18 @@ fun SosScreen(
                             if (label == "Redningsselskapet") {
                                 Image(icon as Painter, contentDescription = null, modifier = Modifier.size(36.dp))
                             } else {
-                                Icon(icon as ImageVector, contentDescription = null, tint = Color(0xFF1B4965), modifier = Modifier.size(32.dp))
+                                Icon(icon as ImageVector, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(32.dp))
                             }
                             Spacer(modifier = Modifier.width(16.dp))
                             Text(label, modifier = Modifier.weight(1f), fontSize = 18.sp, fontWeight = FontWeight.Medium)
                             Text(number, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                         }
                         if (idx < emergencyNumbers.lastIndex) {
-                            Divider()
+                            HorizontalDivider(
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                thickness = 1.dp
+                            )
                         }
                     }
                 }
@@ -286,7 +291,7 @@ fun SosScreen(
                         Icon(
                             Icons.Default.Place,
                             contentDescription = null,
-                            tint = Color(0xFF1B4965),
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.size(24.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))

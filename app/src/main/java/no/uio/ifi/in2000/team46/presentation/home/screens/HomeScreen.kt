@@ -335,12 +335,11 @@ fun FishTipDialog(
             ) {
                 Text(
                     text = "Lukk",
-                    color = Navy,
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.titleMedium
                 )
             }
         },
-        containerColor = Color(0xFFF5F5F5),
         shape = RoundedCornerShape(24.dp),
         title = {
             Column(
@@ -350,7 +349,7 @@ fun FishTipDialog(
             ) {
                 Text(
                     text = "Dagens fisketips \uD83C\uDFA3 ",
-                    color = Navy,
+                    color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.headlineSmall.copy(
                         fontWeight = FontWeight.Bold
                     )
@@ -360,7 +359,7 @@ fun FishTipDialog(
         text = {
             Text(
                 text = tip,
-                color = Navy,
+                color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier
                     .fillMaxWidth()
