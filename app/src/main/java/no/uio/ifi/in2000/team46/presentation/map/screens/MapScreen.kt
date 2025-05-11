@@ -79,6 +79,7 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.*
 import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentOverlaySliders
+import no.uio.ifi.in2000.team46.presentation.grib.components.PrecipitationLegend
 import no.uio.ifi.in2000.team46.presentation.grib.components.PrecipitationOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.grib.components.WaveOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.grib.components.WindOverlaySliders
@@ -476,6 +477,18 @@ fun MapScreen(
             ) {
                 WindLegend(modifier = Modifier.align(Alignment.CenterEnd))
             }
+
+            // 4) Precipitation‐legend
+            val isPrecipVisible by precipitationViewModel.isLayerVisible.collectAsState()
+            LegendToggle(
+                isLayerVisible = isPrecipVisible,
+                verticalPosition = 3  // velg neste ledige posisjon
+            ) {
+                PrecipitationLegend(
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                )
+            }
+
 
             // 3) Kontroller
             mapLibreMap?.let { map ->
