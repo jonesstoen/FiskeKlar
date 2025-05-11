@@ -1,10 +1,7 @@
 package no.uio.ifi.in2000.team46.presentation.fishlog.screens
 
-import android.os.Build
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -79,7 +76,6 @@ fun AddFishingEntryScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
 
     var location by remember { mutableStateOf("") }
-    var area by remember { mutableStateOf("") }
     var fishType by remember { mutableStateOf("") }
     var weightText by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
@@ -110,7 +106,7 @@ fun AddFishingEntryScreen(
     // Håndter når brukeren returnerer med et nytt område
     LaunchedEffect(Unit) {
         navController.currentBackStackEntry?.savedStateHandle?.get<String>("newFavorite")?.let { newFavorite ->
-            area = newFavorite
+            location = newFavorite
             selectedFavorite = favorites.find { it.name == newFavorite }
             navController.currentBackStackEntry?.savedStateHandle?.remove<String>("newFavorite")
         }
@@ -160,10 +156,7 @@ fun AddFishingEntryScreen(
                 actions = {
                     Button(
                         onClick = {
-                            Log.d("FishingLog", "Button clicked!")
                             val weightValue = weightText.toDoubleOrNull() ?: 0.0
-                            Log.d("FishingLog", "Saving with gotCatch=$gotCatch")
-                            Log.d("FishingLog", "location=$location, area=$area")
                             onSave(
                                 date,
                                 time,
@@ -178,9 +171,7 @@ fun AddFishingEntryScreen(
                             )
                         },
                         enabled = {
-                            val isEnabled = location.isNotEmpty() && area.isNotEmpty() && (!gotCatch || (gotCatch && fishType.isNotEmpty() && weightText.isNotEmpty()))
-                            Log.d("FishingLog", "Button enabled check: location=${location.isNotEmpty()}, area=${area.isNotEmpty()}, gotCatch=$gotCatch, fishType=${fishType.isNotEmpty()}, weightText=${weightText.isNotEmpty()}")
-                            Log.d("FishingLog", "Button enabled: $isEnabled")
+                            val isEnabled = location.isNotEmpty() && (!gotCatch || (gotCatch && fishType.isNotEmpty() && weightText.isNotEmpty()))
                             isEnabled
                         }(),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -323,50 +314,6 @@ fun AddFishingEntryScreen(
                             }
                         }
                     }
-                }
-
-                Column {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text("Område", style = MaterialTheme.typography.titleMedium)
-                        IconButton(onClick = { showAreaInfo = !showAreaInfo }) {
-                            Icon(Icons.Default.Info, contentDescription = "Info om område")
-                        }
-                    }
-                    if (showAreaInfo) {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 4.dp),
-                            color = Color(0xFFE3F2FD),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(8.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    "Skriv inn område hvor fisken ble fanget (f.eks. navn på vann, elv, kystområde).",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(onClick = { showAreaInfo = false }) {
-                                    Icon(Icons.Default.Close, contentDescription = "Lukk info")
-                                }
-                            }
-                        }
-                    }
-                    OutlinedTextField(
-                        value = area,
-                        onValueChange = { area = it },
-                        label = { Text("Område") },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Next),
-                        keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
-                    )
                 }
 
 

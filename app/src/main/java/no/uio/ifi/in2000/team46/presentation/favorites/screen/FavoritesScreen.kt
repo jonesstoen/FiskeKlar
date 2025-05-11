@@ -475,14 +475,6 @@ fun MiniMap(
                 val style = if (isDarkMode) "streets-v2-dark" else "basic"
                 val styleUrl = "https://api.maptiler.com/maps/$style/style.json?key=$apiKey"
                 map.setStyle(styleUrl) {
-                    // Legg til brukerens posisjon
-                    userLocation?.let {
-                        val userLatLng = LatLng(it.latitude, it.longitude)
-                        val markerOptions = org.maplibre.android.annotations.MarkerOptions()
-                            .position(userLatLng)
-                            .title("Din posisjon")
-                        map.addMarker(markerOptions)
-                    }
 
                     // Legg til favorittsteder
                     favorites.forEach { favoriteWithStats ->

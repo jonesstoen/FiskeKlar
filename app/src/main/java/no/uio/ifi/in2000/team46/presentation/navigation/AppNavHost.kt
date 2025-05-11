@@ -313,7 +313,8 @@ fun AppNavHost(
                             set("savedLocationType", locationType)
                         }
                         navController.navigate("addFavorite?name=$name")
-                    }
+                    },
+                    profileViewModel = profileViewModel
                 )
             }
 
@@ -362,7 +363,8 @@ fun AppNavHost(
                 val type = backStackEntry.arguments?.getString("type") ?: "POINT"
                 MapPickerScreen(
                     navController = navController,
-                    selectionMode = type
+                    selectionMode = type,
+                    profileViewModel = profileViewModel
                 )
             }
 

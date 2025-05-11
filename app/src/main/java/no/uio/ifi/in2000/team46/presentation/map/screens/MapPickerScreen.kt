@@ -3,6 +3,7 @@ package no.uio.ifi.in2000.team46.presentation.map.screens
 import android.location.Location
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,6 +18,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
@@ -36,13 +38,15 @@ import org.maplibre.android.annotations.PolygonOptions
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.Style
+import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapPickerScreen(
     navController: NavController,
     selectionMode: String,
-    navigateToAddFavorite: ((Pair<Double, Double>?, List<Pair<Double, Double>>?, String) -> Unit)? = null
+    navigateToAddFavorite: ((Pair<Double, Double>?, List<Pair<Double, Double>>?, String) -> Unit)? = null,
+    profileViewModel: ProfileViewModel
 ) {
 
     // ----------- State og kartoppsett -----------
@@ -52,6 +56,19 @@ fun MapPickerScreen(
     val pickedPoints = remember { mutableStateListOf<LatLng>() }
     var mapLibre by remember { mutableStateOf<MapLibreMap?>(null) }
     var userLocation by remember { mutableStateOf<Location?>(null) }
+    
+    // Get the theme from ProfileViewModel and determine if dark mode should be used
+    val appTheme by profileViewModel.theme.collectAsState()
+    val isDarkMode = when (appTheme) {
+        "dark" -> true
+        "light" -> false
+        else -> isSystemInDarkTheme()
+    }
+    
+    // Use the same map style as in MapViewModel
+    val apiKey = "kPH7fJZHXa4Pj6d1oIuw"
+    val style = if (isDarkMode) "streets-v2-dark" else "basic"
+    val styleUrl = "https://api.maptiler.com/maps/$style/style.json?key=$apiKey"
 
     // Hent brukerens posisjon
     LaunchedEffect(Unit) {
@@ -114,7 +131,7 @@ fun MapPickerScreen(
                 view.getMapAsync { map ->
                     mapLibre = map
                     map.setStyle(
-                        Style.Builder().fromUri("https://api.maptiler.com/maps/basic-v2/style.json?key=kPH7fJZHXa4Pj6d1oIuw")
+                        Style.Builder().fromUri(styleUrl)
                     ) {
                         map.addOnMapClickListener { latLng ->
                             when (selectionMode) {
