@@ -24,12 +24,13 @@ fun WaveLegend(
         Text("Bølgehøyde (m)", style = MaterialTheme.typography.titleSmall)
         Spacer(Modifier.height(4.dp))
 
-        LegendItem(color = Color(33, 102, 172), label = "0 m")    // dyp blå
-        LegendItem(color = Color(103, 169, 207), label = "1 m")
-        LegendItem(color = Color(209, 229, 240), label = "2 m")
-        LegendItem(color = Color(253, 219, 199), label = "3 m")
-        LegendItem(color = Color(239, 138,  98), label = "5 m")
-        LegendItem(color = Color(178,  24,  43), label = "≥ 8 m")
+        LegendItem(color = Color(0xFFADD8E6), label = "0–1 m")       // LightBlue
+        LegendItem(color = Color(0xFF6495ED), label = "1–2 m")       // CornflowerBlue
+        LegendItem(color = Color(0xFF4169E1), label = "2–3 m")       // RoyalBlue
+        LegendItem(color = Color(0xFF27408B), label = "3–5 m")       // DarkSlateBlue
+        LegendItem(color = Color(0xFF00008B), label = "5–8 m")       // DarkBlue
+        LegendItem(color = Color(0xFF800080), label = "≥ 8 m")        // Purple
+        LegendItem(color = Color(0xFFB2182B), label = "Over terskel")
     }
 }
 
