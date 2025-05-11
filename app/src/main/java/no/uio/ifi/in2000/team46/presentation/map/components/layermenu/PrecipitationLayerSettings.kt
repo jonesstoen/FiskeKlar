@@ -1,18 +1,12 @@
 package no.uio.ifi.in2000.team46.presentation.map.components.layermenu
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-
 
 @Composable
 fun PrecipitationLayerSettings(
@@ -20,9 +14,10 @@ fun PrecipitationLayerSettings(
     threshold: Double,
     onToggle: (Boolean) -> Unit,
     onThresholdChange: (Double) -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onShowSliders: () -> Unit
 ) {
-    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         TextButton(onClick = onBack) {
             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
             Spacer(Modifier.width(4.dp))
@@ -31,12 +26,13 @@ fun PrecipitationLayerSettings(
 
         LayerToggleRow("Vis regn", isChecked, onToggle)
 
-        Text("Terskel for varsling: ${"%.1f".format(threshold)} mm")
-        Slider(
-            value = threshold.toFloat(),
-            onValueChange = { onThresholdChange(it.toDouble()) },
-            valueRange = 0f..20f,
-            steps = 19
-        )
+
+        Button(
+            onClick = onShowSliders,
+            enabled = isChecked,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Åpne regnkontroller")
+        }
     }
 }

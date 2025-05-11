@@ -79,7 +79,7 @@ class GribRepository(
                 parser.listVariablesInGrib(localGribFile)
                 val list = parser.parsePrecipitationFile(
                     localGribFile,
-                    timeIndex = 1,
+
 
                     )
 

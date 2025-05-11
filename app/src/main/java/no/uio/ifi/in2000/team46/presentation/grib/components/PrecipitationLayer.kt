@@ -17,36 +17,41 @@ import org.maplibre.android.style.expressions.Expression.literal
 import org.maplibre.android.style.expressions.Expression.zoom
 import org.maplibre.android.style.layers.CircleLayer
 
+import org.maplibre.android.style.expressions.Expression.*
+import org.maplibre.android.style.layers.SymbolLayer
+
+
 @Composable
 fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
-    val isVisible     by vm.isLayerVisible.collectAsState()
-    val result        by vm.data.collectAsState()
-    val threshold     by vm.precipThreshold.collectAsState()
-    val srcId         = "precip_source"
+    val isVisible by vm.isLayerVisible.collectAsState()
+    val threshold by vm.precipThreshold.collectAsState()
+    val filteredPoints by vm.filteredPrecipPoints.collectAsState()
+
+    val srcId = "precip_source"
     val circleLayerId = "precip_circle_layer"
+    val textLayerId = "precip_text_layer"
 
-    LaunchedEffect(isVisible, result, threshold) {
+    LaunchedEffect(isVisible, filteredPoints, threshold) {
         map.getStyle { style ->
-            if (!isVisible || result !is Result.Success) {
-                style.removeLayer(circleLayerId)
-                style.removeSource(srcId)
-                return@getStyle
-            }
+            // Fjern eksisterende lag og kilde hvis de finnes
+            style.removeLayer(circleLayerId)
+            style.removeLayer(textLayerId)
+            style.removeSource(srcId)
 
-            val points = (result as Result.Success<List<PrecipitationPoint>>).data
-            if (points.isEmpty()) return@getStyle
+            if (!isVisible || filteredPoints.isEmpty()) return@getStyle
 
-            val features = points.map { p ->
-                Feature.fromGeometry(Point.fromLngLat(p.lon, p.lat))
-                    .apply { addNumberProperty("precip", p.precipitation) }
+            // Lag GeoJSON features med tekstlabel
+            val features = filteredPoints.map { p ->
+                Feature.fromGeometry(Point.fromLngLat(p.lon, p.lat)).apply {
+                    addNumberProperty("precip", p.precipitation)
+                    addStringProperty("precipLabel", String.format("%.2f", p.precipitation))
+                }
             }
             val fc = FeatureCollection.fromFeatures(features)
-
-            style.removeLayer(circleLayerId)
-            style.removeSource(srcId)
             style.addSource(GeoJsonSource(srcId, fc))
 
-            val layer = CircleLayer(circleLayerId, srcId).withProperties(
+            // Sirkel for nedbørsmengde
+            val circleLayer = CircleLayer(circleLayerId, srcId).withProperties(
                 circleRadius(
                     interpolate(
                         linear(), zoom(),
@@ -59,15 +64,30 @@ fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
                 ),
                 circleOpacity(literal(0.8f)),
                 circleColor(
-                    Expression.switchCase(
-                        Expression.gt(Expression.get("precip"), literal(threshold)),
-                        Expression.color(0xFFB2182B.toInt()), // Rødt hvis over terskel
-                        Expression.color(0xFF64B5F6.toInt())  // Standard blå
+                    switchCase(
+                        gt(get("precip"), literal(threshold)),
+                        color(0xFFB2182B.toInt()), // rød hvis over terskel
+                        color(0xFF64B5F6.toInt())  // blå ellers
                     )
                 )
             )
-            style.addLayer(layer)
+            style.addLayer(circleLayer)
+
+            // Tekstlag som viser nedbørsmengde i mm
+            val textLayer = SymbolLayer(textLayerId, srcId).withProperties(
+                textField(concat(get("precipLabel"), literal(" mm"))),
+                textSize(10f),
+                textColor(color(0xFF000000.toInt())),
+                textHaloColor(color(0xFFFFFFFF.toInt())),
+                textHaloWidth(1f),
+                textAnchor("top"),
+                textOffset(arrayOf(0f, 1.2f))
+            ).withFilter(gte(zoom(), literal(8)))
+
+            style.addLayerAbove(textLayer, circleLayerId)
         }
     }
 }
+
+
 

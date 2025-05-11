@@ -152,6 +152,10 @@ fun MapControls(
                         onShowWaveSliders()
                     },
                     onShowCurrentSliders = onShowCurrentSliders,
+                    onShowPrecipSliders = {
+                        onLayerMenuExpandedChange(false)
+                        precipitationViewModel.setShowPrecipSliders(true)
+                    }
                 )
             }
         }

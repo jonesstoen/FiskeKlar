@@ -44,7 +44,9 @@ fun GribLayerMenu(
     currentViewModel: CurrentViewModel,
     precipitationViewModel: PrecipitationViewModel,
     onShowWindSliders: () -> Unit,
-    onShowCurrentSliders: () -> Unit
+    onShowCurrentSliders: () -> Unit,
+    onShowPrecipSliders: () -> Unit,
+    onLayerMenuExpandedChange: (Boolean) -> Unit
 ) {
     // uses ViewModel to mutate menu navigation state
     fun goTo(state: GribMenuState) = gribViewModel.setGribMenuState(state)
@@ -94,7 +96,11 @@ fun GribLayerMenu(
                     else precipitationViewModel.deactivateLayer()
                 },
                 onThresholdChange = { precipitationViewModel.setPrecipThreshold(it) },
-                onBack = { goTo(GribMenuState.Main) }
+                onBack = { goTo(GribMenuState.Main) },
+                onShowSliders = {
+                    onLayerMenuExpandedChange(false)
+                    precipitationViewModel.setShowPrecipSliders(true)
+                }
             )
         }
 

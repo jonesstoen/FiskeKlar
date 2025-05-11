@@ -79,6 +79,7 @@ import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.*
 import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentOverlaySliders
+import no.uio.ifi.in2000.team46.presentation.grib.components.PrecipitationOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.grib.components.WaveOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.grib.components.WindOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.map.components.layermenu.GribMenuState
@@ -455,6 +456,7 @@ fun MapScreen(
 
             val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
             val isCurrentLayerVisible by currentViewModel.isLayerVisible.collectAsState()
+            val isPrecipitationVisible by precipitationViewModel.isLayerVisible.collectAsState()
 
             LegendToggle(
                 isLayerVisible = isWindLayerVisible,
@@ -552,6 +554,20 @@ fun MapScreen(
                     }
                 )
             }
+            val showPrecipSliders by precipitationViewModel.showPrecipSliders.collectAsState()
+
+            if (isPrecipitationVisible && showPrecipSliders) {
+                PrecipitationOverlaySliders(
+                    viewModel = precipitationViewModel,
+                    onClose = {
+                        precipitationViewModel.setShowPrecipSliders(false)
+                        gribViewModel.setGribMenuState(GribMenuState.Precipitation)
+                        isLayerMenuExpanded = true
+                    }
+                )
+            }
+
+
 
 
 
