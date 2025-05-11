@@ -71,12 +71,15 @@ import no.uio.ifi.in2000.team46.presentation.map.utils.rememberMapViewWithLifecy
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
     viewModel : FavoritesViewModel,
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit,
+    profileViewModel: ProfileViewModel
 ) {
     // ----------- State og data -----------
     var searchQuery by rememberSaveable { mutableStateOf("") }
@@ -184,7 +187,8 @@ fun FavoritesScreen(
             MiniMap(
                 onMapClick = { onNavigate("map") },
                 userLocation = userLocation,
-                favorites = filteredFavorites
+                favorites = filteredFavorites,
+                profileViewModel = profileViewModel
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -421,13 +425,21 @@ fun FavoriteCard(
 fun MiniMap(
     onMapClick: () -> Unit,
     userLocation: android.location.Location?,
-    favorites: List<FavoriteWithStats>
+    favorites: List<FavoriteWithStats>,
+    profileViewModel: ProfileViewModel
 ) {
     val mapView = rememberMapViewWithLifecycle()
     val context = LocalContext.current
     val locationRepository = remember { LocationRepository(context) }
     val scope = rememberCoroutineScope()
-    val isDarkMode = isSystemInDarkTheme()
+    
+    // Get the theme from ProfileViewModel and determine if dark mode should be used
+    val appTheme by profileViewModel.theme.collectAsState()
+    val isDarkMode = when (appTheme) {
+        "dark" -> true
+        "light" -> false
+        else -> isSystemInDarkTheme()
+    }
 
     // State for user location
     var userLocation by remember { mutableStateOf<android.location.Location?>(null) }
@@ -459,11 +471,9 @@ fun MiniMap(
             modifier = Modifier.fillMaxSize()
         ) { view ->
             view.getMapAsync { map ->
-                val styleUrl = if (isDarkMode) {
-                    "https://api.maptiler.com/maps/basic-v2-dark/style.json?key=kPH7fJZHXa4Pj6d1oIuw"
-                } else {
-                    "https://api.maptiler.com/maps/basic-v2/style.json?key=kPH7fJZHXa4Pj6d1oIuw"
-                }
+                val apiKey = "kPH7fJZHXa4Pj6d1oIuw"
+                val style = if (isDarkMode) "streets-v2-dark" else "basic"
+                val styleUrl = "https://api.maptiler.com/maps/$style/style.json?key=$apiKey"
                 map.setStyle(styleUrl) {
                     // Legg til brukerens posisjon
                     userLocation?.let {

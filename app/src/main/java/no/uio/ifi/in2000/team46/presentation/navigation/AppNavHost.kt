@@ -164,7 +164,8 @@ fun AppNavHost(
                     metAlertsViewModel = metAlertsViewModel,
                     forbudViewModel = forbudViewModel,
                     searchViewModel = searchViewModel,
-                    navController = navController
+                    navController = navController,
+                    profileViewModel = profileViewModel
                 )
             }
 
@@ -186,7 +187,8 @@ fun AppNavHost(
                     forbudViewModel = forbudViewModel,
                     searchViewModel = searchViewModel,
                     navController = navController,
-                    initialLocation = if (lat != null && lng != null) Pair(lat, lng) else null
+                    initialLocation = if (lat != null && lng != null) Pair(lat, lng) else null,
+                    profileViewModel = profileViewModel
                 )
             }
 
@@ -286,7 +288,8 @@ fun AppNavHost(
             composable("favorites") {
                 FavoritesScreen(
                     viewModel = favoritesViewModel,
-                    onNavigate = { route -> navController.navigate(route) }
+                    onNavigate = { route -> navController.navigate(route) },
+                    profileViewModel = profileViewModel
                 )
             }
 
@@ -382,8 +385,9 @@ fun AppNavHost(
                     metAlertsViewModel = metAlertsViewModel,
                     forbudViewModel = forbudViewModel,
                     searchViewModel = searchViewModel,
-                   navController= navController,
-                    areaPoints = areaPoints
+                    navController = navController,
+                    areaPoints = areaPoints,
+                    profileViewModel = profileViewModel
                 )
             }
 
@@ -528,7 +532,8 @@ fun AppNavHost(
                     navController = navController,
                     highlightVessel = if (userLat != null && userLon != null && vesselLat != null && vesselLon != null && shipType != null)
                         HighlightVesselData(userLat, userLon, vesselLat, vesselLon, vesselName, shipType)
-                    else null
+                    else null,
+                    profileViewModel = profileViewModel
                 )
             }
         }
