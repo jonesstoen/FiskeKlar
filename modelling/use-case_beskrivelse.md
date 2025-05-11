@@ -92,7 +92,7 @@
 
     - Bilde
 
-3. Brukeren kan gå tilbake til listen via en tilbakeknapp.
+3. Brukeren kan gå tilbake til listen ved å bruke tilbakeknapp.
 
 ## Use-case 4 – Lagre mine favorittområder for å fiske:
 - Navn: Se favorittområder, legge til favorittområde, slette favorittområde og se detaljer
