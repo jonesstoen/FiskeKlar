@@ -67,7 +67,7 @@ fun HomeScreen(
             in 15..17 -> "God ettermiddag"
             else -> "God kveld"
         }
-        if (name.isNotBlank()) "$timeGreeting, $name" else "$timeGreeting!"
+        if (name.isNotBlank()) "$timeGreeting, $name" else timeGreeting
     }
 
     val fishingTips = listOf(
@@ -82,30 +82,28 @@ fun HomeScreen(
         "Bytt sluk ofte hvis du ikke får napp.",
         "Fisk dypere midt på dagen.",
         "Morgen og kveld gir oftest best fangst.",
-        "Fisk saktere ved kaldt vær.",
         "Bruk levende agn på varme sommerdager.",
-        "Let etter fugleaktivitet – ofte fisk under.",
+        "Let etter fugleaktivitet, ofte er det fisk under.",
         "Ved høyvann fisk nær land.",
         "Skift fiskested hvis ingen napp på 20 minutter.",
-        "Lytt etter små plaskelyder – tegn på småfisk.",
         "Fisk nært flytende tang.",
-        "Se etter mørke flekker på bunnen – kan være fisk!",
+        "Se etter mørke flekker på bunnen, det kan være fisk!",
         "Bruk polaroid-solbriller for å se under vannflaten.",
         "Prøv forskjellige innsveivingsteknikker.",
         "Fisk i nærheten av brygger og moloer.",
         "I regn: bruk lyse sluker.",
         "I stille vær: bruk små, rolige sluker.",
         "Se på tidevannet før du planlegger turen.",
-        "Fisk rett etter regn – kan være god aktivitet.",
+        "Fisk rett etter regn, kan være god aktivitet.",
         "Fisk saktere i kaldt vann.",
         "Skift størrelse på agnet om fisken ikke biter.",
-        "Prøv med naturlig agn som reke eller børstemark.",
+        "Prøv med naturlig agn som reke eller mark.",
         "Se etter strømkanter hvor fisk kan stå.",
         "Bruk lett utstyr for småfisk.",
         "Bruk tyngre utstyr om det blåser mye.",
-        "Hold kroken skarp – sjekk den ofte.",
-        "Varier innsveivingen – gjør små rykk.",
-        "Vær stille på land – vibrasjoner kan skremme fisk.",
+        "Hold kroken skarp, sjekk den ofte.",
+        "Varier innsveivingen, gjør små rykk.",
+        "Vær stille på land, vibrasjoner kan skremme fisk.",
         "Fisk i skyggeområder midt på dagen.",
         "Prøv med popper hvis fisken er aktiv i overflaten.",
         "Bruk duftspray på kunstig agn.",
@@ -114,7 +112,6 @@ fun HomeScreen(
         "Rull agnet over bunnen for å lokke bunnfisk.",
         "Kast oppstrøms i elver og sveiv sakte nedstrøms.",
         "Bruk tyngre sluker i sterk strøm.",
-        "Ved klart vann: bruk lang fortom.",
         "Bruk UV-aktive sluker i gråvær.",
         "Lær deg å knyte gode fiskeknuter.",
         "Bruk agn med naturlig lukt.",
@@ -126,7 +123,6 @@ fun HomeScreen(
         "Se etter skiftninger i bunnforhold.",
         "Fisk der ferskvann møter saltvann.",
         "Fisk nær kunstige strukturer (brygger, pæler).",
-        "Bruk mindre sluker for forsiktig fisk.",
         "Prøv overflateagn ved lavt vann.",
         "Små vibrasjoner kan utløse hugg.",
         "Bruk agn som etterligner byttefisk.",
@@ -135,20 +131,18 @@ fun HomeScreen(
         "Ha med ekstra snelle og line.",
         "Se etter vak på vannflaten.",
         "Fisk sakte i skumringen.",
-        "Test nye teknikker – ikke bare det du kan.",
+        "Test nye teknikker, ikke bare det du kan.",
         "Bruk metallagn på store dybder.",
-        "Bruk split-shot søkke for å variere dybden.",
-        "Gå forsiktig i vannet – ikke skrem fisken.",
+        "Gå forsiktig i vannet, ikke skrem fisken.",
         "Se etter steder med strøm og stillere partier.",
         "Bruk propellagn for å lokke overflatefisk.",
-        "Bruk fiskerapport-apper for å finne hotspots.",
         "Bruk lokkelyder om natten.",
         "Velg tynnere line ved lite napp.",
-        "Fisk under broer – ofte mye fisk der.",
+        "Fisk under broer, ofte mye fisk der.",
         "I kaldt vær: fisk midt på dagen når det er varmest.",
         "Bruk en fiskekalender-app for beste tider.",
-        "Vær tålmodig – noen ganger tar det tid.",
-        "Se på månefaser – de kan påvirke fisket.",
+        "Vær tålmodig, noen ganger tar det tid.",
+        "Se på månefaser, de kan påvirke fisket.",
         "Bruk naturlige farger i klart sollys.",
         "Fisk med vinden i ryggen for lengre kast.",
         "Sørg for at agnet ditt ser skadet ut – det lokker!",
@@ -234,13 +228,13 @@ fun HomeScreen(
                 ) {
                     QuickAccessCard(
                         icon = Icons.Default.Map,
-                        text = "Map",
+                        text = "Kart",
                         onClick = onNavigateToMap,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
                         icon = Icons.AutoMirrored.Filled.List,
-                        text = "Fish Log",
+                        text = "Fiske logg",
                         onClick = onNavigateToFishLog,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
@@ -252,13 +246,13 @@ fun HomeScreen(
                 ) {
                     QuickAccessCard(
                         icon = Icons.Default.WbSunny,
-                        text = "Weather",
+                        text = "Været",
                         onClick = onNavigateToWeather,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
                         icon = Icons.Default.Favorite,
-                        text = "Favorites",
+                        text = "Favoritter",
                         onClick = onNavigateToFavorites,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
