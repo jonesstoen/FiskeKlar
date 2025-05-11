@@ -85,6 +85,7 @@ import no.uio.ifi.in2000.team46.presentation.grib.components.WindOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.map.components.layermenu.GribMenuState
 import no.uio.ifi.in2000.team46.presentation.onboarding.screens.MapOnboardingScreen
 import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.MapOnboardingViewModel
+import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 
 // =====================
 // MAP SCREEN
@@ -103,7 +104,8 @@ fun MapScreen(
     initialLocation: Pair<Double, Double>? = null,
     areaPoints: List<Pair<Double, Double>>? = null,
     highlightVessel: HighlightVesselData? = null,
-    mapOnboardingViewModel: MapOnboardingViewModel = viewModel()
+    mapOnboardingViewModel: MapOnboardingViewModel = viewModel(),
+    profileViewModel: ProfileViewModel
 ) {
     // Fjern lokal showOnboarding state og bruk ViewModel state direkte
     val showMapOnboarding by mapOnboardingViewModel.showMapOnboarding.collectAsState()
@@ -111,7 +113,17 @@ fun MapScreen(
     // noen av verdiene som vi kunne brukt remembersavable på støtter ikke den funksjonaliteten derfor er de bare remember
     // ----------- State og permissions -----------
     val ctx = LocalContext.current
-    val isDark = isSystemInDarkTheme()
+    
+    // Get the theme from ProfileViewModel
+    val appTheme by profileViewModel.theme.collectAsState()
+    
+    // Determine if dark theme should be used based on app settings, not just system theme
+    val isDark = when (appTheme) {
+        "dark" -> true
+        "light" -> false
+        else -> isSystemInDarkTheme()
+    }
+    
     val styleUrl = mapViewModel.getStyleUrl(isDark)
     var isLayerMenuExpanded by remember { mutableStateOf(false) }
 
