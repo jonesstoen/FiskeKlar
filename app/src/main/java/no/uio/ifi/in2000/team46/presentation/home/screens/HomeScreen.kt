@@ -68,7 +68,7 @@ fun HomeScreen(
             in 15..17 -> "God ettermiddag"
             else -> "God kveld"
         }
-        if (name.isNotBlank()) "$timeGreeting, $name" else "$timeGreeting!"
+        if (name.isNotBlank()) "$timeGreeting, $name" else timeGreeting
     }
 
     val fishingTips = listOf(

@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import no.uio.ifi.in2000.team46.R
+import no.uio.ifi.in2000.team46.utils.NetworkUtils
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -68,6 +69,9 @@ fun SosScreen(
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     var savedPosition by remember { mutableStateOf<Pair<Double, Double>?>(null) }
+    
+    // Check for internet connectivity
+    var isNetworkConnected by remember { mutableStateOf(NetworkUtils.isNetworkAvailable(context)) }
 
     // Ikke kall activateLayer/updateVisibleRegion hvis fartøylisten ikke er tom og posisjonen ikke har endret seg
     LaunchedEffect(userLocation) {
@@ -197,7 +201,11 @@ fun SosScreen(
                     }
                 }
                 if (nearestVessels.isEmpty()) {
-                    Text("Ingen fartøy funnet i nærheten.", color = Color.Gray, fontSize = 14.sp)
+                    if (!isNetworkConnected) {
+                        Text("Ingen internettforbindelse", color = Color.Gray, fontSize = 14.sp)
+                    } else {
+                        Text("Ingen fartøy funnet i nærheten.", color = Color.Gray, fontSize = 14.sp)
+                    }
                 }
             }
 

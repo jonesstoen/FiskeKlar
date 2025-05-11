@@ -85,6 +85,8 @@ import no.uio.ifi.in2000.team46.presentation.map.components.layermenu.GribMenuSt
 import no.uio.ifi.in2000.team46.presentation.onboarding.screens.MapOnboardingScreen
 import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.MapOnboardingViewModel
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
+import no.uio.ifi.in2000.team46.utils.NetworkUtils
+import no.uio.ifi.in2000.team46.presentation.map.components.NetworkConnectivityAlert
 
 // =====================
 // MAP SCREEN
@@ -112,6 +114,23 @@ fun MapScreen(
     // noen av verdiene som vi kunne brukt remembersavable på støtter ikke den funksjonaliteten derfor er de bare remember
     // ----------- State og permissions -----------
     val ctx = LocalContext.current
+    
+    // Check for internet connectivity
+    var isNetworkConnected by remember { mutableStateOf(NetworkUtils.isNetworkAvailable(ctx)) }
+    var showNetworkAlert by remember { mutableStateOf(false) }
+    
+    // Show alert if network is not connected
+    LaunchedEffect(Unit) {
+        if (!isNetworkConnected) {
+            showNetworkAlert = true
+        }
+    }
+    
+    // Simple network connectivity alert dialog
+    NetworkConnectivityAlert(
+        show = showNetworkAlert,
+        onDismiss = { showNetworkAlert = false }
+    )
     
     // Get the theme from ProfileViewModel
     val appTheme by profileViewModel.theme.collectAsState()
@@ -592,4 +611,3 @@ fun MapScreen(
         }
     }
 }
-
