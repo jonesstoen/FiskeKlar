@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import no.uio.ifi.in2000.team46.R
@@ -181,12 +182,16 @@ fun HomeScreen(
     ) { paddingValues ->
         Column(
             modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth()
+                .fillMaxSize()
                 .padding(paddingValues)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -265,9 +270,11 @@ fun HomeScreen(
                 }
             }
 
-            // Push fish tip box to the bottom
-            Spacer(modifier = Modifier.height(32.dp))
-
+            }
+            
+            // Add fixed spacing to ensure separation
+            Spacer(modifier = Modifier.height(16.dp))
+            
             // Random fishing tip card at the bottom
             RandomFishTipBox(fishingTips = fishingTips)
         }
@@ -382,39 +389,46 @@ fun RandomFishTipBox(
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFFB5D5C5)
         ),
-        shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(12.dp)
         ) {
             Column(
                 horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.align(Alignment.CenterStart)
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(end = 36.dp) // Make room for refresh button
             ) {
                 Text(
                     text = "🎣 Dagens fisketips?",
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
                     color = Navy
                 )
                 Text(
                     text = "\"$currentTip\"",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Navy
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Navy,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
             IconButton(
                 onClick = { currentTip = fishingTips.random() }, // Nytt tips!
-                modifier = Modifier.align(Alignment.TopEnd)
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .size(32.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = "Nytt tips",
-                    tint = Navy
+                    tint = Navy,
+                    modifier = Modifier.size(18.dp)
                 )
             }
         }

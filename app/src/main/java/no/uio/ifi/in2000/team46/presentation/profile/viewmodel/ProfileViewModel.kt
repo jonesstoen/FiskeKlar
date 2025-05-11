@@ -18,10 +18,14 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import kotlinx.coroutines.flow.map
+import no.uio.ifi.in2000.team46.data.local.database.dao.FavoriteLocation
+import no.uio.ifi.in2000.team46.data.local.database.dao.MostCaughtFish
+import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
 
 class ProfileViewModel(
     private val userRepository: UserRepository,
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
+    private val fishLogRepository: FishLogRepository
 ) : ViewModel() {
 
     companion object {
@@ -43,6 +47,20 @@ class ProfileViewModel(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = "system"
+        )
+        
+    val mostCaughtFish: StateFlow<MostCaughtFish?> = fishLogRepository.getMostCaughtFishFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+        
+    val favoriteLocation: StateFlow<FavoriteLocation?> = fishLogRepository.getFavoriteLocationFlow()
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
         )
 
     fun setTheme(newTheme: String) {
@@ -84,9 +102,10 @@ class ProfileViewModel(
 
 class ProfileViewModelFactory(
     private val repo: UserRepository,
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
+    private val fishLogRepository: FishLogRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return ProfileViewModel(repo, dataStore) as T
+        return ProfileViewModel(repo, dataStore, fishLogRepository) as T
     }
 }

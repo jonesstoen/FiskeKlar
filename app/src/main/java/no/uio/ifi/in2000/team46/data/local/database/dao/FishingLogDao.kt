@@ -17,6 +17,12 @@ interface FishingLogDao {
 
     @Query("SELECT * FROM fishing_log WHERE location = :location")
     fun getLogsByLocationFlow(location: String): Flow<List<FishingLog>>
+    
+    @Query("SELECT fishType, SUM(count) as totalCount FROM fishing_log GROUP BY fishType ORDER BY totalCount DESC LIMIT 1")
+    fun getMostCaughtFishFlow(): Flow<MostCaughtFish?>
+    
+    @Query("SELECT location, COUNT(*) as entryCount FROM fishing_log GROUP BY location ORDER BY entryCount DESC LIMIT 1")
+    fun getFavoriteLocationFlow(): Flow<FavoriteLocation?>
 
     @Insert
     suspend fun insert(fishingLog: FishingLog)
@@ -27,3 +33,13 @@ interface FishingLogDao {
     @Query("DELETE FROM fishing_log")
     suspend fun deleteAllLogs()
 }
+
+data class MostCaughtFish(
+    val fishType: String,
+    val totalCount: Int
+)
+
+data class FavoriteLocation(
+    val location: String,
+    val entryCount: Int
+)

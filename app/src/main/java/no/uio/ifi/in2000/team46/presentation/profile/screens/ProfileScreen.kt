@@ -18,6 +18,8 @@ import no.uio.ifi.in2000.team46.presentation.profile.component.ProfileContent
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import java.io.File
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import android.net.Uri
 
 
@@ -30,6 +32,8 @@ fun ProfileScreen(
     onNavigateToTheme: () -> Unit
 ) {
     val user by viewModel.user.collectAsState()
+    val mostCaughtFish by viewModel.mostCaughtFish.collectAsState()
+    val favoriteLocation by viewModel.favoriteLocation.collectAsState()
     var isEditing by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -57,6 +61,9 @@ fun ProfileScreen(
                     modifier    = Modifier
                         .fillMaxSize(),
                     user        = user!!,
+                    mostCaughtFish = mostCaughtFish?.fishType,
+                    mostCaughtFishCount = mostCaughtFish?.totalCount,
+                    favoriteLocation = favoriteLocation?.location,
                     onClearUser = {
                         viewModel.clearUser()
                         isEditing = true
@@ -84,17 +91,50 @@ fun UserInputForm(
     var imageUri by remember {
         mutableStateOf(imageUriDefault?.let { Uri.parse(it) })
     }
+    var tmpUri by remember { mutableStateOf<Uri?>(null) }
+    
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
-        if (!success) imageUri = null
+        if (success) {
+            imageUri = tmpUri
+        } else {
+            tmpUri = null
+            imageUri = null
+        }
+    }
+    
+    val pickImageLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        // Only update the imageUri if a valid URI was returned
+        if (uri != null) {
+            // Create a permanent copy of the selected image
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val profileImageFile = File(context.filesDir, "profile_image_${System.currentTimeMillis()}.jpg")
+                
+                inputStream?.use { input ->
+                    profileImageFile.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                
+                // Use the URI of the copied file
+                imageUri = Uri.fromFile(profileImageFile)
+            } catch (e: Exception) {
+                // If copying fails, use the original URI as fallback
+                imageUri = uri
+            }
+        }
     }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Rediger profil", style = MaterialTheme.typography.titleLarge)
@@ -121,35 +161,70 @@ fun UserInputForm(
 
         Spacer(Modifier.height(24.dp))
 
-        Button(
-            onClick = {
-                // Opprett midlertidig fil og ta bilde
-                val tmpFile = File.createTempFile("profile_", ".jpg", context.cacheDir).apply {
-                    createNewFile()
-                    deleteOnExit()
-                }
-                val tmpUri = FileProvider.getUriForFile(
-                    context,
-                    "${context.packageName}.provider",
-                    tmpFile
-                )
-                imageUri = tmpUri
-                takePictureLauncher.launch(tmpUri)
-            },
-            modifier = Modifier.fillMaxWidth()
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text("Ta profilbilde")
+            Button(
+                onClick = {
+                    // Opprett midlertidig fil og ta bilde
+                    val tmpFile = File.createTempFile("profile_", ".jpg", context.cacheDir).apply {
+                        createNewFile()
+                        deleteOnExit()
+                    }
+                    val uri = FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.provider",
+                        tmpFile
+                    )
+                    tmpUri = uri
+                    takePictureLauncher.launch(uri)
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Ta bilde")
+            }
+            
+            Button(
+                onClick = {
+                    pickImageLauncher.launch("image/*")
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text("Velg fra galleri")
+            }
         }
 
-        imageUri?.let {
+        if (imageUri != null) {
             Spacer(Modifier.height(12.dp))
+            Text("Valgt bilde:", style = MaterialTheme.typography.titleMedium)
             AsyncImage(
-                model = it,
+                model = imageUri,
                 contentDescription = "Profilbilde",
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(180.dp)
             )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            OutlinedButton(
+                onClick = {
+                    // Try to delete temp camera image if it's from our app cache
+                    imageUri?.let { uri ->
+                        if (uri.toString().contains("profile_")) {
+                            val file = File(uri.path ?: "")
+                            if (file.exists()) file.delete()
+                        }
+                    }
+                    imageUri = null
+                    tmpUri = null
+                },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Fjern bilde")
+            }
+        } else {
+            Text("Ingen bilde valgt", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
 
         Spacer(Modifier.height(24.dp))

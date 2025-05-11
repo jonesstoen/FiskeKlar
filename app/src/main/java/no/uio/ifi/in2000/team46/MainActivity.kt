@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
         FishingLogViewModel.FishLogViewModelFactory(fishLogRepo, fishTypeRepo)
     }
     private val profileViewModel: ProfileViewModel by viewModels {
-        ProfileViewModelFactory(UserRepository(db.userDao()), dataStore)
+        ProfileViewModelFactory(UserRepository(db.userDao()), dataStore, fishLogRepo)
     }
 
     private val favoritesViewModel: FavoritesViewModel by viewModels {

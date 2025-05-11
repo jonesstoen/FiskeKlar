@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import no.uio.ifi.in2000.team46.R
@@ -25,6 +26,9 @@ import no.uio.ifi.in2000.team46.data.local.database.entities.User
 fun ProfileContent(
     modifier: Modifier = Modifier,
     user: User,
+    mostCaughtFish: String?,
+    mostCaughtFishCount: Int?,
+    favoriteLocation: String?,
     onClearUser: () -> Unit,
     onEditUser: () -> Unit,
     onNavigateToTheme: () -> Unit
@@ -117,57 +121,32 @@ fun ProfileContent(
                         "Fiskestatistikk",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Spacer(Modifier.height(12.dp))
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        StatItem("28", "Antall fisketurer",
-                            IconType.Vector(Icons.Default.Schedule),
-
+                    Spacer(Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
+                    ) {
+                        StatItem(
+                            value = favoriteLocation ?: "Ingen data", 
+                            label = "Favorittområde",
+                            icon = IconType.Vector(Icons.Default.Place)
                         )
-                        StatItem("Nesodden", "Favorittområde",
-                            IconType.Vector(Icons.Default.Place),
 
-                        )
-                    }
-                    Spacer(Modifier.height(12.dp))
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        StatItem("Torsk", "Flest fanget fisk",
-                            IconType.Resource(painterResource(id = R.drawable.fish)),
-
-                        )
-                        StatItem("134", "Timer på sjøen",
-                            IconType.Vector(Icons.Default.Timer),
-
+                        StatItem(
+                            value = if (mostCaughtFish != null && mostCaughtFishCount != null) 
+                                    "$mostCaughtFish (${mostCaughtFishCount}stk)" 
+                                   else "Ingen data", 
+                            label = "Flest fanget fisk",
+                            icon = IconType.Resource(painterResource(id = R.drawable.fish))
                         )
                     }
+                    Spacer(Modifier.height(8.dp))
                 }
             }
         }
 
-        // 4) Mine enheter
+        // 4) Innstillinger
         item {
-            Card(
-                modifier  = Modifier.fillMaxWidth(),
-                shape     = MaterialTheme.shapes.medium,
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                colors    = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                    contentColor   = MaterialTheme.colorScheme.onTertiaryContainer
-                )
-            ) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("Mine enheter", style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.height(12.dp))
-                    Text("Havørna",    style = MaterialTheme.typography.bodyLarge)
-                    Text("LJ2023  |  AIS-ID: 123456789",
-                        style = MaterialTheme.typography.bodyMedium)
-                }
-            }
-        }
-
-        // 5) Innstillinger
-        item {
-            SettingsItem("Endre passord", Icons.Default.Lock)
-            SettingsItem("Varslingsinnstillinger", Icons.Default.Notifications)
             SettingsItem(
                 title = "Temainnstillinger",
                 icon = Icons.Default.Palette,
@@ -207,22 +186,39 @@ sealed class IconType {
 }
 @Composable
 fun StatItem(value: String, label: String, icon: IconType) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        // Label at the top
+        Text(
+            text = label, 
+            style = MaterialTheme.typography.bodyMedium, 
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        
+        // Icon in the middle
         when (icon) {
             is IconType.Vector -> Icon(
                 imageVector = icon.imageVector,
                 contentDescription = label,
-                tint = Color(0xFF2A475E)
+                tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                modifier = Modifier.size(28.dp).padding(vertical = 4.dp)
             )
             is IconType.Resource -> Icon(
                 painter = icon.painter,
                 contentDescription = label,
-                tint = Color(0xFF2A475E),
-                modifier = Modifier.size(24.dp)
+                tint = MaterialTheme.colorScheme.onTertiaryContainer,
+                modifier = Modifier.size(28.dp).padding(vertical = 4.dp)
             )
         }
-        Text(value, style = MaterialTheme.typography.bodyLarge)
-        Text(label, style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center)
+        
+        // Value at the bottom
+        Text(
+            text = value, 
+            style = MaterialTheme.typography.bodyLarge,
+            fontWeight = FontWeight.Bold
+        )
     }
 }
 
