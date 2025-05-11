@@ -123,8 +123,8 @@ fun GribLayerMenu(
                     trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
                     modifier = Modifier.clickable { goTo(GribMenuState.Current) }
                 )
-
-                ListItem(
+                // drift is not implemented yet
+                /*ListItem(
                     headlineContent = { Text("Drift Vektorer") },
                     leadingContent = { Icon(Icons.Default.DirectionsBoat, contentDescription = null) },
                     trailingContent = {
@@ -133,7 +133,7 @@ fun GribLayerMenu(
                             onCheckedChange = { onToggleDrift() }
                         )
                     }
-                )
+                )*/
 
                 ListItem(
                     headlineContent = { Text("Bølger") },
