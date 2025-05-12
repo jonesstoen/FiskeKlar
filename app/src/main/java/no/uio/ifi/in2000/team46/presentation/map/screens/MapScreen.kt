@@ -479,7 +479,8 @@ fun MapScreen(
                     currentViewModel   = currentViewModel,
                     driftViewModel     = driftViewModel,
                     waveViewModel      = waveViewModel,
-                    precipitationViewModel = precipitationViewModel
+                    precipitationViewModel = precipitationViewModel,
+                    isDarkTheme = isDark
                 )
             }
             LegendToggle(
@@ -505,7 +506,10 @@ fun MapScreen(
                 isLayerVisible = isWindLayerVisible,
                 verticalPosition = 2
             ) {
-                WindLegend(modifier = Modifier.align(Alignment.CenterEnd))
+                WindLegend(
+                    modifier = Modifier.align(Alignment.CenterEnd),
+                    isDark = isDark
+                )
             }
 
             // 3) Kontroller

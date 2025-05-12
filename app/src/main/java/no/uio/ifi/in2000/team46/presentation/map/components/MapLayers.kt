@@ -33,7 +33,8 @@ fun MapLayers(
     currentViewModel: CurrentViewModel,
     driftViewModel: DriftViewModel,
     waveViewModel: WaveViewModel,
-    precipitationViewModel: PrecipitationViewModel
+    precipitationViewModel: PrecipitationViewModel,
+    isDarkTheme: Boolean
 ) {
     MetAlertsLayerComponent(metAlertsViewModel, mapView)
     AisLayer(mapView, aisViewModel)
@@ -42,7 +43,8 @@ fun MapLayers(
         gribViewModel = gribViewModel,
         map           = map,
         mapView       = mapView,
-        filterVectors = true
+        filterVectors = true,
+        isDarkMode = isDarkTheme
     )
     GribCurrentLayer(
         currentViewModel = currentViewModel,

@@ -31,7 +31,8 @@ fun GribWindLayer(
     gribViewModel: GribViewModel,
     map: MapLibreMap,
     mapView: MapView,
-    filterVectors: Boolean = false
+    filterVectors: Boolean = false,
+    isDarkMode: Boolean
 ) {
     val isVisible by gribViewModel.isLayerVisible.collectAsState()
     val threshold by gribViewModel.windThreshold.collectAsState()
@@ -69,6 +70,12 @@ fun GribWindLayer(
 
                 iconMap.forEach { (_, resId) ->
                     val baseName = mapView.context.resources.getResourceEntryName(resId)
+                    val whiteName = "${baseName}_white"
+                    val whiteResId = mapView.context.resources.getIdentifier(whiteName, "drawable", mapView.context.packageName)
+                    if (whiteResId != 0 && style.getImage(whiteName) == null) {
+                        val whiteBitmap = BitmapFactory.decodeResource(mapView.context.resources, whiteResId)
+                        style.addImage(whiteName, whiteBitmap)
+                    }
                     if (style.getImage(baseName) == null) {
                         val bitmap = BitmapFactory.decodeResource(mapView.context.resources, resId)
                         style.addImage(baseName, bitmap)
@@ -99,7 +106,7 @@ fun GribWindLayer(
                     Feature.fromGeometry(Point.fromLngLat(v.lon, v.lat)).apply {
                         addNumberProperty("direction", v.direction)
                         addNumberProperty("speed", v.speed)
-                        addStringProperty("icon", selectIcon(v.speed, threshold, iconMap, mapView))
+                        addStringProperty("icon", selectIcon(v.speed, threshold, iconMap, mapView,isDarkMode))
                     }
                 }
 
@@ -177,10 +184,16 @@ private fun selectIcon(
     speed: Double,
     threshold: Double,
     iconMap: Map<Double, Int>,
-    mapView: MapView
+    mapView: MapView,
+    isDarkMode: Boolean
 ): String {
     val thresholdKey = iconMap.keys.sorted().firstOrNull { speed <= it } ?: Double.MAX_VALUE
     val resId = iconMap[thresholdKey] ?: error("no icon found for speed $speed")
     val baseName = mapView.context.resources.getResourceEntryName(resId)
-    return if (speed > threshold) "${baseName}_red" else baseName
+
+    return when {
+        speed > threshold -> "${baseName}_red"
+        isDarkMode -> "${baseName}_white" // white icon for dark mode
+        else -> baseName
+    }
 }
