@@ -234,7 +234,7 @@ fun HomeScreen(
                     )
                     QuickAccessCard(
                         icon = Icons.AutoMirrored.Filled.List,
-                        text = "Fiske logg",
+                        text = "Fiskelogg",
                         onClick = onNavigateToFishLog,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
@@ -252,7 +252,7 @@ fun HomeScreen(
                     )
                     QuickAccessCard(
                         icon = Icons.Default.Favorite,
-                        text = "Favoritter",
+                        text = "Favoritt-steder",
                         onClick = onNavigateToFavorites,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
