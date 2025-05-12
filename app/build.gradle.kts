@@ -91,6 +91,7 @@ dependencies {
     implementation(libs.grib)
     //for theme
     implementation(libs.androidx.ui.text.google.fonts)
+    implementation(libs.androidx.media3.common.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -116,4 +117,17 @@ dependencies {
     //For datastoring theme settings
     implementation (libs.androidx.datastore.preferences)
 
+    // For testing
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.junit)
+    testImplementation (libs.junit.jupiter.api)
+    testImplementation(libs.slf4j.simple)
+
+    tasks.withType<Test> {
+        // Undertrykk Byte-Buddy-advarselen om dynamisk agent-innlasting:
+        jvmArgs = (jvmArgs ?: emptyList()) + "-XX:+EnableDynamicAgentLoading"
+        // (Valgfritt) vis deg traceUsage i stedet for de generelle advarslene:
+        // jvmArgs += "-Djdk.instrument.traceUsage"
+    }
 }

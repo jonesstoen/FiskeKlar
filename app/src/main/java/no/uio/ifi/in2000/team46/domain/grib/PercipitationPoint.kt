@@ -8,5 +8,6 @@ data class PrecipitationPoint(
      * According to the GRIB metadata this is in meters of water
      * (often you’ll want to multiply by 1000 for mm).
      */
-    val precipitation: Double
+    val precipitation: Double,
+    val timestamp : Long
 )

@@ -11,8 +11,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DirectionsBoat
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Waves
@@ -55,19 +55,19 @@ fun CategoryMenu(
         ListItem(
             headlineContent = { Text("Båttrafikk") },
             leadingContent = { Icon(Icons.Default.DirectionsBoat, contentDescription = null) },
-            trailingContent = { Icon(Icons.Default.KeyboardArrowRight, contentDescription = null) },
+            trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
             modifier = Modifier.clickable { onCategorySelected(LayerCategory.TRAFFIC) }
         )
         ListItem(
             headlineContent = { Text("Farevarsler") },
             leadingContent = { Icon(Icons.Default.Warning, contentDescription = null) },
-            trailingContent = { Icon(Icons.Default.KeyboardArrowRight, contentDescription = null) },
+            trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
             modifier = Modifier.clickable { onCategorySelected(LayerCategory.WARNINGS) }
         )
         ListItem(
-            headlineContent = { Text("GRIB Data") },
+            headlineContent = { Text("Vær Data") },
             leadingContent = { Icon(Icons.Default.Waves, contentDescription = null) },
-            trailingContent = { Icon(Icons.Default.KeyboardArrowRight, contentDescription = null) },
+            trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
             modifier = Modifier.clickable { onCategorySelected(LayerCategory.GRIB) }
         )
     }

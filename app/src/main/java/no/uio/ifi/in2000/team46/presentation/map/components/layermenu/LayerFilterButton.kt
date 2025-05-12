@@ -36,6 +36,7 @@ fun LayerFilterButton(
     onShowWindSliders: () -> Unit,
     onShowCurrentSliders: () -> Unit,
     onShowWaveSliders: () -> Unit,
+    onShowPrecipSliders: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var selectedCategory by remember { mutableStateOf(LayerCategory.NONE) }
@@ -160,6 +161,8 @@ fun LayerFilterButton(
                         precipitationViewModel = precipitationViewModel,
                         onShowWindSliders = onShowWindSliders,
                         onShowCurrentSliders = onShowCurrentSliders,
+                        onShowPrecipSliders = onShowPrecipSliders,
+                        onLayerMenuExpandedChange = onExpandedChange,
                         onBack = { selectedCategory = LayerCategory.NONE }
                     )
                 }

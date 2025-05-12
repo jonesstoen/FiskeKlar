@@ -6,34 +6,36 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+
 @Composable
-fun WaveLegend(
+fun PrecipitationLegend(
     modifier: Modifier = Modifier
 ) {
-    // Bakgrunn med litt gjennomsiktighet
     Column(
         modifier = modifier
             .background(Color.White.copy(alpha = 0.8f), shape = RoundedCornerShape(8.dp))
             .padding(8.dp)
     ) {
-        Text("Bølgehøyde (m)", style = MaterialTheme.typography.titleSmall)
+        Text("Nedbør (mm)", style = MaterialTheme.typography.titleSmall)
         Spacer(Modifier.height(4.dp))
 
-        LegendItem(color = Color(0xFFADD8E6), label = "0–1 m")       // LightBlue
-        LegendItem(color = Color(0xFF6495ED), label = "1–2 m")       // CornflowerBlue
-        LegendItem(color = Color(0xFF4169E1), label = "2–3 m")       // RoyalBlue
-        LegendItem(color = Color(0xFF27408B), label = "3–5 m")       // DarkSlateBlue
-        LegendItem(color = Color(0xFF00008B), label = "5–8 m")       // DarkBlue
-        LegendItem(color = Color(0xFF800080), label = "≥ 8 m")        // Purple
+        // Faste intervaller
+        LegendItem(color = Color(0xFFADD8E6), label = "0–1 mm")    // very light blue
+        LegendItem(color = Color(0xFF6495ED), label = "1–5 mm")    // light blue
+        LegendItem(color = Color(0xFF4169E1), label = "5–10 mm")   // medium blue
+        LegendItem(color = Color(0xFF27408B), label = "10–15 mm")  // darker blue
+        LegendItem(color = Color(0xFF00008B), label = "15–20 mm")  // dark blue
+        LegendItem(color = Color(0xFF800080), label = "≥ 20 mm")   // very dark blue
         LegendItem(color = Color(0xFFB2182B), label = "Over terskel")
     }
 }
 
+/** Samme LegendItem som hos bølge‐legenden */
 @Composable
 private fun LegendItem(
     color: Color,

@@ -58,7 +58,6 @@ fun MapControls(
     onShowCurrentSliders: () -> Unit,
     onShowWaveSliders: () -> Unit,
     onUserLocationSelected: (Location) -> Unit,
-    // Ny parameter for å lagre element-posisjoner for onboarding
     elementBounds: MutableMap<String, androidx.compose.ui.geometry.Rect>? = null
 ) {
     val context = LocalContext.current
@@ -163,6 +162,10 @@ fun MapControls(
                         onShowWaveSliders()
                     },
                     onShowCurrentSliders = onShowCurrentSliders,
+                    onShowPrecipSliders = {
+                        onLayerMenuExpandedChange(false)
+                        precipitationViewModel.setShowPrecipSliders(true)
+                    },
                     modifier = Modifier.onGloballyPositioned { coordinates ->
                         elementBounds?.put("filter_button", coordinates.boundsInRoot())
                     }

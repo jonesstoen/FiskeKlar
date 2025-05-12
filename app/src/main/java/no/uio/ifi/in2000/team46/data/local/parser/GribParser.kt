@@ -140,84 +140,72 @@ class GribParser {
 
 
 
-    // for å parse nedbør
     fun parsePrecipitationFile(
         file: File,
-        timeIndex: Int = 1,
         levelIndex: Int = 0
     ): List<PrecipitationPoint> {
         Log.d(TAG, "Opening GRIB file: ${file.absolutePath}")
         val ncfile = NetcdfFiles.open(file.absolutePath)
+
         val precVar = ncfile.findVariable("Total_precipitation_height_above_ground")
             ?: throw IllegalArgumentException("Fant ikke Total_precipitation_height_above_ground")
-        val latVar = ncfile.findVariable("lat")
-            ?: throw IllegalArgumentException("Fant ikke lat")
-        val lonVar = ncfile.findVariable("lon")
-            ?: throw IllegalArgumentException("Fant ikke lon")
-
-        // Log dimension info
-        val timeDim = precVar.dimensions.find { it.shortName == "time" }?.length ?: -1
-        val latLen = latVar.dimensions.firstOrNull()?.length ?: -1
-        val lonLen = lonVar.dimensions.firstOrNull()?.length ?: -1
-        Log.d(TAG, "Dimensions -> time=$timeDim, lat=$latLen, lon=$lonLen")
+        val latVar = ncfile.findVariable("lat") ?: throw IllegalArgumentException("Fant ikke lat")
+        val lonVar = ncfile.findVariable("lon") ?: throw IllegalArgumentException("Fant ikke lon")
+        val timeVar = ncfile.findVariable("time") ?: throw IllegalArgumentException("Fant ikke time")
 
         val units = precVar.getUnitsString()
         Log.d(TAG, "Units: $units")
 
-        @Suppress("UNCHECKED_CAST")
         val data = precVar.read() as ArrayFloat.D4
-        val lats = (latVar.read().reduce().storage as FloatArray)
-        val lons = (lonVar.read().reduce().storage as FloatArray)
+        val lats = latVar.read().reduce().storage as FloatArray
+        val lons = lonVar.read().reduce().storage as FloatArray
         val idx = data.index as Index4D
 
-        // Prepare sampling indices
-        val midLat = lats.size / 2
-        val midLon = lons.size / 2
-        var firstNonZeroLogged = false
+        val timeArray = timeVar.read().reduce().storage
+        val timeUnits = timeVar.getUnitsString()
+        val calendarDateUnit = CalendarDateUnit.of(Calendar.gregorian.toString(), timeUnits)
+        val timeSteps = when (timeArray) {
+            is FloatArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it.toDouble()).millis }
+            is DoubleArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it).millis }
+            else -> throw IllegalArgumentException("Ukjent time-array-type: ${timeArray::class.java}")
+        }
 
         val points = mutableListOf<PrecipitationPoint>()
-        for (iLat in lats.indices) {
-            for (iLon in lons.indices) {
-                // compute cumulative at timeIndex and previous
-                idx.set(timeIndex, levelIndex, iLat, iLon)
-                val rawCum = data.getFloat(idx).toDouble()
-                idx.set(timeIndex - 1, levelIndex, iLat, iLon)
-                val rawPrev = data.getFloat(idx).toDouble()
-                val rawDelta = (rawCum - rawPrev).coerceAtLeast(0.0)
+        for (timeIndex in 1 until timeSteps.size) {
+            val timestamp = timeSteps[timeIndex]
 
-                // convert units
-                val inMm = when {
-                    units.contains("kg m^-2") -> rawDelta
-                    units.contains("m") -> rawDelta * 1000.0
-                    else -> rawDelta
-                }
+            for (iLat in lats.indices) {
+                for (iLon in lons.indices) {
+                    idx.set(timeIndex, levelIndex, iLat, iLon)
+                    val rawCum = data.getFloat(idx).toDouble()
 
-                // Log a few debug samples
-                if (!firstNonZeroLogged && inMm > 0) {
-                    Log.d(TAG, "First non-zero delta at [$iLat,$iLon]: cum=$rawCum, prev=$rawPrev, delta=$rawDelta, mm=$inMm")
-                    firstNonZeroLogged = true
-                }
-                if (iLat == 0 && iLon < 5) {
-                    Log.d(TAG, String.format("Top-row sample [%d,%d]: mm=%.3f", iLat, iLon, inMm))
-                }
-                if (iLat == midLat && iLon == midLon) {
-                    Log.d(TAG, String.format("Mid-grid sample [%d,%d]: mm=%.3f", iLat, iLon, inMm))
-                }
+                    idx.set(timeIndex - 1, levelIndex, iLat, iLon)
+                    val rawPrev = data.getFloat(idx).toDouble()
 
-                if (inMm.isFinite() && inMm > 0) {
-                    points += PrecipitationPoint(
-                        lon = lons[iLon].toDouble(),
-                        lat = lats[iLat].toDouble(),
-                        precipitation = inMm
-                    )
+                    val rawDelta = (rawCum - rawPrev).coerceAtLeast(0.0)
+                    val inMm = when {
+                        units.contains("kg m^-2") -> rawDelta
+                        units.contains("m") -> rawDelta * 1000.0
+                        else -> rawDelta
+                    }
+
+                    if (inMm.isFinite() && inMm > 0) {
+                        points += PrecipitationPoint(
+                            lon = lons[iLon].toDouble(),
+                            lat = lats[iLat].toDouble(),
+                            precipitation = inMm,
+                            timestamp = timestamp
+                        )
+                    }
                 }
             }
         }
 
-        Log.d(TAG, "Parsed points count: ${points.size}")
+        Log.d(TAG, "Parsed ${points.size} precipitation points across ${timeSteps.size} timesteps.")
         ncfile.close()
         return points
     }
+
 
 
 

@@ -3,7 +3,7 @@ package no.uio.ifi.in2000.team46.presentation.grib.components
 import androidx.compose.runtime.*
 import no.uio.ifi.in2000.team46.data.repository.Result
 import org.maplibre.android.maps.MapLibreMap
-import org.maplibre.android.style.expressions.Expression
+import org.maplibre.android.style.expressions.Expression.*
 import org.maplibre.android.style.layers.PropertyFactory.*
 import org.maplibre.android.style.sources.GeoJsonSource
 import org.maplibre.geojson.Feature
@@ -11,42 +11,39 @@ import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
 import no.uio.ifi.in2000.team46.domain.grib.PrecipitationPoint
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModel
-import org.maplibre.android.style.expressions.Expression.interpolate
-import org.maplibre.android.style.expressions.Expression.linear
-import org.maplibre.android.style.expressions.Expression.literal
-import org.maplibre.android.style.expressions.Expression.zoom
 import org.maplibre.android.style.layers.CircleLayer
+import org.maplibre.android.style.layers.SymbolLayer
 
 @Composable
 fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
-    val isVisible     by vm.isLayerVisible.collectAsState()
-    val result        by vm.data.collectAsState()
-    val threshold     by vm.precipThreshold.collectAsState()
-    val srcId         = "precip_source"
+    val isVisible by vm.isLayerVisible.collectAsState()
+    val threshold by vm.precipThreshold.collectAsState()
+    val filteredPoints by vm.filteredPrecipPoints.collectAsState()
+
+    val srcId = "precip_source"
     val circleLayerId = "precip_circle_layer"
+    val textLayerId = "precip_text_layer"
 
-    LaunchedEffect(isVisible, result, threshold) {
+    LaunchedEffect(isVisible, filteredPoints, threshold) {
         map.getStyle { style ->
-            if (!isVisible || result !is Result.Success) {
-                style.removeLayer(circleLayerId)
-                style.removeSource(srcId)
-                return@getStyle
-            }
-
-            val points = (result as Result.Success<List<PrecipitationPoint>>).data
-            if (points.isEmpty()) return@getStyle
-
-            val features = points.map { p ->
-                Feature.fromGeometry(Point.fromLngLat(p.lon, p.lat))
-                    .apply { addNumberProperty("precip", p.precipitation) }
-            }
-            val fc = FeatureCollection.fromFeatures(features)
-
+            // Fjern gamle lag/kilder
             style.removeLayer(circleLayerId)
+            style.removeLayer(textLayerId)
             style.removeSource(srcId)
-            style.addSource(GeoJsonSource(srcId, fc))
 
-            val layer = CircleLayer(circleLayerId, srcId).withProperties(
+            if (!isVisible || filteredPoints.isEmpty()) return@getStyle
+
+            // Bygg GeoJSON-kilde
+            val features = filteredPoints.map { p ->
+                Feature.fromGeometry(Point.fromLngLat(p.lon, p.lat)).apply {
+                    addNumberProperty("precip", p.precipitation)
+                    addStringProperty("precipLabel", String.format("%.2f", p.precipitation))
+                }
+            }
+            style.addSource(GeoJsonSource(srcId, FeatureCollection.fromFeatures(features)))
+
+            // CircleLayer med fargeskala
+            val circleLayer = CircleLayer(circleLayerId, srcId).withProperties(
                 circleRadius(
                     interpolate(
                         linear(), zoom(),
@@ -59,15 +56,34 @@ fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
                 ),
                 circleOpacity(literal(0.8f)),
                 circleColor(
-                    Expression.switchCase(
-                        Expression.gt(Expression.get("precip"), literal(threshold)),
-                        Expression.color(0xFFB2182B.toInt()), // Rødt hvis over terskel
-                        Expression.color(0xFF64B5F6.toInt())  // Standard blå
+                    switchCase(
+                        // 1) Rødt om over terskel
+                        gt(get("precip"), literal(threshold)), color(0xFFB2182B.toInt()),
+                        // 2) Ellers fargeskala som i legenden:
+                        step(
+                            get("precip"),
+                            color(0xFFADD8E6.toInt()),  // 0–1 mm
+                            literal(1.0),  color(0xFF6495ED.toInt()),  // 1–5 mm
+                            literal(5.0),  color(0xFF4169E1.toInt()),  // 5–10 mm
+                            literal(10.0), color(0xFF27408B.toInt()),  // 10–15 mm
+                            literal(15.0), color(0xFF00008B.toInt()),  // 15–20 mm
+                            literal(20.0), color(0xFF800080.toInt())   // ≥20 mm
+                        )
                     )
                 )
             )
-            style.addLayer(layer)
+            style.addLayer(circleLayer)
+
+            val textLayer = SymbolLayer(textLayerId, srcId).withProperties(
+                textField(concat(get("precipLabel"), literal(" mm"))),
+                textSize(10f),
+                textColor(color(0xFF000000.toInt())),
+                textHaloColor(color(0xFFFFFFFF.toInt())),
+                textHaloWidth(1f),
+                textAnchor("top"),
+                textOffset(arrayOf(0f, 1.2f))
+            ).withFilter(gte(zoom(), literal(8f)))
+            style.addLayerAbove(textLayer, circleLayerId)
         }
     }
 }
-
