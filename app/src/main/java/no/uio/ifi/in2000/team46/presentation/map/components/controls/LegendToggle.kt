@@ -1,43 +1,46 @@
 package no.uio.ifi.in2000.team46.presentation.map.components.controls
 
-
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import androidx.compose.foundation.layout.*
-import androidx.compose.ui.unit.times
 
 @Composable
 fun LegendToggle(
     isLayerVisible: Boolean,
-    verticalPosition: Int = 0, // 0 for first button, 1 for second button, etc.
-    iconSpacing: Dp = 50.dp, // Spacing between buttons
+    verticalPosition: Int = 0,   // 0 for første knapp, 1 for andre, osv.
+    iconSpacing: Dp = 50.dp,     // avstand mellom knapper vertikalt
+    isOpen: Boolean,             // om denne legenden er åpen
+    onToggle: () -> Unit,        // toggle-callback fra forelder
     legend: @Composable () -> Unit
 ) {
-    val showLegend = rememberSaveable { mutableStateOf(false) }
-    // Hide legend if the layer is no longer visible
+    // Sørg for å lukke dersom laget skrus helt av
     LaunchedEffect(isLayerVisible) {
-        if (!isLayerVisible) {
-            showLegend.value = false
+        if (!isLayerVisible && isOpen) {
+            onToggle()
         }
     }
 
-    // Calculate vertical offset based on position
-    val bottomOffset = 140.dp + (verticalPosition * iconSpacing)
+    // Beregn vertical offset for Info-knappen
+    val bottomOffset = 140.dp + iconSpacing * verticalPosition
 
+    // 1) Info-knapp
     if (isLayerVisible) {
         Box(
             modifier = Modifier
@@ -47,7 +50,7 @@ fun LegendToggle(
             contentAlignment = Alignment.BottomEnd
         ) {
             IconButton(
-                onClick = { showLegend.value = !showLegend.value },
+                onClick = onToggle,
                 modifier = Modifier
                     .size(40.dp)
                     .background(
@@ -64,17 +67,26 @@ fun LegendToggle(
         }
     }
 
-    if (showLegend.value) {
+    // 2) Legend + bakgrunn som fanger trykk utenfor
+    if (isOpen) {
+        // Transparent fullskjerms-bakgrunn
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Transparent)
+                .clickable(onClick = onToggle)
+                .zIndex(9f)
+        )
+
+        // Selve legenden plassert nederst til høyre
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(end = 16.dp, bottom = 40.dp)
-                .zIndex(9f),
+                .zIndex(10f),
             contentAlignment = Alignment.BottomEnd
         ) {
             legend()
         }
     }
 }
-
-

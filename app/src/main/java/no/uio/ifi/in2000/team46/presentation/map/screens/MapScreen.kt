@@ -128,6 +128,9 @@ fun MapScreen(
     val styleUrl = mapViewModel.getStyleUrl(isDark)
     var isLayerMenuExpanded by remember { mutableStateOf(false) }
 
+    // State for showing the legend
+    var openLegend by rememberSaveable { mutableStateOf<Int?>(null) }
+
 
     // Request location permission
     var hasLocationPermission by rememberSaveable { mutableStateOf(false) }
@@ -451,38 +454,46 @@ fun MapScreen(
                     precipitationViewModel = precipitationViewModel
                 )
             }
+            val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
+            val isCurrentLayerVisible by currentViewModel.isLayerVisible.collectAsState()
+            val isPrecipitationVisible by precipitationViewModel.isLayerVisible.collectAsState()
+            val isMetAlertsVisible by metAlertsViewModel.isLayerVisible.collectAsState()
+
             LegendToggle(
                 isLayerVisible = isWaveVisible && waveResult is Result.Success,
-                verticalPosition = 0
+                verticalPosition = 0,
+                isOpen            = openLegend == 0,
+                onToggle          = { openLegend = if (openLegend == 0) null else 0 }
+
             ) {
                 WaveLegend(modifier = Modifier.align(Alignment.CenterEnd))
             }
 
-            val isMetAlertsVisible by metAlertsViewModel.isLayerVisible.collectAsState()
 
             LegendToggle(
                 isLayerVisible = isMetAlertsVisible,
-                verticalPosition = 1
+                verticalPosition = 1,
+                isOpen            = openLegend == 1,
+                onToggle          = { openLegend = if (openLegend == 1) null else 1 }
             ) {
                 MetAlertsLegend(modifier = Modifier.align(Alignment.CenterEnd))
             }
 
-            val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
-            val isCurrentLayerVisible by currentViewModel.isLayerVisible.collectAsState()
-            val isPrecipitationVisible by precipitationViewModel.isLayerVisible.collectAsState()
-
             LegendToggle(
                 isLayerVisible = isWindLayerVisible,
-                verticalPosition = 2
+                verticalPosition = 2,
+                isOpen            = openLegend == 2,
+                onToggle          = { openLegend = if (openLegend == 2) null else 2 }
             ) {
                 WindLegend(modifier = Modifier.align(Alignment.CenterEnd))
             }
 
-            // 4) Precipitation‐legend
-            val isPrecipVisible by precipitationViewModel.isLayerVisible.collectAsState()
+            // Precipitation‐legend
             LegendToggle(
-                isLayerVisible = isPrecipVisible,
-                verticalPosition = 3  // velg neste ledige posisjon
+                isLayerVisible = isPrecipitationVisible,
+                verticalPosition = 3,
+                isOpen            = openLegend == 3,
+                onToggle          = { openLegend = if (openLegend == 3) null else 3 }
             ) {
                 PrecipitationLegend(
                     modifier = Modifier.align(Alignment.CenterEnd)
@@ -542,7 +553,7 @@ fun MapScreen(
                 )
             }
             val showWindSliders by gribViewModel.showWindSliders.collectAsState()
-            val gribMenuState by gribViewModel.gribMenuState.collectAsState()
+
 
             if (isWindLayerVisible && showWindSliders) {
                 WindOverlaySliders(
@@ -591,9 +602,6 @@ fun MapScreen(
                     }
                 )
             }
-
-
-
 
 
             // Legg til hjelpeknapp i øvre høyre hjørne
