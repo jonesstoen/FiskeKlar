@@ -56,7 +56,7 @@ fun OnboardingScreen(
             title = "Værvarsel",
             description = "Sjekk værvarsel for hvor som helst i verden",
             icon = Icons.Default.WbSunny,
-            highlightColor = Color(0xFFBEE9E8)
+            highlightColor = Color(0xFFFCB927)
         ),
         OnboardingStep(
             title = "Favoritter",

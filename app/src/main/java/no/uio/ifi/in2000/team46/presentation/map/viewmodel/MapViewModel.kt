@@ -240,20 +240,15 @@ class MapViewModel(
         this.map = map
         map.setStyle(styleUrl) { style ->
             try {
+                // Sett standard visning med lav zoom som utgangspunkt
                 val controller = MapController(map)
                 controller.setInitialView(
                     initialLat, initialLon,
-                    zoom = MapConstants.INITIAL_ZOOM
+                    zoom = 5.0 // Lav zoom før brukerposisjon er tilgjengelig
                 )
+                
+                // Legg til fartøy-ikoner til kartstilen
                 VesselIconHelper.addVesselIconsToStyle(context, map.style!!)
-
-                // Oppdater vær basert på brukerens posisjon hvis tilgjengelig
-                viewModelScope.launch {
-                    val location = locationRepository.getCurrentLocation()
-                    location?.let {
-                        updateTemperature(it.latitude, it.longitude)
-                    }
-                }
             } catch (e: Exception) {
                 Log.e("MapViewModel", "Error initializing map: ${e.message}")
             }
@@ -319,6 +314,37 @@ class MapViewModel(
                     removeMapMarker(style)  // Fjern eksisterende markør
                     addUserLocationIndicator(map, style, it.latitude, it.longitude)
                 }
+            }
+        }
+    }
+    
+    /** 
+     * Zoom til brukerens posisjon ved initialisering av kartet.
+     * Bruker zoom-nivå fra MapConstants.INITIAL_ZOOM.
+     */
+    fun zoomToUserLocationInitial(map: MapLibreMap, context: Context) {
+        viewModelScope.launch {
+            // Hent brukerens posisjon raskt
+            val loc = locationRepository.getFastLocation()
+            loc?.let {
+                // Nullstill eventuell valgt posisjon
+                clearSelectedLocation()
+                
+                // Zoom til brukerens posisjon med INITIAL_ZOOM fra MapConstants
+                val cameraPosition = CameraUpdateFactory.newLatLngZoom(
+                    org.maplibre.android.geometry.LatLng(it.latitude, it.longitude),
+                    MapConstants.INITIAL_ZOOM
+                )
+                map.animateCamera(cameraPosition, 1000) // 1000ms animasjonstid
+                
+                // Legg til posisjonsindikator
+                map.getStyle { style ->
+                    removeMapMarker(style)
+                    addUserLocationIndicator(map, style, it.latitude, it.longitude)
+                }
+                
+                // Oppdater værdata for brukerens posisjon
+                updateTemperature(it.latitude, it.longitude)
             }
         }
     }

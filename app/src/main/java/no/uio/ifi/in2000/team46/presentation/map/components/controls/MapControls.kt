@@ -12,6 +12,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -55,7 +57,9 @@ fun MapControls(
     onShowWindSliders: () -> Unit,
     onShowCurrentSliders: () -> Unit,
     onShowWaveSliders: () -> Unit,
-    onUserLocationSelected: (Location) -> Unit
+    onUserLocationSelected: (Location) -> Unit,
+    // Ny parameter for å lagre element-posisjoner for onboarding
+    elementBounds: MutableMap<String, androidx.compose.ui.geometry.Rect>? = null
 ) {
     val context = LocalContext.current
     val temperature by mapViewModel.temperature.collectAsState()
@@ -108,6 +112,10 @@ fun MapControls(
                             color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(12.dp)
                         )
+                        // Lagre posisjon for søkeknappen for onboarding
+                        .onGloballyPositioned { coordinates ->
+                            elementBounds?.put("search_field", coordinates.boundsInRoot())
+                        }
                 ) {
                     Icon(Icons.Default.Search, contentDescription = "Open Search")
                 }
@@ -129,7 +137,10 @@ fun MapControls(
             ) {
                 ZoomButton(
                     onZoomIn = { mapViewModel.zoomIn(map) },
-                    onZoomOut = { mapViewModel.zoomOut(map) }
+                    onZoomOut = { mapViewModel.zoomOut(map) },
+                    modifier = Modifier.onGloballyPositioned { coordinates ->
+                        elementBounds?.put("zoom_buttons", coordinates.boundsInRoot())
+                    }
                 )
                 LayerFilterButton(
                     aisViewModel = aisViewModel,
@@ -152,6 +163,9 @@ fun MapControls(
                         onShowWaveSliders()
                     },
                     onShowCurrentSliders = onShowCurrentSliders,
+                    modifier = Modifier.onGloballyPositioned { coordinates ->
+                        elementBounds?.put("filter_button", coordinates.boundsInRoot())
+                    }
                 )
             }
         }
@@ -169,12 +183,19 @@ fun MapControls(
                 mapViewModel = mapViewModel,
                 navController = navController,
                 weatherService = remember { WeatherService() },
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier
+                    .padding(4.dp)
+                    .onGloballyPositioned { coordinates ->
+                        elementBounds?.put("weather_panel", coordinates.boundsInRoot())
+                    }
             )
             zoomToLocationButton(
                 modifier = Modifier
                     .align(Alignment.End)
                     .padding(end = 16.dp)
+                    .onGloballyPositioned { coordinates ->
+                        elementBounds?.put("location_button", coordinates.boundsInRoot())
+                    }
             ) {
                 if (hasLocationPermission) {
                     mapViewModel.userLocation.value?.let { location ->

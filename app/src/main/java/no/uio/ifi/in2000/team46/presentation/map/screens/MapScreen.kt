@@ -84,6 +84,9 @@ import no.uio.ifi.in2000.team46.presentation.grib.components.WindOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.map.components.layermenu.GribMenuState
 import no.uio.ifi.in2000.team46.presentation.onboarding.screens.MapOnboardingScreen
 import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.MapOnboardingViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import androidx.lifecycle.viewModelScope
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import no.uio.ifi.in2000.team46.utils.NetworkUtils
 import no.uio.ifi.in2000.team46.presentation.map.components.NetworkConnectivityAlert
@@ -378,9 +381,20 @@ fun MapScreen(
         }
     }
 
-    // Sjekk om dette er første launch når komponenten monteres
+    // Initialiseringseffekter
+    // 1. Sjekk om dette er første launch når komponenten monteres
     LaunchedEffect(Unit) {
         mapOnboardingViewModel.checkFirstLaunch(ctx)
+    }
+    
+    // 2. Zoom til brukerens posisjon når kartet er klart
+    LaunchedEffect(mapLibreMap) {
+        mapLibreMap?.let { map ->
+            // Kort forsinkelse for å sikre at kartet er fullstendig initialisert
+            delay(200)
+            // Zoom til brukerens posisjon med zoom-nivå fra MapConstants
+            mapViewModel.zoomToUserLocationInitial(map, ctx)
+        }
     }
 
     // ----------- UI: BottomSheetScaffold med kart, lag og kontroller -----------
@@ -495,7 +509,10 @@ fun MapScreen(
             }
 
             // 3) Kontroller
-            mapLibreMap?.let { map ->
+        // Definer en Map for å holde på bounds for hvert element
+        val elementBounds = remember { mutableMapOf<String, androidx.compose.ui.geometry.Rect>() }
+        
+        mapLibreMap?.let { map ->
                 MapControls(
                     map = map,
                     mapViewModel = mapViewModel,
@@ -513,6 +530,7 @@ fun MapScreen(
                     onLayerMenuExpandedChange = { isLayerMenuExpanded = it },
                     onRequestPermission = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
                     navController = navController,
+                    elementBounds = elementBounds,
                     onSearchResultSelected = { feature ->
                         selectedSearchResult.value = feature
                         map.getStyle { style ->
@@ -586,12 +604,12 @@ fun MapScreen(
 
 
 
-            // Legg til hjelpeknapp i øvre høyre hjørne
+            // Legg til hjelpeknapp på kartet
             IconButton(
                 onClick = { mapOnboardingViewModel.showMapOnboarding() },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(16.dp)
+                    .padding(top = 40.dp, end = 14.dp)
                     .zIndex(1f)
             ) {
                 Icon(
@@ -605,7 +623,26 @@ fun MapScreen(
             if (showMapOnboarding) {
                 MapOnboardingScreen(
                     viewModel = mapOnboardingViewModel,
-                    onFinish = { mapOnboardingViewModel.hideMapOnboarding() }
+                    onFinish = { mapOnboardingViewModel.hideMapOnboarding() },
+                    onZoom = { 
+                        // Øk zoom-nivået med 1
+                        mapLibreMap?.let { map ->
+                            val currentZoom = map.cameraPosition.zoom
+                            val newZoom = currentZoom + 1.0
+                            val cameraUpdate = CameraUpdateFactory.zoomTo(newZoom)
+                            map.animateCamera(cameraUpdate)
+                        }
+                    },
+                    onToggleLayers = { 
+                        // Toggle lag-menyen
+                        isLayerMenuExpanded = !isLayerMenuExpanded
+                    },
+                    onShowLocation = { 
+                        // Zoom til brukerens posisjon
+                        mapLibreMap?.let { map ->
+                            mapViewModel.zoomToUserLocation(map, ctx)
+                        }
+                    }
                 )
             }
         }

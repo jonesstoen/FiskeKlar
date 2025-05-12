@@ -1,7 +1,10 @@
 package no.uio.ifi.in2000.team46.presentation.grib.components
 
+import android.graphics.Color.toArgb
 import android.util.Log
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.toArgb
 import no.uio.ifi.in2000.team46.domain.grib.WaveVector
 import no.uio.ifi.in2000.team46.data.repository.Result
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModel
@@ -26,6 +29,9 @@ fun GribWaveLayer(
     val isVisible by waveViewModel.isLayerVisible.collectAsState()
     val threshold by waveViewModel.waveThreshold.collectAsState()
     val filteredWaves by waveViewModel.filteredWaveVectors.collectAsState()
+
+    val primaryColor = MaterialTheme.colorScheme.primary.toArgb()
+
 
     LaunchedEffect(isVisible, filteredWaves, threshold) {
         map.getStyle { style ->
@@ -74,10 +80,9 @@ fun GribWaveLayer(
 
             val textLayer = SymbolLayer("wave_text_layer", "wave_source").withProperties(
                 textField(concat(get("heightLabel"), literal(" m"))),
-                textSize(10f),
-                textColor(color(0xFF000000.toInt())),
-                textHaloColor(color(0xFFFFFFFF.toInt())),
-                textHaloWidth(1f),
+                textSize(14f),
+                textColor(color(primaryColor)),
+                textFont(arrayOf("Arial Bold")),
                 textAnchor("top"),
                 textOffset(arrayOf(0f, 1.2f)),
             ).withFilter(gte(zoom(), literal(8)))
