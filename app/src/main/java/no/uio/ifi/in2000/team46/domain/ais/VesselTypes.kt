@@ -1,6 +1,6 @@
 package no.uio.ifi.in2000.team46.domain.ais
 
-
+// vesseltypes defines static AIS ship type codes used for mapping vessel categories
 
 object VesselTypes {
     val AMBULANSEBÅT = 58

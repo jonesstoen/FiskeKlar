@@ -13,11 +13,12 @@ import androidx.core.content.ContextCompat
 import no.uio.ifi.in2000.team46.R
 import org.maplibre.android.maps.Style
 
+// this file defines a utility object for adding vessel icons to a maplibre style
+// it provides functions to convert drawable resources into bitmaps and register them under specific ids in the map style
+
 object VesselIconHelper {
     private const val TAG = "VesselIconHelper"
-    /**
-     * Call this function when your map style is loaded to add all vessel icons.
-     */
+
     fun addVesselIconsToStyle(context: Context, style: Style) {
         Log.d(TAG, "Adding vessel icons to style")
         addIcon(context, style, "fishing", R.drawable.ic_vessel_fishing)
@@ -31,7 +32,7 @@ object VesselIconHelper {
         addIcon(context, style, "tug", R.drawable.ic_vessel_tug)
         addIcon(context, style, "other", R.drawable.ic_vessel_other)
     }
-
+    // helper function to decode a drawable resource and add it to the style under a given id
     private fun addIcon(context: Context, style: Style, iconId: String, @DrawableRes drawableRes: Int) {
         val drawable = ContextCompat.getDrawable(context, drawableRes)
         val bitmap = drawable?.toBitmap()
@@ -42,7 +43,7 @@ object VesselIconHelper {
             Log.e(TAG, "Failed to decode resource for icon: $iconId")
         }
     }
-
+    // extension function to convert a drawable into a bitmap for use with maplibre
     private fun Drawable.toBitmap(): Bitmap? {
         if (this is BitmapDrawable) {
             return bitmap

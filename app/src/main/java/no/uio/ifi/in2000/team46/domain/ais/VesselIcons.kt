@@ -8,6 +8,9 @@ import androidx.core.content.ContextCompat
 import no.uio.ifi.in2000.team46.R
 import android.graphics.Canvas
 
+// vesselicons provides a mapping between vessel types and their styled icons
+// includes icon initialization, color mapping, and utility for loading vector drawables as bitmaps
+
 
 object VesselIcons {
     data class VesselStyle(
@@ -16,7 +19,7 @@ object VesselIcons {
     )
 
     private var icons: Map<String, Bitmap>? = null
-
+    // loads and caches all vessel icons as bitmaps from vector drawables
     fun initializeIcons(context: Context) {
         if (icons == null) {
             icons = mapOf(
@@ -55,7 +58,7 @@ object VesselIcons {
         VesselTypes.TAUBÅT to VesselStyle(Color.parseColor("#FFE74C3C"), "tug"),
         VesselTypes.ANDRE_FARTØY to VesselStyle(Color.parseColor("#FF95A5A6"), "other")
     )
-
+    // loads a vector drawable and converts it to a bitmap
     private fun getBitmapFromVectorDrawable(context: Context, drawableId: Int): Bitmap {
         val drawable = ContextCompat.getDrawable(context, drawableId) as VectorDrawable
         val bitmap = Bitmap.createBitmap(

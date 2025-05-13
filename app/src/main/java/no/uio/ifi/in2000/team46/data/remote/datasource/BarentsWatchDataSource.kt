@@ -9,20 +9,24 @@ import retrofit2.http.POST
 import retrofit2.http.Body
 import retrofit2.http.Query
 
+// barentswatchdatasource defines retrofit endpoints for accessing vessel tracking data from barentswatch
+// it supports latest positions, live stream, filtered queries, and raw data access for debugging
+
 interface BarentsWatchDataSource {
-    // Hent siste posisjon av alle fartøy
+
+    // retrieves the latest known position for all vessels
     @GET("v1/latest/combined")
     suspend fun getLatestPositions(
         @Header("Authorization") token: String
     ): Response<List<AisVesselPosition>>
 
-    // Strøm av alle fartøy
+    // retrieves a continuous stream of vessel data
     @GET("v1/combined")
     suspend fun getVesselStream(
         @Header("Authorization") token: String
     ): Response<List<AisVesselPosition>>
 
-    // For filtrert strøm av fartøy
+    // retrieves filtered vessel data based on filter parameters
     @POST("v1/combined")
     suspend fun getFilteredVessels(
         @Header("Authorization") token: String,
@@ -31,16 +35,16 @@ interface BarentsWatchDataSource {
         @Query("modelFormat") modelFormat: String = "Geojson"
     ): Response<List<AisVesselPosition>>
 
-    // Alternativ metode som returnerer rå ResponseBody for debugging
+    // alternative method for retrieving the raw response body (for debugging)
     @GET("v1/latest/combined")
     suspend fun getLatestPositionsRaw(
         @Header("Authorization") token: String
     ): Response<ResponseBody>
 }
 
-// Data class for filtrering
+// data class used to filter vessels in post requests
 data class VesselFilter(
-    val shipTypes: List<Int>? = null,
-    val countryCodes: List<String>? = null,
-    val Downsample: Boolean = false
+    val shipTypes: List<Int>? = null, // optional filter by ship type ids
+    val countryCodes: List<String>? = null, // optional filter by country codes
+    val Downsample: Boolean = false // whether to downsample the dataset
 )
