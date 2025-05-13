@@ -5,13 +5,13 @@ classDiagram
         +brukerId: String
         +navn: String
         +leggTilFangst(f: Fangst)
-        +leggTilFavorittomrade(f: Favorittomrade)
+        +leggTilFavorittsted(f: Favorittsteder)
         +åpneKart()
         +brukeSOS()
         +seVærvarsel()
     }
 
-    class Fiskelog {
+    class Fiskelogg {
         +fangster: List<Fangst>
         +leggTilFangst(f: Fangst)
         +slettFangst(fangstId: String)
@@ -28,13 +28,14 @@ classDiagram
         +leggTilBilde(bilde: String)
     }
 
-    class Favorittomrade {
+    class Favorittsteder {
         +id: String
         +navn: String
         +beskrivelse: String
         +lokasjon: String
         +leggTilFangst(f: Fangst)
         +visOmradePaKart()
+        +visVærvarselForFavorittsted()
     }
 
     class Kart {
@@ -46,6 +47,7 @@ classDiagram
         +visVind()
         +visStrøm()
         +visDrift()
+        +visFavorittsteder()
     }
 
     class Værvarsel {
@@ -65,8 +67,8 @@ classDiagram
     class Database {
         +lagreFangst(f: Fangst)
         +slettFangst(fangstId: String)
-        +lagreFavorittomrade(f: Favorittomrade)
-        +hentFavorittomrader(): List<Favorittomrade>
+        +lagreFavorittsted(f: Favorittsted)
+        +hentFavorittsteder(): List<Favorittsteder>
     }
 
     class VærdataAPI {
@@ -74,27 +76,27 @@ classDiagram
         +hentLangtidsvarsel()
     }
 
-    class FiskeInfoAPI {
+    class KartSkjermAPI {
         +hentFartøy()
         +hentFarevarsler()
         +hentGRIBdata() %% Bølger, regn, vind, strøm, drift
     }
 
-    %% Relasjoner med multiplikitet og kommentarer
-    Hobbyfisker "1" --> "1" Fiskelog : bruker
-    Hobbyfisker "1" --> "0..*" Favorittomrade : har
+    Hobbyfisker "1" --> "1" Fiskelogg : har
+    Hobbyfisker "1" --> "0..*" Favorittsteder : har
     Hobbyfisker "1" --> "1" Kart : benytter
     Hobbyfisker "1" --> "1" SOS : benytter
     Hobbyfisker "1" --> "1" Værvarsel : sjekker
 
-    Fiskelog "1" --> "*" Fangst : består av
-    Favorittomrade "1" --> "*" Fangst : inneholder
+    Fiskelogg "1" --> "*" Fangst : består av
+    Favorittsteder "1" --> "*" Fangst : inneholder
 
     Kart "1" --> "1" Værvarsel : henter
-    Kart "1" --> "1" FiskeInfoAPI : henter data
-    SOS "1" --> "1" FiskeInfoAPI : henter data
+    Kart "1" --> "1" KartSkjermAPI : henter data
+    SOS "1" --> "1" KartSkjermAPI : henter data
 
-    Fiskelog --> Database : lagrer data i
-    Favorittomrade --> Database : lagrer data i
+    Fiskelogg --> Database : lagrer data i
+    Favorittsteder --> Database : lagrer data i
     Værvarsel --> VærdataAPI : henter data fra
+
 ```

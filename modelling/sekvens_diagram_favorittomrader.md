@@ -1,46 +1,52 @@
-Sekvensdiagram for favorittområde
+Sekvensdiagram for favoritt-steder
 
 ```mermaid
 sequenceDiagram
-    participant Bruker
+    actor Hobbyfisker
     participant App
     participant Database
     participant KartVisning
+    participant Værvarsel-skjerm
 
-    Bruker->>App: Åpner favorittområder
-    App->>Database: Hent alle lagrede favorittområder
-    Database-->>App: Returnerer resultat
+    Hobbyfisker ->> App: Åpner favoritt-steder
+    App ->> Database: Hent alle lagrede favorittsteder
+    Database -->> App: Returnerer resultat
 
-    alt Lagrede favorittområder fra før
-        App-->>Bruker: Viser liste over favorittområder
+    alt Lagrede favorittsteder fra før
+        App -->> Hobbyfisker: Viser liste over favorittsteder
 
-        alt Bruker velger et område
-            Bruker->>App: Trykk på område
-            App->>Database: Hent detaljert info
-            Database-->>App: Områdedetaljer
-            App-->>Bruker: Viser fangstdata og alternativer
+        alt Bruker velger et favorittsted fra listen
+            Hobbyfisker ->> App: Trykker på et favorittsted
+            App ->> Database: Hent detaljert info
+            Database -->> App: Returnerer sted-detaljer
+            App -->> Hobbyfisker: Viser fangstdata og alternativer
 
             alt Velger: Legg til fangst
-                Bruker->>App: Går til fangstregistrering
-                App->>Bruker: Viser skjema
-                Bruker->>App: Trykk: Lagre
-                App->>Database: Lagre fangstdata
-                Database-->>App: Bekreftelse
-                App-->>Bruker: Oppdatert info
+                Hobbyfisker ->> App: Går til fangstregistrering
+                App -->> Hobbyfisker: Viser skjema
+                Hobbyfisker ->> App: Fyller ut og trykker "Lagre"
+                App ->> Database: Lagre fangstdata
+                Database -->> App: Bekreftelse
+                App -->> Hobbyfisker: Oppdatert info
             else Velger: Vis på kart
-                Bruker->>App: Trykk: Vis på kart
-                App->>KartVisning: Zoom til område
-                KartVisning-->>Bruker: Viser område markert
+                Hobbyfisker ->> App: Trykk "Vis på kart"
+                App ->> KartVisning: Zoom til område
+                KartVisning -->> Hobbyfisker: Viser område markert
+            else Velger: Se været
+                Hobbyfisker ->> App: Trykk "Se været"
+                App ->> Værvarsel-skjerm: Hent værdata
+                Værvarsel-skjerm -->> App: Returnerer værdata
+                App -->> Hobbyfisker: Viser værmelding
+            else Velger: Slett sted
+                Hobbyfisker ->> App: Trykk "Slett"
+                App -->> Hobbyfisker: Viser advarsel "Er du sikker?"
+                Hobbyfisker ->> App: Bekrefter sletting
+                App ->> Database: Slett favorittsted
+                App -->> Hobbyfisker: Oppdatert liste over favoritt-steder
             end
-
-            else Bruker trykker: Slett
-                Bruker->>App: Bekrefter sletting
-                App->>Database: Slett favoritt
-                Database-->>App: Bekreftelse
-                App-->>Bruker: Oppdatert liste
         end
 
-    else Tom liste med favorittområder
-        App-->>Bruker: Viser melding: Trykk + for å legge til favoritter
+    else Ingen favorittsteder
+        App -->> Hobbyfisker: Viser melding "Trykk + for å legge til favoritter"
     end
 ```
