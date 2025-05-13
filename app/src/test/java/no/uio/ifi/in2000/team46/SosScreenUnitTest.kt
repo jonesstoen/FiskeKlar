@@ -13,7 +13,7 @@ class SosScreenUnitTest {
     }
 
     @Test
-    // 1° change in lat is 111,19 km ≈ 60,04 NM
+    // 1 degree change in latitude is approx 60 NM
     fun haversine_one_degree_latitude_is_ca_60_nm() {
         val distance = haversine(0.0, 0.0, 1.0, 0.0)
         assertEquals(60.04, distance, 0.1)
@@ -36,7 +36,7 @@ class SosScreenUnitTest {
     @Test
     fun does_not_throw_for_extreme_coordinate_values() {
         try {
-            // Utenfor normale koordinatgrenser, men skal ikke kaste unntak
+            // Should not throw an exception for extreme coordinates
             haversine(1000.0, -1000.0, 5000.0, 2000.0)
         } catch (e: Exception) {
             fail("haversine gives error because unrealistic coordinates: ${e.message}")

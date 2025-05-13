@@ -126,9 +126,9 @@ dependencies {
     testImplementation(libs.slf4j.simple)
 
     tasks.withType<Test> {
-        // Undertrykk Byte-Buddy-advarselen om dynamisk agent-innlasting:
+        // Supress Byte-Buddy-warning
         jvmArgs = (jvmArgs ?: emptyList()) + "-XX:+EnableDynamicAgentLoading"
-        // (Valgfritt) vis deg traceUsage i stedet for de generelle advarslene:
-        // jvmArgs += "-Djdk.instrument.traceUsage"
+
     }
+    testImplementation(kotlin("test"))
 }
