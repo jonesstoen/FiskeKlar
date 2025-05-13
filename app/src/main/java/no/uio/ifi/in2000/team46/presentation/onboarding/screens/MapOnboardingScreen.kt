@@ -46,8 +46,10 @@ enum class OnboardingStepType {
     SEARCH,            // Viser søkefunksjonen
     ZOOM,              // Forklarer zoom-funksjonalitet
     LAYERS,            // Viser lag-menyen
+    LAYER_INFO,        // Forklarer informasjonsboksen for kartlag
     WEATHER,           // Forklarer værvisningen
     LOCATION,          // Viser lokasjonsfunksjonen
+    LONG_PRESS,        // Forklarer langt trykk på kartet
     COMPLETE           // Avslutning av onboarding
 }
 
@@ -230,7 +232,7 @@ fun MapOnboardingScreen(
             ),
             OnboardingFeature(
                 title = "Min posisjon",
-                description = "Trykk her for å sentrere kartet på din nåværende posisjon",
+                description = "Her kan du trykke for å sentrere kartet til din nåværende posisjon",
                 icon = Icons.Default.LocationOn,
                 color = Color(0xFFD32F2F),
                 xPercent = 0.5f,
@@ -246,9 +248,11 @@ fun MapOnboardingScreen(
             OnboardingStepType.WELCOME -> OnboardingStepType.SEARCH
             OnboardingStepType.SEARCH -> OnboardingStepType.ZOOM
             OnboardingStepType.ZOOM -> OnboardingStepType.LAYERS
-            OnboardingStepType.LAYERS -> OnboardingStepType.WEATHER
+            OnboardingStepType.LAYERS -> OnboardingStepType.LAYER_INFO
+            OnboardingStepType.LAYER_INFO -> OnboardingStepType.WEATHER
             OnboardingStepType.WEATHER -> OnboardingStepType.LOCATION
-            OnboardingStepType.LOCATION -> OnboardingStepType.COMPLETE
+            OnboardingStepType.LOCATION -> OnboardingStepType.LONG_PRESS
+            OnboardingStepType.LONG_PRESS -> OnboardingStepType.COMPLETE
             OnboardingStepType.COMPLETE -> {
                 viewModel.hideMapOnboarding()
                 onFinish()
@@ -264,9 +268,11 @@ fun MapOnboardingScreen(
             OnboardingStepType.SEARCH -> OnboardingStepType.WELCOME
             OnboardingStepType.ZOOM -> OnboardingStepType.SEARCH
             OnboardingStepType.LAYERS -> OnboardingStepType.ZOOM
-            OnboardingStepType.WEATHER -> OnboardingStepType.LAYERS
+            OnboardingStepType.LAYER_INFO -> OnboardingStepType.LAYERS
+            OnboardingStepType.WEATHER -> OnboardingStepType.LAYER_INFO
             OnboardingStepType.LOCATION -> OnboardingStepType.WEATHER
-            OnboardingStepType.COMPLETE -> OnboardingStepType.LOCATION
+            OnboardingStepType.LONG_PRESS -> OnboardingStepType.LOCATION
+            OnboardingStepType.COMPLETE -> OnboardingStepType.LONG_PRESS
         }
     }
     
@@ -401,7 +407,7 @@ fun MapOnboardingScreen(
                                     .background(
                                         if (isCurrentStep) {
                                             when (step) {
-                                                OnboardingStepType.WELCOME -> Color(0xFF1B4965)
+                                                OnboardingStepType.WELCOME -> Color(0xFFF52860)
                                                 OnboardingStepType.SEARCH -> features[0].color
                                                 OnboardingStepType.ZOOM -> features[1].color
                                                 OnboardingStepType.LAYERS -> features[2].color
@@ -434,19 +440,23 @@ fun MapOnboardingScreen(
                                     OnboardingStepType.SEARCH -> features[0].icon
                                     OnboardingStepType.ZOOM -> features[1].icon
                                     OnboardingStepType.LAYERS -> features[2].icon
+                                    OnboardingStepType.LAYER_INFO -> Icons.Default.Info
                                     OnboardingStepType.WEATHER -> features[3].icon
                                     OnboardingStepType.LOCATION -> features[4].icon
+                                    OnboardingStepType.LONG_PRESS -> Icons.Default.TouchApp
                                     OnboardingStepType.COMPLETE -> Icons.Default.CheckCircle
                                 },
                                 contentDescription = null,
                                 modifier = Modifier.size(48.dp),
                                 tint = when (step) {
-                                    OnboardingStepType.WELCOME -> Color(0xFF1B4965)
+                                    OnboardingStepType.WELCOME -> Color(0xFFF52860)
                                     OnboardingStepType.SEARCH -> features[0].color
                                     OnboardingStepType.ZOOM -> features[1].color
                                     OnboardingStepType.LAYERS -> features[2].color
+                                    OnboardingStepType.LAYER_INFO -> Color(0xFF42A5F5)
                                     OnboardingStepType.WEATHER -> features[3].color
                                     OnboardingStepType.LOCATION -> features[4].color
+                                    OnboardingStepType.LONG_PRESS -> Color(0xFFEF8632 )
                                     OnboardingStepType.COMPLETE -> Color(0xFF4CAF50)
                                 }
                             )
@@ -456,24 +466,28 @@ fun MapOnboardingScreen(
                             // Tittel
                             Text(
                                 text = when (step) {
-                                    OnboardingStepType.WELCOME -> "Velkommen til Havvarsel"
+                                    OnboardingStepType.WELCOME -> "Velkommen til kartet!"
                                     OnboardingStepType.SEARCH -> features[0].title
                                     OnboardingStepType.ZOOM -> features[1].title
                                     OnboardingStepType.LAYERS -> features[2].title
+                                    OnboardingStepType.LAYER_INFO -> "Informasjonsboks"
                                     OnboardingStepType.WEATHER -> features[3].title
                                     OnboardingStepType.LOCATION -> features[4].title
+                                    OnboardingStepType.LONG_PRESS -> "Langt trykk"
                                     OnboardingStepType.COMPLETE -> "Du er klar!"
                                 },
                                 style = MaterialTheme.typography.titleLarge,
                                 fontWeight = FontWeight.Bold,
                                 textAlign = TextAlign.Center,
                                 color = when (step) {
-                                    OnboardingStepType.WELCOME -> Color(0xFF1B4965)
+                                    OnboardingStepType.WELCOME -> Color(0xFFF52860)
                                     OnboardingStepType.SEARCH -> features[0].color
                                     OnboardingStepType.ZOOM -> features[1].color
                                     OnboardingStepType.LAYERS -> features[2].color
+                                    OnboardingStepType.LAYER_INFO -> Color(0xFF42A5F5)
                                     OnboardingStepType.WEATHER -> features[3].color
                                     OnboardingStepType.LOCATION -> features[4].color
+                                    OnboardingStepType.LONG_PRESS -> Color(0xFFEF8632)
                                     OnboardingStepType.COMPLETE -> Color(0xFF4CAF50)
                                 }
                             )
@@ -483,12 +497,14 @@ fun MapOnboardingScreen(
                             // Beskrivelse
                             Text(
                                 text = when (step) {
-                                    OnboardingStepType.WELCOME -> "La oss ta en rask gjennomgang av funksjonene i appen."
+                                    OnboardingStepType.WELCOME -> "La oss ta en rask gjennomgang av funksjonene til kartet."
                                     OnboardingStepType.SEARCH -> features[0].description
                                     OnboardingStepType.ZOOM -> features[1].description
                                     OnboardingStepType.LAYERS -> features[2].description
+                                    OnboardingStepType.LAYER_INFO -> "Når du aktiverer et kartlag vil det dukke opp en informasjonsboks på kartet, som gir deg informasjon om laget"
                                     OnboardingStepType.WEATHER -> features[3].description
                                     OnboardingStepType.LOCATION -> features[4].description
+                                    OnboardingStepType.LONG_PRESS -> "Trykk og hold inne hvor som helst på kartet for å legge ut en markør og se været for den posisjonen"
                                     OnboardingStepType.COMPLETE -> "Du har nå lært om de viktigste funksjonene i appen. God tur på sjøen!"
                                 },
                                 style = MaterialTheme.typography.bodyLarge,
@@ -523,8 +539,10 @@ fun MapOnboardingScreen(
                                             OnboardingStepType.SEARCH -> features[0].color
                                             OnboardingStepType.ZOOM -> features[1].color
                                             OnboardingStepType.LAYERS -> features[2].color
+                                            OnboardingStepType.LAYER_INFO -> Color(0xFF42A5F5)
                                             OnboardingStepType.WEATHER -> features[3].color
                                             OnboardingStepType.LOCATION -> features[4].color
+                                            OnboardingStepType.LONG_PRESS -> Color(0xFFEF8632)
                                             OnboardingStepType.COMPLETE -> Color(0xFF4CAF50)
                                             else -> Color(0xFF1B4965)
                                         }
@@ -541,12 +559,14 @@ fun MapOnboardingScreen(
                                 onClick = goToNextStep,
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = when (currentStep) {
-                                        OnboardingStepType.WELCOME -> Color(0xFF1B4965)
+                                        OnboardingStepType.WELCOME -> Color(0xFFF52860)
                                         OnboardingStepType.SEARCH -> features[0].color
                                         OnboardingStepType.ZOOM -> features[1].color
                                         OnboardingStepType.LAYERS -> features[2].color
+                                        OnboardingStepType.LAYER_INFO -> Color(0xFF42A5F5)
                                         OnboardingStepType.WEATHER -> features[3].color
                                         OnboardingStepType.LOCATION -> features[4].color
+                                        OnboardingStepType.LONG_PRESS -> Color(0xFFEF8632)
                                         OnboardingStepType.COMPLETE -> Color(0xFF4CAF50)
                                     }
                                 )

@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.data.remote.api.WeatherService
@@ -202,19 +203,54 @@ class WeatherDetailViewModel(
         }
     }
 
+    // Cache for weather data to avoid unnecessary API calls
+    private val weatherCache = mutableMapOf<Pair<Double, Double>, Pair<Long, WeatherDetailState>>()
+    private val CACHE_EXPIRY_MS = 5 * 60 * 1000 // 5 minutes
+    
     @RequiresApi(Build.VERSION_CODES.O)
     fun updateLocation(latitude: Double, longitude: Double, locationName: String) {
         viewModelScope.launch {
+            // Check if we have cached data that's still valid
+            val cacheKey = Pair(latitude, longitude)
+            val cachedData = weatherCache[cacheKey]
+            val currentTime = System.currentTimeMillis()
+            
+            if (cachedData != null && (currentTime - cachedData.first < CACHE_EXPIRY_MS)) {
+                // Use cached data if it's still valid
+                val cachedState = cachedData.second
+                _uiState.update { 
+                    cachedState.copy(locationName = locationName, isLoading = false)
+                }
+                return@launch
+            }
+            
+            // No valid cache, need to fetch data
             _uiState.update { it.copy(isLoading = true, error = null) }
+            
             try {
-                val weatherDetails = weatherService.getWeatherDetails(latitude, longitude)
+                // Fetch both basic weather and forecast concurrently
+                val weatherDetailsDeferred = viewModelScope.async { 
+                    weatherService.getWeatherDetails(latitude, longitude) 
+                }
+                val forecastsDeferred = viewModelScope.async { 
+                    weatherService.getDetailedForecast(latitude, longitude) 
+                }
+                
+                // Wait for both to complete
+                val weatherDetails = weatherDetailsDeferred.await()
+                val forecasts = forecastsDeferred.await()
+                
                 val weatherData = WeatherData(
                     temperature = weatherDetails.temperature,
                     symbolCode = weatherDetails.symbolCode ?: "",
                     latitude = latitude,
                     longitude = longitude
                 )
-                _uiState.update { it.copy(
+                
+                val filteredForecasts = filterAndProcessForecasts(forecasts)
+                
+                // Update state with all data at once
+                val newState = _uiState.value.copy(
                     weatherData = weatherData,
                     locationName = locationName,
                     feelsLike = weatherDetails.feelsLike ?: 0.0,
@@ -223,11 +259,18 @@ class WeatherDetailViewModel(
                     weatherDescription = weatherDetails.description ?: "",
                     windSpeed = weatherDetails.windSpeed,
                     windDirection = weatherDetails.windDirection,
+                    forecasts = filteredForecasts,
                     isLoading = false,
                     error = null,
                     isSearchExpanded = false
-                )}
-                loadForecast(latitude, longitude)
+                )
+                
+                // Cache the new state
+                weatherCache[cacheKey] = Pair(currentTime, newState)
+                
+                // Update the UI
+                _uiState.update { newState }
+                
             } catch (e: Exception) {
                 _uiState.update { it.copy(
                     isLoading = false,

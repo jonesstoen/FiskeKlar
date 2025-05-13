@@ -1,5 +1,7 @@
 package no.uio.ifi.in2000.team46.presentation.map.components.controls
 
+import android.R
+import android.R.attr.onClick
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,6 +20,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.BasicTextField
@@ -28,6 +31,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.colorResource
 import no.uio.ifi.in2000.team46.data.remote.api.Feature
 import org.maplibre.android.maps.MapLibreMap
 
@@ -123,7 +127,7 @@ fun SearchBox(
                     bottomStart = 0.dp,
                     bottomEnd = 0.dp
                 ) else RoundedCornerShape(24.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
+                color = MaterialTheme.colorScheme.secondaryContainer,
                 modifier = Modifier.clickable(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
@@ -183,7 +187,7 @@ fun SearchBox(
                                         Text(
                                             text = "Søk etter sted...",
                                             style = MaterialTheme.typography.bodyLarge,
-                                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer
                                         )
                                     }
                                     innerTextField()
@@ -207,7 +211,7 @@ fun SearchBox(
                                     Icon(
                                         imageVector = Icons.Default.Clear,
                                         contentDescription = "Tøm søk",
-                                        tint = Color.Gray
+                                        tint = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
                             } else {
@@ -231,7 +235,7 @@ fun SearchBox(
                                 Icon(
                                     imageVector = Icons.Default.Cancel,
                                     contentDescription = "Lukk søkeboks",
-                                    tint = Color.Gray
+                                    tint = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
                         }
@@ -241,7 +245,7 @@ fun SearchBox(
                     // Show a thin line only when results are visible
                     if (showResults) {
                         Divider(
-                            color = Color(0xFFE0E0E0),
+                            color = MaterialTheme.colorScheme.outline,
                             thickness = 1.dp
                         )
                     }
@@ -263,7 +267,7 @@ fun SearchBox(
                         bottomStart = 24.dp,
                         bottomEnd = 24.dp
                     ),
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.secondaryContainer
                 ) {
                     LazyColumn(
                         modifier = Modifier
@@ -277,12 +281,14 @@ fun SearchBox(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(horizontal = 16.dp, vertical = 8.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+
+
                                 ) {
                                     Text(
                                         text = "Nylige søk",
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = MaterialTheme.colorScheme.onSurface
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
                                 }
                             }
@@ -329,7 +335,7 @@ fun SearchResultItem(
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(vertical = 2.dp),
-        color = Color.White
+        color = MaterialTheme.colorScheme.secondaryContainer,
     ) {
         Row(
             modifier = Modifier
@@ -343,7 +349,7 @@ fun SearchResultItem(
                 modifier = Modifier
                     .padding(end = 16.dp, top = 2.dp)
                     .size(20.dp),
-                tint = Color.DarkGray
+                tint = MaterialTheme.colorScheme.onSecondaryContainer
             )
 
             Column(
@@ -353,7 +359,7 @@ fun SearchResultItem(
                 Text(
                     text = feature.properties.name,
                     style = MaterialTheme.typography.titleMedium,
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
 
                 // Location information
@@ -372,7 +378,7 @@ fun SearchResultItem(
                     Text(
                         text = location,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.3f)
                     )
                 }
             }
@@ -382,7 +388,7 @@ fun SearchResultItem(
         HorizontalDivider(
             modifier = Modifier.padding(start = 52.dp),
             thickness = 0.5.dp,
-            color = Color(0xFFE0E0E0)
+            color = MaterialTheme.colorScheme.outline
         )
     }
 }
