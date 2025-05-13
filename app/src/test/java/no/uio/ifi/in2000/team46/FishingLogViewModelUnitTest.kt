@@ -20,32 +20,31 @@ import org.junit.Assert.*
 @OptIn(ExperimentalCoroutinesApi::class)
 class FishingLogViewModelTest {
 
+    // test-dispatcher for running coroutines in the test
     private val testDispatcher = UnconfinedTestDispatcher()
 
-    // mocks
+    // mocks for repositories
     private lateinit var fishLogRepo: FishLogRepository
     private lateinit var fishTypeRepo: FishTypeRepository
 
-    // system under test
+    // viewmodel for the test
     private lateinit var vm: FishingLogViewModel
 
     @Before
     fun setUp() {
-        // Sett hoved-dispatcher til vår test-dispatcher
+        // Setting the main dispatcher to the test dispatcher
         Dispatchers.setMain(testDispatcher)
 
-        // lag mocks
+        // mock repositories
         fishLogRepo = mockk()
         fishTypeRepo = mockk()
 
-        // mock static Log så det ikke feiler i JVM-test
+        // mock static Log so we don't get logcat errors
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
 
         // prepare repositories' flows
-        // entries initial: tom liste
         every { fishLogRepo.getAllLogsFlow() } returns MutableStateFlow(emptyList())
-        // fishTypes initial: tom liste
         every { fishTypeRepo.allTypes } returns MutableStateFlow(emptyList())
 
         // init ViewModel
@@ -54,14 +53,14 @@ class FishingLogViewModelTest {
 
     @After
     fun tearDown() {
-        // tilbakestill dispatcher og unmock
+        // resetting the main dispatcher
         Dispatchers.resetMain()
         unmockkStatic(Log::class)
     }
 
+
     @Test
     fun `entries initial value is empty list`() {
-        // stateIn henter umiddelbart gjeldende verdi fra flow
         assertTrue(vm.entries.value.isEmpty())
     }
 
@@ -72,7 +71,6 @@ class FishingLogViewModelTest {
 
     @Test
     fun `addEntry calls repository insert with correct FishingLog`() = runTest {
-        // arrange: gjør insert klar til å coEvery
         coEvery { fishLogRepo.insert(any()) } just Runs
 
         // sample input
@@ -87,11 +85,12 @@ class FishingLogViewModelTest {
         val lon = 10.8
         val count = 1
 
-        // act
+        // adding the sample entry
         vm.addEntry(date, time, loc, type, weight, notes, uri, lat, lon, count)
         advanceUntilIdle()
 
-        // assert: fang argumentet
+
+        // verifying that the repository's insert method was called with the correct FishingLog
         val slot = slot<FishingLog>()
         coVerify(exactly = 1) { fishLogRepo.insert(capture(slot)) }
 

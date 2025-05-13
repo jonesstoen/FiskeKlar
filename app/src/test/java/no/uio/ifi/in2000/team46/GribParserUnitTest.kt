@@ -6,7 +6,6 @@ import no.uio.ifi.in2000.team46.data.local.parser.GribParser
 import org.junit.Before
 import org.junit.After
 import org.junit.Test
-import org.junit.Assert.*
 import ucar.nc2.NetcdfFile
 import ucar.nc2.NetcdfFiles
 import ucar.nc2.Variable
@@ -20,12 +19,7 @@ import kotlin.test.assertFailsWith
 import kotlin.math.atan2
 import org.junit.Assert.assertEquals
 
-
 // DISCLAIMER: ChatGPT-4o was used to create this test class.
-
-
-
-
 
 class GribParserUnitTest {
 
@@ -35,13 +29,16 @@ class GribParserUnitTest {
 
     @Before
     fun setUp() {
+        // stub Android Log to prevent crashes in JVM tests
         mockkStatic(Log::class)
         every { Log.d(any(), any()) } returns 0
 
+        // stub NetcdfFiles.open to return our mocked NetcdfFile
         mockkStatic(NetcdfFiles::class)
         ncfile = mockk(relaxed = true)
         every { NetcdfFiles.open(dummy.absolutePath) } returns ncfile
 
+        // stub CalendarDateUnit to convert hour offsets to timestamps
         mockkStatic(CalendarDateUnit::class)
         calendarUnit = mockk()
         every { CalendarDateUnit.of(any(), any()) } returns calendarUnit
@@ -55,12 +52,15 @@ class GribParserUnitTest {
 
     @After
     fun tearDown() {
+        // reset all mocks
         unmockkAll()
     }
 
     @Test
     fun parseVectorFile_missing_uVar_throws() {
+        //  simulate missing u component variable
         every { ncfile.findVariable("uComp") } returns null
+        // act & assert: parsing should fail with IllegalStateException
         assertFailsWith<IllegalStateException> {
             GribParser().parseVectorFile(dummy, "uComp", "vComp", VectorType.WIND)
         }
@@ -68,6 +68,7 @@ class GribParserUnitTest {
 
     @Test
     fun parseVectorFile_singlePoint() {
+        //  mock required variables
         val uVar = mockk<Variable>()
         val vVar = mockk<Variable>()
         val latVar = mockk<Variable>()
@@ -107,8 +108,10 @@ class GribParserUnitTest {
         every { uVar.read() } returns uData
         every { vVar.read() } returns vData
 
+        // parse vector file
         val result = GribParser().parseVectorFile(dummy, "uComp", "vComp", VectorType.WIND)
 
+        // verify single WindVector with correct properties
         assertEquals(1, result.size)
         val vec = result[0] as WindVector
 
@@ -118,6 +121,7 @@ class GribParserUnitTest {
         assertEquals((Math.toDegrees(atan2(3.0, 4.0)) + 360) % 360, vec.direction, 1e-6)
         assertEquals(0L, vec.timestamp)
 
+        // Verify the file was closed
         verify { ncfile.close() }
     }
 }
