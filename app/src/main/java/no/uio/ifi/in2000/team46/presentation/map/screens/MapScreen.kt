@@ -102,6 +102,7 @@ import no.uio.ifi.in2000.team46.data.repository.FavoriteRepository
 // MAP SCREEN
 // =====================
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(

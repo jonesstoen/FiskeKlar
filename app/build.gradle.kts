@@ -94,6 +94,7 @@ dependencies {
     implementation(libs.androidx.media3.common.ktx)
 
     testImplementation(libs.junit)
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

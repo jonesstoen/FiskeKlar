@@ -74,7 +74,7 @@ class PrecipitationViewModelTest {
 
     @Test
     fun `fetch stores successful result in data`() = runTest {
-        val sampleData = listOf(PrecipitationPoint(60.0, 10.0, 3.0))
+        val sampleData = listOf(PrecipitationPoint(60.0, 10.0, 3.0, 10))
         coEvery { repo.getPrecipitationData() } returns Result.Success(sampleData)
 
         viewModel.toggleLayerVisibility()
