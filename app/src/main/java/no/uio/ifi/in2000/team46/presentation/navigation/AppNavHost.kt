@@ -70,7 +70,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.rememberCoroutineScope
 import java.net.URLEncoder
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun AppNavHost(
     navController: NavHostController,
@@ -84,17 +84,10 @@ fun AppNavHost(
     profileViewModel: ProfileViewModel,
     onboardingViewModel: OnboardingViewModel,
     weatherService: WeatherService,
+    favoritesViewModel: FavoritesViewModel
 ) {
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
-    val context = LocalContext.current
-    val db = AppDatabase.getDatabase(context)
-    val fishLogRepo = FishLogRepository(db.fishingLogDao())
-    val favoriteRepo = FavoriteRepository(db.favoriteLocationDao())
-    val favoritesViewModel = FavoritesViewModel(
-        favoriteRepo,
-        fishLogRepo
-    )
 
 
     Scaffold(
@@ -147,9 +140,6 @@ fun AppNavHost(
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("home") {
-                val ctx = LocalContext.current
-                val db = AppDatabase.getDatabase(ctx)
-                val userRepo = UserRepository(db.userDao())
                 HomeScreen(
                     viewModel = profileViewModel,
                     onboardingViewModel = onboardingViewModel,
@@ -173,7 +163,7 @@ fun AppNavHost(
             ) { backStack ->
                 // Hent showFavorites-parameteren
                 val showFavorites = backStack.arguments?.getBoolean("showFavorites") ?: false
-                
+
                 MapScreen(
                     mapView = mapView,
                     mapViewModel = mapViewModel,

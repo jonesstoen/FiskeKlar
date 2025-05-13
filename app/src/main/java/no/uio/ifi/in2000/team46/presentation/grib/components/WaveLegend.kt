@@ -18,7 +18,7 @@ fun WaveLegend(
     // Bakgrunn med litt gjennomsiktighet
     Column(
         modifier = modifier
-            .background(Color.White.copy(alpha = 0.8f), shape = RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), shape = RoundedCornerShape(8.dp))
             .padding(8.dp)
     ) {
         Text("Bølgehøyde (m)", style = MaterialTheme.typography.titleSmall)

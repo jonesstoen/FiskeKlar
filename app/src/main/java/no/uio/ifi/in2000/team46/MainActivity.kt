@@ -1,12 +1,11 @@
 package no.uio.ifi.in2000.team46
 
-import android.os.Build
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.annotation.RequiresApi
 import androidx.navigation.compose.rememberNavController
 import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
 import no.uio.ifi.in2000.team46.data.repository.FavoriteRepository
@@ -74,7 +73,6 @@ class MainActivity : ComponentActivity() {
 
     private val onboardingViewModel: OnboardingViewModel by viewModels()
 
-    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // initialize MapLibre
@@ -101,7 +99,8 @@ class MainActivity : ComponentActivity() {
                     fishLogViewModel = fishLogViewModel,
                     profileViewModel = profileViewModel,
                     onboardingViewModel = onboardingViewModel,
-                    weatherService = weatherService
+                    weatherService = weatherService,
+                    favoritesViewModel = favoritesViewModel,
                 )
             }
         }

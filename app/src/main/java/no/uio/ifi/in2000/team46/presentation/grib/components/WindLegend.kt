@@ -12,7 +12,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import no.uio.ifi.in2000.team46.R
-
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 @Composable
 fun WindLegend(
@@ -40,36 +41,56 @@ fun WindLegend(
     Surface(
         modifier = modifier
             .padding(8.dp)
-            .width(240.dp),
+            .width(170.dp)
+            .height(300.dp),
         shape = RoundedCornerShape(12.dp),
         tonalElevation = 6.dp,
         color = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f)
     ) {
         Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxSize()
         ) {
-            Text("Vindstyrker (m/s)", style = MaterialTheme.typography.titleSmall)
+            // always visible header
+            Column(
+                modifier = Modifier
+                    .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 4.dp)
+            ) {
+                Text("Vindstyrker (m/s)", style = MaterialTheme.typography.titleSmall)
+                HorizontalDivider(
+                    modifier = Modifier.padding(top = 4.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                )
+            }
 
-            windLegendItems.forEach { (label, baseName) ->
-                val resName = if (isDark) "${baseName}_white" else baseName
-                val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
+            // scrollable legend entries
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(horizontal = 12.dp, vertical = 4.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                windLegendItems.forEach { (label, baseName) ->
+                    val resName = if (isDark) "${baseName}_white" else baseName
+                    val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
 
-                if (resId != 0) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = resId),
-                            contentDescription = null,
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Text(label, style = MaterialTheme.typography.bodyMedium)
+                    if (resId != 0) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = resId),
+                                contentDescription = null,
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Text(label, style = MaterialTheme.typography.bodyMedium)
+                        }
                     }
                 }
             }
         }
     }
 }
+

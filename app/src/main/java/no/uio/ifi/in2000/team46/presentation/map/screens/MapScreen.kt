@@ -90,12 +90,14 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
 import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
+
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import no.uio.ifi.in2000.team46.utils.NetworkUtils
 import no.uio.ifi.in2000.team46.presentation.map.components.NetworkConnectivityAlert
+import no.uio.ifi.in2000.team46.presentation.map.components.LegendPanel
+import no.uio.ifi.in2000.team46.presentation.map.components.controls.LegendController
 import no.uio.ifi.in2000.team46.presentation.map.favorites.FavoritesLayerViewModel
 import no.uio.ifi.in2000.team46.data.repository.FavoriteRepository
-
 // =====================
 // MAP SCREEN
 // =====================
@@ -132,7 +134,7 @@ fun MapScreen(
             favoritesViewModel.setLayerVisibility(true)
         }
     }
-    
+
     // noen av verdiene som vi kunne brukt remembersavable på støtter ikke den funksjonaliteten derfor er de bare remember
     // ----------- State og permissions -----------
     
@@ -166,9 +168,8 @@ fun MapScreen(
     val styleUrl = mapViewModel.getStyleUrl(isDark)
     var isLayerMenuExpanded by remember { mutableStateOf(false) }
 
-    // State for showing the legend
-    var openLegend by rememberSaveable { mutableStateOf<Int?>(null) }
-    
+
+
     // Hent tilstanden for om initial zoom er utført fra ViewModel
     val hasPerformedInitialZoom by mapViewModel.hasPerformedInitialZoom.collectAsState()
 
@@ -301,6 +302,18 @@ fun MapScreen(
         factory = PrecipitationViewModelFactory(
             GribRepository(GribRetrofitInstance.GribApi, context)
         )
+    )
+    // controller for showing the legends
+    val legendController = remember { LegendController() }
+
+    LegendPanel(
+        isDark = isDark,
+        legendController = legendController,
+        gribViewModel = gribViewModel,
+        waveViewModel = waveViewModel,
+        precipitationViewModel = precipitationViewModel,
+        currentViewModel = currentViewModel,
+        metAlertsViewModel = metAlertsViewModel
     )
 
     // ----------- MetAlerts bottom sheet -----------
@@ -508,15 +521,15 @@ fun MapScreen(
             // 2) Lag
             mapLibreMap?.let { map ->
                 MapLayers(
-                    map = map,
-                    mapView = mapView,
-                    aisViewModel = aisViewModel,
+                    map        = map,
+                    mapView    = mapView,
+                    aisViewModel       = aisViewModel,
                     metAlertsViewModel = metAlertsViewModel,
-                    forbudViewModel = forbudViewModel,
-                    gribViewModel = gribViewModel,
-                    currentViewModel = currentViewModel,
-                    driftViewModel = driftViewModel,
-                    waveViewModel = waveViewModel,
+                    forbudViewModel    = forbudViewModel,
+                    gribViewModel      = gribViewModel,
+                    currentViewModel   = currentViewModel,
+                    driftViewModel     = driftViewModel,
+                    waveViewModel      = waveViewModel,
                     precipitationViewModel = precipitationViewModel,
                     favoritesViewModel = favoritesViewModel,
                     isDarkTheme = isDark
@@ -527,49 +540,7 @@ fun MapScreen(
             val isPrecipitationVisible by precipitationViewModel.isLayerVisible.collectAsState()
             val isMetAlertsVisible by metAlertsViewModel.isLayerVisible.collectAsState()
 
-            LegendToggle(
-                isLayerVisible = isWaveVisible && waveResult is Result.Success,
-                verticalPosition = 0,
-                isOpen            = openLegend == 0,
-                onToggle          = { openLegend = if (openLegend == 0) null else 0 }
 
-            ) {
-                WaveLegend(modifier = Modifier.align(Alignment.CenterEnd))
-            }
-
-
-            LegendToggle(
-                isLayerVisible = isMetAlertsVisible,
-                verticalPosition = 1,
-                isOpen            = openLegend == 1,
-                onToggle          = { openLegend = if (openLegend == 1) null else 1 }
-            ) {
-                MetAlertsLegend(modifier = Modifier.align(Alignment.CenterEnd))
-            }
-
-            LegendToggle(
-                isLayerVisible = isWindLayerVisible,
-                verticalPosition = 2,
-                isOpen            = openLegend == 2,
-                onToggle          = { openLegend = if (openLegend == 2) null else 2 }
-            ) {
-                WindLegend(
-                    modifier = Modifier.align(Alignment.CenterEnd),
-                    isDark = isDark
-                )
-            }
-
-            // Precipitation‐legend
-            LegendToggle(
-                isLayerVisible = isPrecipitationVisible,
-                verticalPosition = 3,
-                isOpen            = openLegend == 3,
-                onToggle          = { openLegend = if (openLegend == 3) null else 3 }
-            ) {
-                PrecipitationLegend(
-                    modifier = Modifier.align(Alignment.CenterEnd)
-                )
-            }
 
 
             // 3) Kontroller
@@ -598,11 +569,11 @@ fun MapScreen(
                 onSearchResultSelected = { feature ->
                     searchViewModel.addToHistory(feature)
                     selectedSearchResult.value = feature
-                    
+
                     // Hent koordinater fra søkeresultatet
                     val latitude = feature.geometry.coordinates[1]
                     val longitude = feature.geometry.coordinates[0]
-                    
+
                     // Zoom til lokasjonen
                     map.animateCamera(
                         CameraUpdateFactory.newLatLngZoom(
@@ -610,7 +581,7 @@ fun MapScreen(
                             14.0
                         )
                     )
-                    
+
                     // Legg til markør på kartet
                     map.getStyle { style ->
                         // Fjern eksisterende markør først

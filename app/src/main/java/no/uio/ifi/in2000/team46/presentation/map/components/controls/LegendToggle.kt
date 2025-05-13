@@ -38,7 +38,7 @@ fun LegendToggle(
     }
 
     // Beregn vertical offset for Info-knappen
-    val bottomOffset = 140.dp + iconSpacing * verticalPosition
+    val bottomOffset = 430.dp + iconSpacing * verticalPosition
 
     // 1) Info-knapp
     if (isLayerVisible) {
