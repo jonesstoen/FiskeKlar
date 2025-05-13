@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -42,7 +43,6 @@ import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
 import no.uio.ifi.in2000.team46.presentation.fishlog.viewmodel.FishingLogViewModel
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import java.time.LocalTime
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
@@ -89,6 +89,11 @@ fun FishingLogScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Fiskelogg") },
+                navigationIcon = {
+                    IconButton(onClick = { onNavigate("home") }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Tilbake til hjem")
+                    }
+                },
                 actions = {
                     IconButton(onClick = { showDeleteDialog = true }) {
                         Icon(Icons.Default.Delete, contentDescription = "Slett alle", tint = Color.Red)
@@ -160,9 +165,7 @@ fun FishingEntryCard(
     onClick: () -> Unit
 ) {
     val dateFmt = DateTimeFormatter.ofPattern("d. MMMM yyyy", Locale("no"))
-    val timeFmt = DateTimeFormatter.ofPattern("HH:mm")
     val dateText = LocalDate.parse(entry.date).format(dateFmt)
-    val timeText = LocalTime.parse(entry.time).format(timeFmt)
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
@@ -195,7 +198,7 @@ fun FishingEntryCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "$dateText  •  $timeText",
+                    text = "$dateText",
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(

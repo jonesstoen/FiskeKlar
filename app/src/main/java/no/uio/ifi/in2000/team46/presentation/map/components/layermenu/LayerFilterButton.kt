@@ -18,8 +18,9 @@ import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.*
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
+import no.uio.ifi.in2000.team46.presentation.map.favorites.FavoritesLayerViewModel
 
-enum class LayerCategory { NONE, TRAFFIC, WARNINGS, GRIB }
+enum class LayerCategory { NONE, TRAFFIC, WARNINGS, GRIB, FAVORITES }
 
 @Composable
 fun LayerFilterButton(
@@ -31,6 +32,7 @@ fun LayerFilterButton(
     driftViewModel: DriftViewModel,
     waveViewModel: WaveViewModel,
     precipitationViewModel: PrecipitationViewModel,
+    favoritesViewModel: FavoritesLayerViewModel,
     isExpanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     onShowWindSliders: () -> Unit,
@@ -50,6 +52,7 @@ fun LayerFilterButton(
     val isDriftLayerVisible by driftViewModel.isLayerVisible.collectAsState()
     val isWaveLayerVisible by waveViewModel.isLayerVisible.collectAsState()
     val isPrecipitationVisible by precipitationViewModel.isLayerVisible.collectAsState()
+    val isFavoritesLayerVisible by favoritesViewModel.isLayerVisible.collectAsState()
     val selectedVesselTypes by aisViewModel.selectedVesselTypes.collectAsState()
     val isLoading by aisViewModel.isLoading.collectAsState()
     val showSliders by gribViewModel.showWindSliders.collectAsState()
@@ -119,6 +122,7 @@ fun LayerFilterButton(
                             driftViewModel.deactivateLayer()
                             waveViewModel.deactivateLayer()
                             precipitationViewModel.deactivateLayer()
+                            favoritesViewModel.setLayerVisibility(false)
                         }
                     )
 
@@ -163,6 +167,13 @@ fun LayerFilterButton(
                         onShowCurrentSliders = onShowCurrentSliders,
                         onShowPrecipSliders = onShowPrecipSliders,
                         onLayerMenuExpandedChange = onExpandedChange,
+                        onBack = { selectedCategory = LayerCategory.NONE }
+                    )
+                    
+                    LayerCategory.FAVORITES -> FavoritesLayerMenu(
+                        isChecked = isFavoritesLayerVisible,
+                        onToggle = { favoritesViewModel.setLayerVisibility(it) },
+                        onRefresh = { favoritesViewModel.loadFavorites() },
                         onBack = { selectedCategory = LayerCategory.NONE }
                     )
                 }

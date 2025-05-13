@@ -5,7 +5,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +30,8 @@ import androidx.core.content.FileProvider
 import no.uio.ifi.in2000.team46.presentation.fishlog.components.FishTypeDropdown
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Instant
+import java.time.ZoneId
 import no.uio.ifi.in2000.team46.data.repository.LocationRepository
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -48,6 +49,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.SelectableDates
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -87,6 +96,9 @@ fun AddFishingEntryScreen(
     var showAreaInfo by remember { mutableStateOf(false) }
     var showFishTypeInfo by remember { mutableStateOf(false) }
     var showNotesInfo by remember { mutableStateOf(false) }
+    var showDateInfo by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    var dateText by remember { mutableStateOf(date.toString()) }
     val fishTypes by viewModel.fishTypes.collectAsState()
     val locationRepository = remember { LocationRepository(context) }
     var userLocation by remember { mutableStateOf<android.location.Location?>(null) }
@@ -171,7 +183,7 @@ fun AddFishingEntryScreen(
                             )
                         },
                         enabled = {
-                            val isEnabled = location.isNotEmpty() && (!gotCatch || (gotCatch && fishType.isNotEmpty() && weightText.isNotEmpty()))
+                            val isEnabled = location.isNotEmpty() && dateText.isNotEmpty() && (!gotCatch || (gotCatch && fishType.isNotEmpty() && weightText.isNotEmpty()))
                             isEnabled
                         }(),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
@@ -214,7 +226,7 @@ fun AddFishingEntryScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 4.dp),
-                            color = Color(0xFFE3F2FD),
+                            color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Row(
@@ -225,7 +237,8 @@ fun AddFishingEntryScreen(
                                 Text(
                                     "Velg et eksisterende sted du har brukt før, eller legg til et nytt fiskested for gjenbruk senere.",
                                     style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                                 IconButton(onClick = { showLocationInfo = false }) {
                                     Icon(Icons.Default.Close, contentDescription = "Lukk info")
@@ -316,6 +329,114 @@ fun AddFishingEntryScreen(
                     }
                 }
 
+                // Date field
+                Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text("Dato", style = MaterialTheme.typography.titleMedium)
+                        IconButton(onClick = { showDateInfo = !showDateInfo }) {
+                            Icon(Icons.Default.Info, contentDescription = "Info om dato")
+                        }
+                    }
+                    if (showDateInfo) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 4.dp),
+                            color = MaterialTheme.colorScheme.primaryContainer,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "Her skriver du inn datoen for fangsten",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.weight(1f),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                IconButton(onClick = { showDateInfo = false }) {
+                                    Icon(Icons.Default.Close, contentDescription = "Lukk info")
+                                }
+                            }
+                        }
+                    }
+                    // Bruk en Button som ser ut som et tekstfelt
+                    OutlinedButton(
+                        onClick = { showDatePicker = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(4.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = MaterialTheme.colorScheme.onSurface
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
+                            horizontalAlignment = Alignment.Start
+                        ) {
+
+                            Text(
+                                text = dateText,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Text(
+                                text = "Trykk for å velge dato",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 4.dp)
+                            )
+                        }
+                    }
+                    
+                    // DatePicker dialog
+                    if (showDatePicker) {
+                        // Dagens dato som millisekunder siden epoch
+                        val today = LocalDate.now().toEpochDay() * 24 * 60 * 60 * 1000
+                        
+                        val datePickerState = rememberDatePickerState(
+                            initialSelectedDateMillis = date.toEpochDay() * 24 * 60 * 60 * 1000,
+                            // Setter maksimal dato til dagens dato (ingen fremtidige datoer)
+                            selectableDates = object : SelectableDates {
+                                override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                                    // Returnerer true hvis datoen er før eller lik dagens dato
+                                    return utcTimeMillis <= today
+                                }
+                            }
+                        )
+                        
+                        DatePickerDialog(
+                            onDismissRequest = { showDatePicker = false },
+                            confirmButton = {
+                                Button(onClick = {
+                                    datePickerState.selectedDateMillis?.let { millis ->
+                                        val selectedDate = Instant.ofEpochMilli(millis).atZone(ZoneId.systemDefault()).toLocalDate()
+                                        date = selectedDate
+                                        dateText = selectedDate.toString()
+                                    }
+                                    showDatePicker = false
+                                }) {
+                                    Text("OK")
+                                }
+                            },
+                            dismissButton = {
+                                Button(onClick = { showDatePicker = false }) {
+                                    Text("Avbryt")
+                                }
+                            }
+                        ) {
+                            DatePicker(state = datePickerState)
+                        }
+                    }
+                }
 
                 Column {
                     Row(
@@ -358,7 +479,7 @@ fun AddFishingEntryScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 4.dp),
-                            color = Color(0xFFE3F2FD),
+                            color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Row(
@@ -369,7 +490,8 @@ fun AddFishingEntryScreen(
                                 Text(
                                     "Angi hvilken fisk du fanget (f.eks. ørret, torsk, gjedde).",
                                     style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                                 IconButton(onClick = { showFishTypeInfo = false }) {
                                     Icon(Icons.Default.Close, contentDescription = "Lukk info")
@@ -453,7 +575,7 @@ fun AddFishingEntryScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(bottom = 4.dp),
-                            color = Color(0xFFE3F2FD),
+                            color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(8.dp)
                         ) {
                             Row(
@@ -464,7 +586,8 @@ fun AddFishingEntryScreen(
                                 Text(
                                     "Legg til ekstra informasjon som værforhold, agn, teknikk, utstyr eller andre detaljer.",
                                     style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
                                 )
                                 IconButton(onClick = { showNotesInfo = false }) {
                                     Icon(Icons.Default.Close, contentDescription = "Lukk info")

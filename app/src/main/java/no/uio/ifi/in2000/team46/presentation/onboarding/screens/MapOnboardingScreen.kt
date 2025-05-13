@@ -276,7 +276,7 @@ fun MapOnboardingScreen(
         onFinish()
     }
 
-    // Funksjon for u00e5 markere at brukeren har interagert med en funksjon
+    // Funksjon for å markere at brukeren har interagert med en funksjon
     val handleFeatureInteraction = { step: OnboardingStepType ->
         if (currentStep == step) {
             goToNextStep()
@@ -296,13 +296,13 @@ fun MapOnboardingScreen(
                     .clickable(enabled = false) {}
             )
             
-            // Overlay med indikatorer for hver funksjon (oppu00e5 tinten)
+            // Overlay med indikatorer for hver funksjon (oppå tinten)
             Box(modifier = Modifier.fillMaxSize().clickable(enabled = false) {}) {
-                // Hent skjermstu00f8rrelse en gang for alle indikatorer
+                // Hent skjermstørrelse en gang for alle indikatorer
                 val screenWidth = LocalConfiguration.current.screenWidthDp.dp
                 val screenHeight = LocalConfiguration.current.screenHeightDp.dp
                 
-                // Vis indikator basert pu00e5 gjeldende steg
+                // Vis indikator basert på gjeldende steg
                 when (currentStep) {
                     OnboardingStepType.SEARCH -> {
                         FeatureIndicator(

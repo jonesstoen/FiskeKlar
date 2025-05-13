@@ -89,9 +89,12 @@ import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.MapOnboardingV
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.lifecycle.viewModelScope
+import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import no.uio.ifi.in2000.team46.utils.NetworkUtils
 import no.uio.ifi.in2000.team46.presentation.map.components.NetworkConnectivityAlert
+import no.uio.ifi.in2000.team46.presentation.map.favorites.FavoritesLayerViewModel
+import no.uio.ifi.in2000.team46.data.repository.FavoriteRepository
 
 // =====================
 // MAP SCREEN
@@ -111,17 +114,30 @@ fun MapScreen(
     areaPoints: List<Pair<Double, Double>>? = null,
     highlightVessel: HighlightVesselData? = null,
     mapOnboardingViewModel: MapOnboardingViewModel = viewModel(),
-    profileViewModel: ProfileViewModel
+    profileViewModel: ProfileViewModel,
+    showFavorites: Boolean = false
 ) {
+    // Opprett FavoritesLayerViewModel
+    val context = LocalContext.current
+    val db = AppDatabase.getDatabase(context)
+    val favoritesViewModel = remember {
+        FavoritesLayerViewModel(FavoriteRepository(db.favoriteLocationDao()))
+    }
     // Fjern lokal showOnboarding state og bruk ViewModel state direkte
     val showMapOnboarding by mapOnboardingViewModel.showMapOnboarding.collectAsState()
     
+    // Aktiver favorittlaget hvis showFavorites er true
+    LaunchedEffect(showFavorites) {
+        if (showFavorites) {
+            favoritesViewModel.setLayerVisibility(true)
+        }
+    }
+    
     // noen av verdiene som vi kunne brukt remembersavable på støtter ikke den funksjonaliteten derfor er de bare remember
     // ----------- State og permissions -----------
-    val ctx = LocalContext.current
     
     // Check for internet connectivity
-    var isNetworkConnected by remember { mutableStateOf(NetworkUtils.isNetworkAvailable(ctx)) }
+    var isNetworkConnected by remember { mutableStateOf(NetworkUtils.isNetworkAvailable(context)) }
     var showNetworkAlert by remember { mutableStateOf(false) }
     
     // Show alert if network is not connected
@@ -211,7 +227,11 @@ fun MapScreen(
                 map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50))
             } else if (initialLocation != null) {
                 val (lat, lng) = initialLocation
-                //map.addMarker(MarkerOptions().position(LatLng(lat, lng)).title("Favorittpunkt"))
+                // Legg til markør for favorittplasseringen (punkter)
+                map.addMarker(MarkerOptions()
+                    .position(LatLng(lat, lng))
+                    .title("Favorittpunkt")
+                )
                 map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 14.0))
             }
         }
@@ -231,7 +251,7 @@ fun MapScreen(
         factory = GribViewModelFactory(
             GribRepository(
                 GribRetrofitInstance.GribApi,
-                ctx
+                context
             )
         )
     )
@@ -239,14 +259,14 @@ fun MapScreen(
         factory = CurrentViewModelFactory(
             CurrentRepository(
                 api = GribRetrofitInstance.GribApi,
-                context = ctx
+                context = context
             )
         )
     )
     val driftViewModel: DriftViewModel = viewModel(
         factory = DriftViewModelFactory(
-            GribRepository(GribRetrofitInstance.GribApi, ctx),
-            CurrentRepository(GribRetrofitInstance.GribApi, ctx)
+            GribRepository(GribRetrofitInstance.GribApi, context),
+            CurrentRepository(GribRetrofitInstance.GribApi, context)
         )
     )
     // ------------- Bølger -------------
@@ -254,7 +274,7 @@ fun MapScreen(
         factory = WaveViewModelFactory(
             WaveRepository(
                 api     = GribRetrofitInstance.GribApi,
-                context = ctx
+                context = context
             )
         )
     )
@@ -279,7 +299,7 @@ fun MapScreen(
 
     val precipitationViewModel: PrecipitationViewModel = viewModel(
         factory = PrecipitationViewModelFactory(
-            GribRepository(GribRetrofitInstance.GribApi, ctx)
+            GribRepository(GribRetrofitInstance.GribApi, context)
         )
     )
 
@@ -320,7 +340,7 @@ fun MapScreen(
             mapViewModel.clearSelectedLocation() // Fjern valgt posisjon i ViewModel også
             map.clear()
             // Viktig: Initialiser AIS-ikoner før bruk!
-            VesselIcons.initializeIcons(ctx)
+            VesselIcons.initializeIcons(context)
             // Tegn vanlig rød linje mellom bruker og båt
             map.addPolyline(
                 PolylineOptions()
@@ -335,7 +355,7 @@ fun MapScreen(
             // Marker båtposisjon med AIS-ikon og navn
             val vesselIconType = VesselIcons.getVesselStyle(highlightVessel.shipType).iconType
             val bitmap = VesselIcons.getIcons()[vesselIconType]
-            val iconFactory = IconFactory.getInstance(ctx)
+            val iconFactory = IconFactory.getInstance(context)
             if (bitmap != null) {
                 map.addMarker(
                     MarkerOptions()
@@ -383,7 +403,7 @@ fun MapScreen(
         map.getStyle { style ->
             if (mapViewModel.selectedLocation.value != null && mapViewModel.isLocationExplicitlySelected()) {
                 val selectedLoc = mapViewModel.selectedLocation.value!!
-                addMapMarker(map, style, selectedLoc.first, selectedLoc.second, ctx)
+                addMapMarker(map, style, selectedLoc.first, selectedLoc.second, context)
             } else {
             }
         }
@@ -392,18 +412,26 @@ fun MapScreen(
     // Initialiseringseffekter
     // 1. Sjekk om dette er første launch når komponenten monteres
     LaunchedEffect(Unit) {
-        mapOnboardingViewModel.checkFirstLaunch(ctx)
+        mapOnboardingViewModel.checkFirstLaunch(context)
     }
     
-    // 2. Zoom til brukerens posisjon kun første gang kartet åpnes
+    // 2. Zoom til brukerens posisjon kun første gang kartet åpnes direkte fra hjemskjermen
     LaunchedEffect(mapLibreMap) {
-        if (!hasPerformedInitialZoom) {
+        // Utfør initial zoom kun hvis:
+        // 1. Initial zoom ikke er utført tidligere
+        // 2. Det er ingen initialLocation (ikke navigert fra favoritter/punkt)
+        // 3. Det er ingen areaPoints (ikke navigert fra favoritter/område)
+        if (!hasPerformedInitialZoom && initialLocation == null && areaPoints == null) {
             mapLibreMap?.let { map ->
                 // Kort forsinkelse for å sikre at kartet er fullstendig initialisert
                 delay(300)
                 // Zoom til brukerens posisjon med zoom-nivå fra MapConstants
-                mapViewModel.zoomToUserLocationInitial(map, ctx)
+                mapViewModel.zoomToUserLocationInitial(map, context)
             }
+        } else if (!hasPerformedInitialZoom && (initialLocation != null || areaPoints != null)) {
+            // Hvis vi navigerer fra favoritter, marker initial zoom som utført
+            // for å unngå at det skjer når man går tilbake til kartet senere
+            mapViewModel.setInitialZoomPerformed()
         }
     }
 
@@ -437,7 +465,7 @@ fun MapScreen(
                 onMapReady = { map, _ ->
                     Log.d("MapScreen", "onMapReady called")
                     mapLibreMap = map
-                    mapViewModel.initializeMap(map, ctx,styleUrl)
+                    mapViewModel.initializeMap(map, context,styleUrl)
                     
                     // Add listeners to detect when user is dragging the map
                     map.addOnCameraMoveStartedListener { reason ->
@@ -465,7 +493,7 @@ fun MapScreen(
                                     Log.d("MapScreen", "Setting new location: ${point.latitude}, ${point.longitude}")
                                     mapViewModel.setSelectedLocation(point.latitude, point.longitude)
                                     map.getStyle { style ->
-                                        addMapMarker(map, style, point.latitude, point.longitude, ctx)
+                                        addMapMarker(map, style, point.latitude, point.longitude, context)
                                     }
                                     mapViewModel.zoomToLocation(map, point.latitude, point.longitude, map.cameraPosition.zoom)
                                     true
@@ -480,16 +508,17 @@ fun MapScreen(
             // 2) Lag
             mapLibreMap?.let { map ->
                 MapLayers(
-                    map        = map,
-                    mapView    = mapView,
-                    aisViewModel       = aisViewModel,
+                    map = map,
+                    mapView = mapView,
+                    aisViewModel = aisViewModel,
                     metAlertsViewModel = metAlertsViewModel,
-                    forbudViewModel    = forbudViewModel,
-                    gribViewModel      = gribViewModel,
-                    currentViewModel   = currentViewModel,
-                    driftViewModel     = driftViewModel,
-                    waveViewModel      = waveViewModel,
+                    forbudViewModel = forbudViewModel,
+                    gribViewModel = gribViewModel,
+                    currentViewModel = currentViewModel,
+                    driftViewModel = driftViewModel,
+                    waveViewModel = waveViewModel,
                     precipitationViewModel = precipitationViewModel,
+                    favoritesViewModel = favoritesViewModel,
                     isDarkTheme = isDark
                 )
             }
@@ -548,56 +577,64 @@ fun MapScreen(
         val elementBounds = remember { mutableMapOf<String, androidx.compose.ui.geometry.Rect>() }
         
         mapLibreMap?.let { map ->
-                MapControls(
-                    map = map,
-                    mapViewModel = mapViewModel,
-                    searchViewModel = searchViewModel,
-                    metAlertsViewModel = metAlertsViewModel,
-                    aisViewModel = aisViewModel,
-                    forbudViewModel = forbudViewModel,
-                    gribViewModel = gribViewModel,
-                    currentViewModel = currentViewModel,
-                    driftViewModel = driftViewModel,
-                    waveViewModel = waveViewModel,
-                    precipitationViewModel = precipitationViewModel,
-                    hasLocationPermission = hasLocationPermission,
-                    isLayerMenuExpanded = isLayerMenuExpanded,
-                    onLayerMenuExpandedChange = { isLayerMenuExpanded = it },
-                    onRequestPermission = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
-                    navController = navController,
-                    elementBounds = elementBounds,
-                    onSearchResultSelected = { feature ->
-                        selectedSearchResult.value = feature
-                        map.getStyle { style ->
-                            val coordinates = feature.geometry.coordinates
-                            if (coordinates.size >= 2) {
-                                val longitude = coordinates[0]
-                                val latitude = coordinates[1]
-                                addMapMarker(map, style, latitude, longitude, ctx)
-                                mapViewModel.setSelectedLocation(latitude, longitude)
-                                mapViewModel.updateWeatherForLocation(latitude, longitude, explicit = true)
-                            }
-                        }
-                    },
-                    onUserLocationSelected = { location ->
-                        map.getStyle { style ->
-                            removeMapMarker(style)  // Fjern eksisterende markør
-                            mapViewModel.clearSelectedLocation()  // Nullstill valgt posisjon
-                            mapViewModel.updateWeatherForLocation(location.latitude, location.longitude, explicit = false)
-                        }
-                    },
-                    onShowWindSliders = { gribViewModel.setShowWindSliders(true) },
-                    onShowCurrentSliders = {
-                        isLayerMenuExpanded = false
-                        currentViewModel.setShowCurrentSliders(true)
-                    },
-                    onShowWaveSliders = {
-                        isLayerMenuExpanded = false
-                        waveViewModel.setShowWaveSliders(true)
+            MapControls(
+                map = map,
+                mapViewModel = mapViewModel,
+                searchViewModel = searchViewModel,
+                metAlertsViewModel = metAlertsViewModel,
+                aisViewModel = aisViewModel,
+                forbudViewModel = forbudViewModel,
+                gribViewModel = gribViewModel,
+                currentViewModel = currentViewModel,
+                driftViewModel = driftViewModel,
+                waveViewModel = waveViewModel,
+                precipitationViewModel = precipitationViewModel,
+                favoritesViewModel = favoritesViewModel,
+                hasLocationPermission = hasLocationPermission,
+                onRequestPermission = { permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION) },
+                isLayerMenuExpanded = isLayerMenuExpanded,
+                onLayerMenuExpandedChange = { isLayerMenuExpanded = it },
+                navController = navController,
+                onSearchResultSelected = { feature ->
+                    searchViewModel.addToHistory(feature)
+                    selectedSearchResult.value = feature
+                    
+                    // Hent koordinater fra søkeresultatet
+                    val latitude = feature.geometry.coordinates[1]
+                    val longitude = feature.geometry.coordinates[0]
+                    
+                    // Zoom til lokasjonen
+                    map.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            LatLng(latitude, longitude),
+                            14.0
+                        )
+                    )
+                    
+                    // Legg til markør på kartet
+                    map.getStyle { style ->
+                        // Fjern eksisterende markør først
+                        mapViewModel.clearSelectedLocation()
+                        // Sett ny lokasjon i ViewModel
+                        mapViewModel.setSelectedLocation(latitude, longitude)
+                        // Legg til markør
+                        addMapMarker(map, style, latitude, longitude, context)
                     }
+                },
+                onShowWindSliders = { gribViewModel.setShowWindSliders(true) },
+                onShowCurrentSliders = {
+                    isLayerMenuExpanded = false
+                    currentViewModel.setShowCurrentSliders(true)
+                },
+                onShowWaveSliders = { waveViewModel.setShowWaveSliders(true) },
+                onUserLocationSelected = { location ->
+                    // Oppdater temperatur og værsymbol basert på brukerens posisjon
+                    mapViewModel.updateTemperature(location.latitude, location.longitude)
+                },
+                elementBounds = elementBounds
+            )
+        }
 
-                )
-            }
             val showWindSliders by gribViewModel.showWindSliders.collectAsState()
 
 
@@ -686,7 +723,7 @@ fun MapScreen(
                     onShowLocation = { 
                         // Zoom til brukerens posisjon
                         mapLibreMap?.let { map ->
-                            mapViewModel.zoomToUserLocation(map, ctx)
+                            mapViewModel.zoomToUserLocation(map, context)
                         }
                     }
                 )

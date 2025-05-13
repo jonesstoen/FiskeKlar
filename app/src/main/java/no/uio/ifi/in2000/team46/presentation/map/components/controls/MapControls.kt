@@ -34,6 +34,7 @@ import no.uio.ifi.in2000.team46.data.remote.api.WeatherService
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModel
 import no.uio.ifi.in2000.team46.presentation.map.components.WeatherDisplay
 import no.uio.ifi.in2000.team46.presentation.map.components.layermenu.LayerFilterButton
+import no.uio.ifi.in2000.team46.presentation.map.favorites.FavoritesLayerViewModel
 
 @Composable
 fun MapControls(
@@ -48,6 +49,7 @@ fun MapControls(
     driftViewModel: DriftViewModel,
     waveViewModel: WaveViewModel,
     precipitationViewModel: PrecipitationViewModel,
+    favoritesViewModel: FavoritesLayerViewModel,
     hasLocationPermission: Boolean,
     onRequestPermission: () -> Unit,
     isLayerMenuExpanded: Boolean,
@@ -150,6 +152,7 @@ fun MapControls(
                     driftViewModel = driftViewModel,
                     waveViewModel = waveViewModel,
                     precipitationViewModel = precipitationViewModel,
+                    favoritesViewModel = favoritesViewModel,
                     isExpanded = isLayerMenuExpanded,
                     onExpandedChange = onLayerMenuExpandedChange,
                     onShowWindSliders = {

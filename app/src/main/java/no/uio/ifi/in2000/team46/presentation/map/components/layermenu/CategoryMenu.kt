@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.DirectionsBoat
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.Waves
@@ -69,6 +70,12 @@ fun CategoryMenu(
             leadingContent = { Icon(Icons.Default.Waves, contentDescription = null) },
             trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
             modifier = Modifier.clickable { onCategorySelected(LayerCategory.GRIB) }
+        )
+        ListItem(
+            headlineContent = { Text("Favoritter") },
+            leadingContent = { Icon(Icons.Default.Favorite, contentDescription = null) },
+            trailingContent = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null) },
+            modifier = Modifier.clickable { onCategorySelected(LayerCategory.FAVORITES) }
         )
     }
 }

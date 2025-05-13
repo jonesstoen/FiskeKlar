@@ -21,6 +21,8 @@ import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewMod
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.components.GribWaveLayer
 import no.uio.ifi.in2000.team46.presentation.grib.components.PrecipitationLayer
+import no.uio.ifi.in2000.team46.presentation.map.favorites.FavoritesLayerViewModel
+import no.uio.ifi.in2000.team46.presentation.map.favorites.FavoritesLayer
 
 @Composable
 fun MapLayers(
@@ -34,6 +36,7 @@ fun MapLayers(
     driftViewModel: DriftViewModel,
     waveViewModel: WaveViewModel,
     precipitationViewModel: PrecipitationViewModel,
+    favoritesViewModel: FavoritesLayerViewModel,
     isDarkTheme: Boolean
 ) {
     MetAlertsLayerComponent(metAlertsViewModel, mapView)
@@ -86,7 +89,11 @@ fun MapLayers(
         vm = precipitationViewModel,
         map = map
     )
-
-
+    
+    // Legg til favorittlaget
+    FavoritesLayer(
+        mapView = mapView,
+        viewModel = favoritesViewModel
+    )
 }
 

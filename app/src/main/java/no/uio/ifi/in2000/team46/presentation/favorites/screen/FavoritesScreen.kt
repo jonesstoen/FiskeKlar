@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
@@ -107,6 +108,11 @@ fun FavoritesScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Mine favorittsteder") },
+                navigationIcon = {
+                    IconButton(onClick = { onNavigate("home") }) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Tilbake til hjem")
+                    }
+                },
                 actions = {
                     if (favoritesWithStats.isNotEmpty()) {
                         IconButton(onClick = { showDeleteAllDialog = true }) {
@@ -185,7 +191,7 @@ fun FavoritesScreen(
 
             // ----------- MiniMap (kartutsnitt) -----------
             MiniMap(
-                onMapClick = { onNavigate("map") },
+                onMapClick = { onNavigate("map?showFavorites=true") },
                 userLocation = userLocation,
                 favorites = filteredFavorites,
                 profileViewModel = profileViewModel

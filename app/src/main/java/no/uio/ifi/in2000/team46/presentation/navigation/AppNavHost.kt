@@ -162,7 +162,18 @@ fun AppNavHost(
                 )
             }
 
-            composable("map") { backStack ->
+            composable(
+                route = "map?showFavorites={showFavorites}",
+                arguments = listOf(
+                    navArgument("showFavorites") {
+                        type = NavType.BoolType
+                        defaultValue = false
+                    }
+                )
+            ) { backStack ->
+                // Hent showFavorites-parameteren
+                val showFavorites = backStack.arguments?.getBoolean("showFavorites") ?: false
+                
                 MapScreen(
                     mapView = mapView,
                     mapViewModel = mapViewModel,
@@ -171,7 +182,9 @@ fun AppNavHost(
                     forbudViewModel = forbudViewModel,
                     searchViewModel = searchViewModel,
                     navController = navController,
-                    profileViewModel = profileViewModel
+                    profileViewModel = profileViewModel,
+                    showFavorites = showFavorites
+                    // GribViewModel og CurrentViewModel opprettes inne i MapScreen-funksjonen
                 )
             }
 
@@ -456,12 +469,11 @@ fun AppNavHost(
                     },
                     onNavigateToMap = { lat, lon, areaPoints ->
                         if (lat != null && lon != null) {
-                            mapViewModel.setSelectedLocation(lat, lon)
-                            navController.navigate("map")
+                            // For punkter - naviger til map/{lat}/{lng}
+                            navController.navigate("map/${lat}/${lon}")
                         } else if (areaPoints != null) {
-                            // Handle area points navigation
-                            // Since setSelectedArea doesn't exist, we'll just navigate to the map
-                            navController.navigate("map")
+                            // For områder - naviger til mapArea/{areaPointsJson}
+                            navController.navigate("mapArea/${areaPoints}")
                         }
                     },
                     onNavigateToWeather = { lat, lon, locationName ->
