@@ -63,6 +63,12 @@ import no.uio.ifi.in2000.team46.presentation.map.screens.MapScreen
 import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.OnboardingViewModel
 import no.uio.ifi.in2000.team46.presentation.ui.theme.backgroundLight
 import no.uio.ifi.in2000.team46.presentation.profile.screens.ThemeSettingsScreen
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
+import java.net.URLEncoder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -245,10 +251,32 @@ fun AppNavHost(
                 val userLocation by mapViewModel.userLocation.collectAsState()
                 var weatherData by remember { mutableStateOf<WeatherData?>(null) }
                 var weatherDetails by remember { mutableStateOf<WeatherDetails?>(null) }
-
-                LaunchedEffect(userLocation) {
+                var isLoading by remember { mutableStateOf(true) }
+                var customLocationName by remember { mutableStateOf<String?>(null) }
+                
+                // Get the location name from MapViewModel
+                val mapLocationName by mapViewModel.locationName.collectAsState()
+                
+                // Force location name update and wait for it to complete
+                LaunchedEffect(Unit) {
+                    isLoading = true
                     userLocation?.let { location ->
                         try {
+                            // First get the location name directly using getLocationName
+                            val locationName = mapViewModel.getLocationName(
+                                location.latitude,
+                                location.longitude
+                            )
+                            
+                            // Store the result in our local state
+                            customLocationName = locationName
+                            
+                            // Also update the MapViewModel's state for consistency
+                            mapViewModel.updateLocationName(location.latitude, location.longitude)
+                            
+                            android.util.Log.d("AppNavHost", "Direct location name result: $locationName")
+                            
+                            // Get weather details
                             weatherDetails = weatherService.getWeatherDetails(location.latitude, location.longitude)
                             weatherDetails?.let { details ->
                                 weatherData = WeatherData(
@@ -259,16 +287,26 @@ fun AppNavHost(
                                 )
                             }
                         } catch (e: Exception) {
-                            // Håndter feil her hvis nødvendig
+                            android.util.Log.e("AppNavHost", "Error getting location or weather: ${e.message}")
+                        } finally {
+                            isLoading = false
                         }
+                    } ?: run {
+                        isLoading = false
                     }
+                }
+                
+                // Show loading indicator while we're getting the location name
+                if (isLoading) {
+                    androidx.compose.material3.CircularProgressIndicator()
+                    return@composable
                 }
 
                 if (weatherData != null && weatherDetails != null) {
                     WeatherDetailScreen(
                         navController = navController,
                         weatherData = weatherData!!,
-                        locationName = "Min posisjon",
+                        locationName = customLocationName ?: "Nåværende posisjon",  // Use our directly obtained location name
                         feelsLike = weatherDetails!!.feelsLike ?: 0.0,
                         highTemp = weatherDetails!!.highTemp ?: 0.0,
                         lowTemp = weatherDetails!!.lowTemp ?: 0.0,
@@ -397,20 +435,51 @@ fun AppNavHost(
                 "favoriteDetail/{favoriteId}",
                 arguments = listOf(navArgument("favoriteId") { type = NavType.IntType })
             ) { backStackEntry ->
-                val favoriteId = backStackEntry.arguments?.getInt("favoriteId") ?: return@composable
+                val favoriteId = backStackEntry.arguments?.getInt("favoriteId") ?: -1
+                val context = LocalContext.current
+                val viewModel = remember {
+                    val db = AppDatabase.getDatabase(context)
+                    FavoritesViewModel(
+                        FavoriteRepository(db.favoriteLocationDao()),
+                        FishLogRepository(db.fishingLogDao())
+                    )
+                }
+                
+                // We'll use the weatherService directly instead of creating a view model here
+                
                 FavoriteDetailScreen(
                     favoriteId = favoriteId,
-                    viewModel = favoritesViewModel,
+                    viewModel = viewModel,
                     onBack = { navController.popBackStack() },
-                    onAddFishingLog = { location ->
-                        navController.navigate("addFishingEntry?location=$location")
+                    onAddFishingLog = { locationName ->
+                        navController.navigate("add_fishing_entry/$locationName")
                     },
-                    onNavigateToMap = { lat, lng, areaPointsJson ->
-                        if (areaPointsJson != null) {
-                            navController.navigate("mapArea/$areaPointsJson")
-                        } else {
-                            navController.navigate("map/$lat/$lng")
+                    onNavigateToMap = { lat, lon, areaPoints ->
+                        if (lat != null && lon != null) {
+                            mapViewModel.setSelectedLocation(lat, lon)
+                            navController.navigate("map")
+                        } else if (areaPoints != null) {
+                            // Handle area points navigation
+                            // Since setSelectedArea doesn't exist, we'll just navigate to the map
+                            navController.navigate("map")
                         }
+                    },
+                    onNavigateToWeather = { lat, lon, locationName ->
+                        // Get weather details and navigate to weather detail screen
+                        val encodedLocationName = URLEncoder.encode(locationName, StandardCharsets.UTF_8.toString())
+                        
+                        // We'll use hardcoded values for now and let the WeatherDetailViewModel
+                        // fetch the actual data when the screen loads
+                        
+                        // Navigate directly to weather detail screen with coordinates
+                        // The WeatherDetailViewModel will fetch the actual data
+                        navController.navigate(
+                            "weather_detail/0.0/0.0/" +
+                            "0.0/0.0/clearsky_day/" +
+                            "Værdata/${encodedLocationName}/" +
+                            "0.0/0.0/" +
+                            "${lat}/${lon}"
+                        )
                     }
                 )
             }

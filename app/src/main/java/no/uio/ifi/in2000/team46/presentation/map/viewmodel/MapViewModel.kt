@@ -106,8 +106,12 @@ class MapViewModel(
     private var _isLocationExplicitlySelected = MutableStateFlow(false)
     val isLocationExplicitlySelected: StateFlow<Boolean> = _isLocationExplicitlySelected.asStateFlow()
 
-    private val _locationName = MutableStateFlow<String>("Nåværende posisjon")
+    private val _locationName = MutableStateFlow("Nåværende posisjon")
     val locationName: StateFlow<String> = _locationName.asStateFlow()
+    
+    // Flag for å holde styr på om initial zoom er utført
+    private val _hasPerformedInitialZoom = MutableStateFlow(false)
+    val hasPerformedInitialZoom: StateFlow<Boolean> = _hasPerformedInitialZoom.asStateFlow()
 
     private var weatherUpdateJob: Job? = null
     private var map: MapLibreMap? = null
@@ -345,8 +349,20 @@ class MapViewModel(
                 
                 // Oppdater værdata for brukerens posisjon
                 updateTemperature(it.latitude, it.longitude)
+                
+                // Marker at initial zoom er utført
+                setInitialZoomPerformed()
             }
         }
+    }
+    
+    /**
+     * Markerer at initial zoom er utført.
+     * Dette brukes for å unngå at kartet zoomer til brukerens posisjon
+     * hver gang brukeren navigerer tilbake til kartet.
+     */
+    fun setInitialZoomPerformed() {
+        _hasPerformedInitialZoom.value = true
     }
 
     /** Enkel zoom‑in/zoom‑out. */

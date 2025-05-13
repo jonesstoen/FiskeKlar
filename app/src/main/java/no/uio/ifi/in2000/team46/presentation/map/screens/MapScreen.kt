@@ -152,6 +152,9 @@ fun MapScreen(
 
     // State for showing the legend
     var openLegend by rememberSaveable { mutableStateOf<Int?>(null) }
+    
+    // Hent tilstanden for om initial zoom er utført fra ViewModel
+    val hasPerformedInitialZoom by mapViewModel.hasPerformedInitialZoom.collectAsState()
 
 
     // Request location permission
@@ -392,13 +395,15 @@ fun MapScreen(
         mapOnboardingViewModel.checkFirstLaunch(ctx)
     }
     
-    // 2. Zoom til brukerens posisjon når kartet er klart
+    // 2. Zoom til brukerens posisjon kun første gang kartet åpnes
     LaunchedEffect(mapLibreMap) {
-        mapLibreMap?.let { map ->
-            // Kort forsinkelse for å sikre at kartet er fullstendig initialisert
-            delay(200)
-            // Zoom til brukerens posisjon med zoom-nivå fra MapConstants
-            mapViewModel.zoomToUserLocationInitial(map, ctx)
+        if (!hasPerformedInitialZoom) {
+            mapLibreMap?.let { map ->
+                // Kort forsinkelse for å sikre at kartet er fullstendig initialisert
+                delay(300)
+                // Zoom til brukerens posisjon med zoom-nivå fra MapConstants
+                mapViewModel.zoomToUserLocationInitial(map, ctx)
+            }
         }
     }
 

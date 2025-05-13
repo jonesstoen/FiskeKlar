@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 
@@ -38,7 +39,8 @@ fun FavoriteDetailScreen(
     viewModel: FavoritesViewModel,
     onBack: () -> Unit,
     onAddFishingLog: (String) -> Unit,
-    onNavigateToMap: (Double?, Double?, String?) -> Unit
+    onNavigateToMap: (Double?, Double?, String?) -> Unit,
+    onNavigateToWeather: (Double, Double, String) -> Unit
 ) {
     // ----------- State -----------
     var favorite by remember { mutableStateOf<FavoriteLocation?>(null) }
@@ -364,34 +366,61 @@ fun FavoriteDetailScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 // Runde knapper med ikoner og skygge
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Button(
-                        onClick = { onAddFishingLog(favoriteLocation.name) },
-                        shape = RoundedCornerShape(50)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Icon(Icons.Default.Add, contentDescription = null)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Legg til fangst")
+                        Button(
+                            onClick = { onAddFishingLog(favoriteLocation.name) },
+                            shape = RoundedCornerShape(50)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Legg til fangst")
+                        }
+                        Button(
+                            onClick = {
+                                if (favoriteLocation.locationType == "POINT") {
+                                    onNavigateToMap(favoriteLocation.latitude, favoriteLocation.longitude, null)
+                                } else {
+                                    val areaPointsJson = favoriteLocation.areaPoints ?: "[]"
+                                    onNavigateToMap(null, null, areaPointsJson)
+                                }
+                            },
+                            shape = RoundedCornerShape(50),
+                        ) {
+                            Icon(Icons.Default.Map, contentDescription = null)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Vis på kart")
+                        }
                     }
+                    
+                    Spacer(modifier = Modifier.height(12.dp))
+                    
                     Button(
                         onClick = {
-                            if (favoriteLocation.locationType == "POINT") {
-                                onNavigateToMap(favoriteLocation.latitude, favoriteLocation.longitude, null)
-                            } else {
-                                val areaPointsJson = favoriteLocation.areaPoints ?: "[]"
-                                onNavigateToMap(null, null, areaPointsJson)
+                            // For both point and area locations, we can use the latitude and longitude
+                            // Area locations also store a center point in the same fields
+                            if (favoriteLocation.latitude != null && favoriteLocation.longitude != null) {
+                                onNavigateToWeather(
+                                    favoriteLocation.latitude, 
+                                    favoriteLocation.longitude, 
+                                    favoriteLocation.name
+                                )
                             }
                         },
                         shape = RoundedCornerShape(50),
+                        modifier = Modifier.fillMaxWidth(0.8f)
                     ) {
-                        Icon(Icons.Default.Map, contentDescription = null)
+                        Icon(Icons.Default.WbSunny, contentDescription = null)
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("Vis på kart")
+                        Text("Se været for dette stedet")
                     }
                 }
             }
