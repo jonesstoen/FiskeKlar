@@ -15,7 +15,7 @@ Modelleringen startet med å utvikle use-case diagram for å få en visualiserin
 - sekvens_diagram_SOS.md
 - sekvens_diagram_kartskjerm.md
 - sekvens_diagram_fiskelogg.md
-- sekvens_diagram_favorittområder.md
+- sekvens_diagram_favorittsteder.md
 - sekvens_diagram_vaervarsel.md
 
 Det er laget totalt 5 ulike sekvensdiagramer for de ulike funksjonalitetene. Vi valgte å lage ett diagram per hovedfunksjonalitet i appen (kart, SOS, fiskelogg, favorittområder og værvarsel), slik at vi får belyst hver delprosess detaljert. Dette er for å visualisere hvordan appen kommuniserer med databasen, kartvisningen og eksterne API-er. De gir innsikt i hvordan ulike komponenter kommuniserer og i hvilken rekkefølge hendelser skjer. Ved å bruke alt og opt i Mermaid kunne vi tydelig skille mellom hovedflyt og alternative scenarier, noe som gjør diagrammene både informative og lette å lese.
