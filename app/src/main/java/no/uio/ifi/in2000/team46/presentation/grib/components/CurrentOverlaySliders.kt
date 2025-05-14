@@ -24,6 +24,9 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+// this composable renders a floating bottom panel with sliders for adjusting current layer settings
+// user can control current threshold and selected timestamp, and toggle sections open/closed
+
 @Composable
 fun CurrentOverlaySliders(
     currentViewModel: CurrentViewModel,
@@ -34,6 +37,7 @@ fun CurrentOverlaySliders(
     val currentResult by currentViewModel.currentData.collectAsState()
     val isLoading by currentViewModel.isLoading.collectAsState()
 
+    // extract unique sorted timestamps from data
     val timestamps = remember(currentResult) {
         if (currentResult is Result.Success) {
             (currentResult as Result.Success<List<CurrentVector>>).data
@@ -65,7 +69,7 @@ fun CurrentOverlaySliders(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Header
+            // header row with title and close button
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -79,7 +83,7 @@ fun CurrentOverlaySliders(
                 }
             }
 
-            // Terskel seksjon
+            // section for threshold slider
             SectionHeader(
                 title = "Terskel for strøm",
                 isExpanded = showThresholdSection,
@@ -111,12 +115,13 @@ fun CurrentOverlaySliders(
 
             HorizontalDivider()
 
-            // Tidspunkt seksjon
+            // section for timestamp slider
             SectionHeader(
                 title = "Tidspunkt",
                 isExpanded = showTimestampSection,
                 onToggle = { showTimestampSection = !showTimestampSection }
             )
+
             if (isLoading) {
                 Box(
                     Modifier
@@ -190,6 +195,7 @@ private fun SectionHeader(title: String, isExpanded: Boolean, onToggle: () -> Un
     }
 }
 
+// formats a timestamp in millis into a readable string like "Tuesday 14. May kl. 16:00"
 private fun formatTimestamp(timestamp: Long): String {
     val formatter = DateTimeFormatter.ofPattern("EEEE d. MMMM 'kl.' HH:mm")
         .withZone(ZoneId.systemDefault())

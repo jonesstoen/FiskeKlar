@@ -1,7 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.grib.components
 
 import androidx.compose.runtime.*
-import no.uio.ifi.in2000.team46.data.repository.Result
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.style.expressions.Expression.*
 import org.maplibre.android.style.layers.PropertyFactory.*
@@ -14,26 +13,34 @@ import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewMod
 import org.maplibre.android.style.layers.CircleLayer
 import org.maplibre.android.style.layers.SymbolLayer
 
+// composable that updates map with precipitation points as colored circles and labels based on threshold and zoom
+
 @Composable
 fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
+    // observe visibility flag from viewmodel
     val isVisible by vm.isLayerVisible.collectAsState()
+    // observe precipitation threshold
     val threshold by vm.precipThreshold.collectAsState()
+    // observe filtered precipitation data points
     val filteredPoints by vm.filteredPrecipPoints.collectAsState()
 
+    // identifiers for map source and layers
     val srcId = "precip_source"
     val circleLayerId = "precip_circle_layer"
     val textLayerId = "precip_text_layer"
 
+    // react to changes in visibility, data, or threshold
     LaunchedEffect(isVisible, filteredPoints, threshold) {
         map.getStyle { style ->
-            // Fjern gamle lag/kilder
+            // remove existing layers and source before updating
             style.removeLayer(circleLayerId)
             style.removeLayer(textLayerId)
             style.removeSource(srcId)
 
+            // if layer not visible or no points, skip adding
             if (!isVisible || filteredPoints.isEmpty()) return@getStyle
 
-            // Bygg GeoJSON-kilde
+            // build geojson features from precipitation data
             val features = filteredPoints.map { p ->
                 Feature.fromGeometry(Point.fromLngLat(p.lon, p.lat)).apply {
                     addNumberProperty("precip", p.precipitation)
@@ -42,8 +49,9 @@ fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
             }
             style.addSource(GeoJsonSource(srcId, FeatureCollection.fromFeatures(features)))
 
-            // CircleLayer med fargeskala
+            // define circle layer styling based on precipitation value and zoom
             val circleLayer = CircleLayer(circleLayerId, srcId).withProperties(
+                // radius interpolates with zoom level for visibility
                 circleRadius(
                     interpolate(
                         linear(), zoom(),
@@ -55,11 +63,10 @@ fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
                     )
                 ),
                 circleOpacity(literal(0.8f)),
+                // color switches to red if above threshold, otherwise uses step scale
                 circleColor(
                     switchCase(
-                        // 1) Rødt om over terskel
                         gt(get("precip"), literal(threshold)), color(0xFFB2182B.toInt()),
-                        // 2) Ellers fargeskala som i legenden:
                         step(
                             get("precip"),
                             color(0xFFADD8E6.toInt()),  // 0–1 mm
@@ -74,6 +81,7 @@ fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
             )
             style.addLayer(circleLayer)
 
+            // define text labels layer for precipitation values
             val textLayer = SymbolLayer(textLayerId, srcId).withProperties(
                 textField(concat(get("precipLabel"), literal(" mm"))),
                 textSize(10f),

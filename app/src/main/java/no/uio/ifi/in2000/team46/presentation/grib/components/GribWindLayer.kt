@@ -26,6 +26,10 @@ import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
 import org.maplibre.android.style.layers.SymbolLayer
 
+// this composable draws wind vector icons on the maplibre map based on grib wind data
+// icons are selected dynamically based on speed, threshold and theme mode
+// the layer is zoom-aware and reduces clutter when zoomed out
+
 @Composable
 fun GribWindLayer(
     gribViewModel: GribViewModel,
@@ -38,6 +42,7 @@ fun GribWindLayer(
     val threshold by gribViewModel.windThreshold.collectAsState()
     val filteredVectors by gribViewModel.filteredWindVectors.collectAsState()
 
+    // monitor zoom level
     val zoomState = remember { mutableStateOf(0.0) }
     LaunchedEffect(map, isVisible) {
         while (isVisible) {
@@ -46,12 +51,14 @@ fun GribWindLayer(
         }
     }
 
+    // draw vectors when layer is visible and data is ready
     if (isVisible && filteredVectors.isNotEmpty()) {
         LaunchedEffect(filteredVectors, threshold, zoomState.value) {
             map.getStyle { style ->
                 val sourceId = "wind_source"
                 val layerId = "wind_layer"
 
+                // icon resource map based on speed intervals (Beaufort scale)
                 val iconMap = mapOf(
                     0.2 to R.drawable.symbol_wind_speed_00,
                     1.5 to R.drawable.symbol_wind_speed_15,
@@ -68,20 +75,23 @@ fun GribWindLayer(
                     Double.MAX_VALUE to R.drawable.symbol_wind_speed_max
                 )
 
+                // add icons to map style if not already present
                 iconMap.forEach { (_, resId) ->
                     val baseName = mapView.context.resources.getResourceEntryName(resId)
                     val whiteName = "${baseName}_white"
+                    val redName = "${baseName}_red"
+
                     val whiteResId = mapView.context.resources.getIdentifier(whiteName, "drawable", mapView.context.packageName)
                     if (whiteResId != 0 && style.getImage(whiteName) == null) {
                         val whiteBitmap = BitmapFactory.decodeResource(mapView.context.resources, whiteResId)
                         style.addImage(whiteName, whiteBitmap)
                     }
+
                     if (style.getImage(baseName) == null) {
                         val bitmap = BitmapFactory.decodeResource(mapView.context.resources, resId)
                         style.addImage(baseName, bitmap)
                     }
 
-                    val redName = "${baseName}_red"
                     val redResId = mapView.context.resources.getIdentifier(redName, "drawable", mapView.context.packageName)
                     if (redResId != 0 && style.getImage(redName) == null) {
                         val redBitmap = BitmapFactory.decodeResource(mapView.context.resources, redResId)
@@ -89,6 +99,7 @@ fun GribWindLayer(
                     }
                 }
 
+                // determine how much to filter vectors based on zoom level
                 val dynamicStep = when {
                     zoomState.value >= 7.5 -> 1
                     zoomState.value >= 6.5 -> 3
@@ -98,21 +109,21 @@ fun GribWindLayer(
 
                 val dataToDraw = if (filterVectors) {
                     filteredVectors.filterIndexed { index, _ -> index % dynamicStep == 0 }
-                } else {
-                    filteredVectors
-                }
+                } else filteredVectors
 
+                // create feature collection with direction, speed and selected icon
                 val features = dataToDraw.mapNotNull { v ->
                     Feature.fromGeometry(Point.fromLngLat(v.lon, v.lat)).apply {
                         addNumberProperty("direction", v.direction)
                         addNumberProperty("speed", v.speed)
-                        addStringProperty("icon", selectIcon(v.speed, threshold, iconMap, mapView,isDarkMode))
+                        addStringProperty("icon", selectIcon(v.speed, threshold, iconMap, mapView, isDarkMode))
                     }
                 }
 
                 val featureCollection = FeatureCollection.fromFeatures(features.toTypedArray())
-                Log.d("GribWindLayer", "Antall vektorer som vises: ${features.size}")
+                Log.d("GribWindLayer", "number of vectors shown: ${features.size}")
 
+                // update or add source
                 val existingSource = style.getSourceAs<GeoJsonSource>(sourceId)
                 if (existingSource != null) {
                     existingSource.setGeoJson(featureCollection.toJson())
@@ -120,6 +131,7 @@ fun GribWindLayer(
                     style.addSource(GeoJsonSource(sourceId, featureCollection.toJson()))
                 }
 
+                // create wind layer if missing
                 if (style.getLayer(layerId) == null) {
                     style.addLayer(
                         SymbolLayer(layerId, sourceId).withProperties(
@@ -145,6 +157,7 @@ fun GribWindLayer(
         }
     }
 
+    // remove layer and source when not visible
     LaunchedEffect(isVisible) {
         if (!isVisible) {
             map.getStyle { style ->
@@ -154,6 +167,7 @@ fun GribWindLayer(
         }
     }
 
+    // warning when zoom level is too low
     AnimatedVisibility(
         visible = isVisible && zoomState.value < 7.0,
         enter = fadeIn(),
@@ -180,6 +194,7 @@ fun GribWindLayer(
     }
 }
 
+// selects appropriate icon name based on speed, threshold and theme
 private fun selectIcon(
     speed: Double,
     threshold: Double,
@@ -193,7 +208,7 @@ private fun selectIcon(
 
     return when {
         speed > threshold -> "${baseName}_red"
-        isDarkMode -> "${baseName}_white" // white icon for dark mode
+        isDarkMode -> "${baseName}_white"
         else -> baseName
     }
 }

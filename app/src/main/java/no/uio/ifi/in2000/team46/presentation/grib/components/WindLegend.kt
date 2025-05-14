@@ -11,15 +11,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import no.uio.ifi.in2000.team46.R
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+
+// this composable shows a legend box with icons representing different wind speed ranges
+// it supports switching between light and dark versions of each icon depending on theme
 
 @Composable
 fun WindLegend(
     modifier: Modifier = Modifier,
     isDark: Boolean
 ) {
+    // each entry has a label (speed range) and base drawable name
     val windLegendItems = listOf(
         Pair("0.0 – 0.2 m/s", "symbol_wind_speed_00"),
         Pair("0.3 – 1.5 m/s", "symbol_wind_speed_15"),
@@ -50,7 +53,7 @@ fun WindLegend(
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
-            // always visible header
+            // header with title and divider
             Column(
                 modifier = Modifier
                     .padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 4.dp)
@@ -62,7 +65,7 @@ fun WindLegend(
                 )
             }
 
-            // scrollable legend entries
+            // scrollable list of icon-label pairs
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -71,6 +74,7 @@ fun WindLegend(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 windLegendItems.forEach { (label, baseName) ->
+                    // choose dark or light version of icon depending on theme
                     val resName = if (isDark) "${baseName}_white" else baseName
                     val resId = context.resources.getIdentifier(resName, "drawable", context.packageName)
 
@@ -93,4 +97,3 @@ fun WindLegend(
         }
     }
 }
-

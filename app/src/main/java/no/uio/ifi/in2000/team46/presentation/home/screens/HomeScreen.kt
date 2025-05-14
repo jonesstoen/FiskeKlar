@@ -1,7 +1,5 @@
 package no.uio.ifi.in2000.team46.presentation.home.screens
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -32,14 +30,13 @@ import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.OnboardingView
 import no.uio.ifi.in2000.team46.presentation.onboarding.screens.OnboardingScreen
 import java.time.LocalTime
 
-// Fargepalett
 // color palette from https://coolors.co/1b4965-5fa8d3-9dc88d-bee9e8-cae9ff
 private val Navy = Color(0xFF1B4965)
-val Background = Color(0xFFCAE9FF)
-private val CardGreen = Color(0xFFB5C9B7)
 
-@RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
+
+
+// composable that shows home screen with greeting, quick actions and random fishing tip
+
 @Composable
 fun HomeScreen(
     viewModel: ProfileViewModel,
@@ -51,26 +48,30 @@ fun HomeScreen(
     onNavigateToProfile: () -> Unit,
     onNavigateToAlerts: () -> Unit
 ) {
+    // observe user data and onboarding flag
     val user by viewModel.user.collectAsState()
     val showOnboarding by onboardingViewModel.showOnboarding.collectAsState()
-    
+
+    // show onboarding screen if flag is true
     if (showOnboarding) {
         OnboardingScreen(
             onFinish = { onboardingViewModel.hideOnboarding() }
         )
     }
 
+    // compute greeting based on time and user name
     val greeting = remember(user) {
-        val name = user?.name?.split(" ")?.firstOrNull() ?: ""
+        val name = user?.name?.split(" ")?.firstOrNull().orEmpty()
         val timeGreeting = when (LocalTime.now().hour) {
-            in 5..10 -> "God morgen"
-            in 11..14 -> "God formiddag"
-            in 15..17 -> "God ettermiddag"
-            else -> "God kveld"
+            in 5..10 -> "god morgen"
+            in 11..14 -> "god formiddag"
+            in 15..17 -> "god ettermiddag"
+            else -> "god kveld"
         }
         if (name.isNotBlank()) "$timeGreeting, $name" else timeGreeting
     }
 
+    // list of fishing tips used in random tip card
     val fishingTips = listOf(
         "Fisk grunt ved soloppgang.",
         "Bruk mørke sluker i grumsete vann.",
@@ -181,48 +182,40 @@ fun HomeScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Top
-            ) {
+            // logo and help button row
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 8.dp)
             ) {
-                // Centered app logo
                 Image(
                     painter = painterResource(id = R.drawable.app_logo),
-                    contentDescription = "App Logo",
+                    contentDescription = "app logo",
                     modifier = Modifier
                         .size(60.dp)
                         .align(Alignment.Center)
                 )
-
-                // Help button at top end
                 IconButton(
                     onClick = { onboardingViewModel.showOnboarding() },
                     modifier = Modifier.align(Alignment.TopEnd)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.Help,
-                        contentDescription = "Show onboarding",
+                        contentDescription = "show onboarding",
                         tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
 
-// Greeting below the logo
+            // greeting text below logo
             Text(
                 text = "$greeting!",
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(top = 12.dp, bottom = 20.dp) // <- Extra spacing added here
+                modifier = Modifier.padding(top = 12.dp, bottom = 20.dp)
             )
-            Spacer(modifier = Modifier.height(8.dp))
 
-            // Grid of quick action cards
+            // grid of quick access cards
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -233,50 +226,44 @@ fun HomeScreen(
                 ) {
                     QuickAccessCard(
                         icon = Icons.Default.Map,
-                        text = "Kart",
+                        text = "kart",
                         onClick = onNavigateToMap,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
                         icon = Icons.AutoMirrored.Filled.List,
-                        text = "Fiskelogg",
+                        text = "fiskelogg",
                         onClick = onNavigateToFishLog,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                 }
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     QuickAccessCard(
                         icon = Icons.Default.WbSunny,
-                        text = "Været",
+                        text = "været",
                         onClick = onNavigateToWeather,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
                         icon = Icons.Default.Favorite,
-                        text = "Favoritt-steder",
+                        text = "favoritt-steder",
                         onClick = onNavigateToFavorites,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                 }
             }
 
-            }
-            
-            // Add fixed spacing to ensure separation
             Spacer(modifier = Modifier.height(16.dp))
-            
-            // Random fishing tip card at the bottom
+
+            // random fishing tip card at bottom
             RandomFishTipBox(fishingTips = fishingTips)
         }
     }
-
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun QuickAccessCard(
     icon: ImageVector,
@@ -284,13 +271,13 @@ private fun QuickAccessCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // card showing icon and label for quick navigation
     Card(
         onClick = onClick,
-        modifier = modifier
-            .height(190.dp),
+        modifier = modifier.height(190.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor   = MaterialTheme.colorScheme.onPrimaryContainer
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
         )
     ) {
         Column(
@@ -303,15 +290,10 @@ private fun QuickAccessCard(
             Icon(
                 imageVector = icon,
                 contentDescription = text,
-                modifier = Modifier.size(40.dp),
-
+                modifier = Modifier.size(40.dp)
             )
             Spacer(modifier = Modifier.height(12.dp))
-            Text(
-                text = text,
-                style     = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Medium,
-            )
+            Text(text = text, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -321,48 +303,22 @@ fun FishTipDialog(
     tip: String,
     onDismiss: () -> Unit
 ) {
+    // dialog showing full fishing tip text
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(
-                onClick = onDismiss
-            ) {
-                Text(
-                    text = "Lukk",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.titleMedium
-                )
+            TextButton(onClick = onDismiss) {
+                Text(text = "lukk", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.titleMedium)
             }
         },
         shape = RoundedCornerShape(24.dp),
         title = {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = "Dagens fisketips \uD83C\uDFA3 ",
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.headlineSmall.copy(
-                        fontWeight = FontWeight.Bold
-                    )
-                )
-            }
+            Text(text = "Dagens fisketips 🎣", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold))
         },
         text = {
-            Text(
-                text = tip,
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                lineHeight = 26.sp
-            )
+            Text(text = tip, color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.fillMaxWidth().padding(16.dp), lineHeight = 26.sp)
         },
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
@@ -370,6 +326,7 @@ fun FishTipDialog(
 fun RandomFishTipBox(
     fishingTips: List<String>
 ) {
+    // box showing a random tip and allowing refresh or full-screen view
     var currentTip by remember { mutableStateOf(fishingTips.random()) }
     var showFullScreenTip by remember { mutableStateOf(false) }
 
@@ -378,59 +335,24 @@ fun RandomFishTipBox(
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(horizontal = 8.dp)
-            .clickable { showFullScreenTip = true }, // Klikk på hele kortet
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFB5D5C5)
-        ),
+            .clickable { showFullScreenTip = true },
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFB5D5C5)),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(end = 36.dp) // Make room for refresh button
-            ) {
-                Text(
-                    text = "🎣 Dagens fisketips?",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    color = Navy
-                )
-                Text(
-                    text = "\"$currentTip\"",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Navy,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
-                )
+        Box(modifier = Modifier.fillMaxWidth().padding(12.dp)) {
+            Column(modifier = Modifier.align(Alignment.CenterStart).padding(end = 36.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(text = "🎣 Dagens fisketips", style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold), color = Navy)
+                Text(text = "\"$currentTip\"", style = MaterialTheme.typography.bodySmall, color = Navy, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
-            IconButton(
-                onClick = { currentTip = fishingTips.random() }, // Nytt tips!
-                modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .size(32.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = "Nytt tips",
-                    tint = Navy,
-                    modifier = Modifier.size(18.dp)
-                )
+            IconButton(onClick = { currentTip = fishingTips.random() }, modifier = Modifier.align(Alignment.TopEnd).size(32.dp)) {
+                Icon(imageVector = Icons.Default.Refresh, contentDescription = "nytt tips", tint = Navy, modifier = Modifier.size(18.dp))
             }
         }
     }
 
     if (showFullScreenTip) {
-        FishTipDialog(
-            tip = currentTip,
-            onDismiss = { showFullScreenTip = false } // Lukk dialogen
-        )
+        FishTipDialog(tip = currentTip, onDismiss = { showFullScreenTip = false })
     }
 }
+

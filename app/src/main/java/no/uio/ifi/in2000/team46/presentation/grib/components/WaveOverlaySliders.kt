@@ -24,15 +24,21 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+// composable that displays wave settings overlay with threshold slider and timestamp selector
+
 @Composable
 fun WaveOverlaySliders(
     waveViewModel: WaveViewModel,
     onClose: () -> Unit
 ) {
+    // observe current threshold value
     val threshold by waveViewModel.waveThreshold.collectAsState()
+    // observe currently selected timestamp
     val selectedTimestamp by waveViewModel.selectedTimestamp.collectAsState()
+    // observe wave data result
     val waveResult by waveViewModel.waveData.collectAsState()
 
+    // extract sorted distinct timestamps when data is available
     val timestamps = remember(waveResult) {
         if (waveResult is Result.Success) {
             (waveResult as Result.Success<List<WaveVector>>).data
@@ -42,12 +48,12 @@ fun WaveOverlaySliders(
         } else emptyList()
     }
 
+    // find index of selected timestamp or default to zero
     val selectedIndex = timestamps.indexOfFirst { it == selectedTimestamp }.coerceAtLeast(0)
 
+    // local states for section expansion
     var showThresholdSection by remember { mutableStateOf(false) }
     var showTimestampSection by remember { mutableStateOf(false) }
-
-
 
     Box(
         modifier = Modifier
@@ -66,7 +72,7 @@ fun WaveOverlaySliders(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Header
+            // header with title and close button
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -74,13 +80,13 @@ fun WaveOverlaySliders(
             ) {
                 Text("Bølgeinnstillinger", style = MaterialTheme.typography.titleMedium)
                 TextButton(onClick = onClose) {
-                    Icon(Icons.Default.Close, contentDescription = "Lukk")
+                    Icon(Icons.Default.Close, contentDescription = "lukk")
                     Spacer(Modifier.width(4.dp))
-                    Text("Lukk")
+                    Text("lukk")
                 }
             }
 
-            // Terskel
+            // threshold section header
             SectionHeader(
                 title = "Terskel for bølgehøyde",
                 isExpanded = showThresholdSection,
@@ -93,7 +99,9 @@ fun WaveOverlaySliders(
                 exit = shrinkVertically()
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // display current threshold in meters
                     Text("${threshold.toInt()} m", style = MaterialTheme.typography.bodyMedium)
+                    // slider to adjust wave height threshold
                     Slider(
                         value = threshold.toFloat(),
                         onValueChange = { waveViewModel.setWaveThreshold(it.toDouble()) },
@@ -110,9 +118,9 @@ fun WaveOverlaySliders(
                 }
             }
 
-            Divider()
+            HorizontalDivider()
 
-            // Tidspunkt
+            // timestamp section header
             SectionHeader(
                 title = "Tidspunkt",
                 isExpanded = showTimestampSection,
@@ -125,6 +133,7 @@ fun WaveOverlaySliders(
                 exit = shrinkVertically()
             ) {
                 if (timestamps.isEmpty()) {
+                    // show loading indicator when timestamps are not ready
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -135,10 +144,12 @@ fun WaveOverlaySliders(
                     }
                 } else {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // display formatted selected timestamp
                         Text(
                             text = formatTimestamp(timestamps[selectedIndex]),
                             style = MaterialTheme.typography.bodyMedium
                         )
+                        // slider to select timestamp index
                         Slider(
                             value = selectedIndex.toFloat(),
                             onValueChange = { index ->
@@ -153,8 +164,8 @@ fun WaveOverlaySliders(
                             Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("Tidligste", style = MaterialTheme.typography.labelSmall)
-                            Text("Seneste", style = MaterialTheme.typography.labelSmall)
+                            Text("tidligste", style = MaterialTheme.typography.labelSmall)
+                            Text("seneste", style = MaterialTheme.typography.labelSmall)
                         }
                     }
                 }
