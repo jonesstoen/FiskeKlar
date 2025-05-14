@@ -21,6 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
+// summary: presents a multi-step onboarding dialog with icons and navigation controls
+// main function: displays sequential screens explaining app features and handles user navigation through steps
+
 data class OnboardingStep(
     val title: String,
     val description: String,
@@ -28,11 +31,11 @@ data class OnboardingStep(
     val highlightColor: Color
 )
 
-@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun OnboardingScreen(
     onFinish: () -> Unit
 ) {
+    // list of onboarding steps with title, description, icon and accent color
     val steps = listOf(
         OnboardingStep(
             title = "Velkommen til Fiskeappen!",
@@ -72,8 +75,10 @@ fun OnboardingScreen(
         )
     )
 
-    var currentStep by remember { mutableStateOf(0) }
+    // state holding current step index
+    var currentStep by remember { mutableIntStateOf(0) }
 
+    // dialog container that blocks back press and outside clicks
     Dialog(
         onDismissRequest = onFinish,
         properties = DialogProperties(
@@ -96,7 +101,7 @@ fun OnboardingScreen(
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Progress indicator
+                // progress indicators for each step
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -110,26 +115,27 @@ fun OnboardingScreen(
                                 .size(8.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    if (index == currentStep) 
-                                        steps[currentStep].highlightColor 
-                                    else 
+                                    if (index == currentStep)
+                                        steps[currentStep].highlightColor
+                                    else
                                         Color.Gray.copy(alpha = 0.3f)
                                 )
                         )
                     }
                 }
 
-                // Current step content
+                // animate transition between step content
                 AnimatedContent(
                     targetState = currentStep,
                     transitionSpec = {
-                        slideInHorizontally { width -> width } + fadeIn() with
-                        slideOutHorizontally { width -> -width } + fadeOut()
+                        (slideInHorizontally { width -> width } + fadeIn()).togetherWith(
+                            slideOutHorizontally { width -> -width } + fadeOut())
                     }
                 ) { step ->
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // icon with circular background highlight
                         Box(
                             modifier = Modifier
                                 .size(120.dp)
@@ -147,6 +153,7 @@ fun OnboardingScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
+                        // step title
                         Text(
                             text = steps[step].title,
                             style = MaterialTheme.typography.headlineSmall,
@@ -157,6 +164,7 @@ fun OnboardingScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        // step description
                         Text(
                             text = steps[step].description,
                             style = MaterialTheme.typography.bodyLarge,
@@ -168,7 +176,7 @@ fun OnboardingScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Navigation buttons
+                // navigation buttons: back or next/finish
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -183,11 +191,13 @@ fun OnboardingScreen(
                             Text("Tilbake")
                         }
                     } else {
+                        // placeholder to align buttons
                         Spacer(modifier = Modifier.width(64.dp))
                     }
 
                     Button(
                         onClick = {
+                            // advance to next step or finish
                             if (currentStep < steps.size - 1) {
                                 currentStep++
                             } else {
@@ -207,4 +217,4 @@ fun OnboardingScreen(
             }
         }
     }
-} 
+}

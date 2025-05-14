@@ -35,7 +35,7 @@ import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.OnboardingView
 import no.uio.ifi.in2000.team46.data.local.datastore.dataStore
 
 class MainActivity : ComponentActivity() {
-    // Hoist all your ViewModels here so they survive navigation
+    // hoisting all  ViewModels here so they survive navigation
     private val locationRepository by lazy { LocationRepository(this) }
     private val db by lazy { AppDatabase.getDatabase(this) }
 
@@ -79,13 +79,13 @@ class MainActivity : ComponentActivity() {
         MapLibre.getInstance(this, "kPH7fJZHXa4Pj6d1oIuw", WellKnownTileServer.MapTiler)
         enableEdgeToEdge()
 
-        // Check if this is first launch
+        // check if this is first launch
         onboardingViewModel.checkFirstLaunch(this)
 
         setContent {
             AppTheme(viewModel = profileViewModel) {
                 val navController = rememberNavController()
-                // Hoist your single MapView
+                // hoist your single MapView
                 val mapView = rememberMapViewWithLifecycle()
 
                 AppNavHost(
