@@ -650,7 +650,7 @@ fun SearchBox(
                     bottomEnd = 0.dp
                 ) 
             else RoundedCornerShape(24.dp),
-            color = Color.White
+            color = MaterialTheme.colorScheme.secondaryContainer
         ) {
             OutlinedTextField(
                 value = searchText,
@@ -671,8 +671,8 @@ fun SearchBox(
                 },
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
+                    focusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.secondaryContainer,
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 )
@@ -693,7 +693,7 @@ fun SearchBox(
                     bottomStart = 24.dp,
                     bottomEnd = 24.dp
                 ),
-                color = Color.White
+                color = MaterialTheme.colorScheme.secondaryContainer
             ) {
                 LazyColumn(
                     modifier = Modifier
@@ -711,7 +711,7 @@ fun SearchBox(
                                 Text(
                                     text = "Nylige søk",
                                     style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
+                                    color = MaterialTheme.colorScheme.onSecondaryContainer
                                 )
                             }
                         }
@@ -727,7 +727,7 @@ fun SearchBox(
                                     focusManager.clearFocus()
                                 }
                                 .padding(vertical = 2.dp),
-                            color = Color.White
+                            color = MaterialTheme.colorScheme.secondaryContainer
 ) {
     Row(
                                 modifier = Modifier
@@ -749,7 +749,7 @@ fun SearchBox(
         Text(
                                         text = feature.properties.name,
                                         style = MaterialTheme.typography.titleMedium,
-                                        color = Color.Black
+                                        color = MaterialTheme.colorScheme.onSecondaryContainer
                                     )
 
                                     val location = buildString {
@@ -767,7 +767,7 @@ fun SearchBox(
         Text(
                                             text = location,
             style = MaterialTheme.typography.bodyMedium,
-                                            color = Color.Gray
+                                            color = MaterialTheme.colorScheme.onSecondaryContainer
                                         )
                                     }
                                 }
@@ -776,7 +776,7 @@ fun SearchBox(
                             HorizontalDivider(
                                 modifier = Modifier.padding(start = 52.dp),
                                 thickness = 0.5.dp,
-                                color = Color(0xFFE0E0E0)
+                                color =MaterialTheme.colorScheme.outline
                             )
                         }
         }

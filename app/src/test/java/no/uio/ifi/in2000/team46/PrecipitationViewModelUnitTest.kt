@@ -25,7 +25,9 @@ class PrecipitationViewModelTest {
 
     @Before
     fun setup() {
+        // main dispatcher for coroutine testing
         Dispatchers.setMain(testDispatcher)
+        // mock repository and initialize ViewMode
         repo = mockk()
         viewModel = PrecipitationViewModel(repo)
     }
@@ -51,33 +53,46 @@ class PrecipitationViewModelTest {
 
     @Test
     fun `setPrecipThreshold updates threshold value`() {
+        // Act: set a new precipitation threshold
         viewModel.setPrecipThreshold(10.0)
+        // Assert: threshold state should reflect the new value
         assertEquals(10.0, viewModel.precipThreshold.value, 0.01)
     }
 
     @Test
     fun `toggleLayerVisibility activates layer and calls fetch`() = runTest {
+        // Arrange: stub repository to return empty data
         coEvery { repo.getPrecipitationData() } returns Result.Success(emptyList())
 
+        // Precondition: layer should start hidden
         assertFalse(viewModel.isLayerVisible.value)
+        // Act: toggle visibility
         viewModel.toggleLayerVisibility()
+
+        // Assert: layer is visible and data fetch is invoked
         assertTrue(viewModel.isLayerVisible.value)
         coVerify { repo.getPrecipitationData() }
     }
 
     @Test
     fun `deactivateLayer turns off layer and clears data`() {
+        // Act: deactivate the precipitation layer
         viewModel.deactivateLayer()
+        // Assert: layer visibility is false and data is cleared
         assertFalse(viewModel.isLayerVisible.value)
         assertNull(viewModel.data.value)
     }
 
     @Test
     fun `fetch stores successful result in data`() = runTest {
+        // Arrange: sample precipitation data
         val sampleData = listOf(PrecipitationPoint(60.0, 10.0, 3.0, 10))
         coEvery { repo.getPrecipitationData() } returns Result.Success(sampleData)
 
+        // Act: fetch data by toggling layer visibility
         viewModel.toggleLayerVisibility()
+
+        // Assert: data state should hold the fetched result
         assertTrue(viewModel.data.value is Result.Success)
         assertEquals(sampleData, (viewModel.data.value as Result.Success).data)
     }

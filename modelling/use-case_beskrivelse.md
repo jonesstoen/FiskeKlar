@@ -13,7 +13,7 @@
 6.	Brukeren kan også aktivere flere lag som farevarsler, vind, bølger osv.
 7.	Kartet oppdateres dynamisk etter hvert valg.
 
-#### Alternativ flyt - varsel om at man befinner seg i en faresone:
+#### Alternativ flyt - varsel om at man befinner seg i en faresone ved aktivering av farevarsel:
 1.	Appen sjekker kontinuerlig brukerens nåværende posisjon opp mot farevarslene.
 2.	Dersom posisjonen faller innenfor et farevarselområde, vises et popup-varsel: «Du befinner deg i en faresone!».
 3.	Brukeren kan deretter velge å ignorere eller få mer informasjon om farevarselet.
@@ -29,7 +29,7 @@
 #### Hovedflyt:
 1.	Brukeren åpner appen og trykker på SOS-knappen.
 2.	Appen henter nåværende posisjon.
-3.	Det sendes forespørsel til barentswatch-API og henter informasjon om nærmeste fartøy.
+3.	Det sendes forespørsel til BarentsWatch-API og henter informasjon om nærmeste fartøy.
 4.	Appen viser en liste over nærmeste fartøy, inkludert navn, type og avstand.
 5.	Hvert fartøy i listen har en knapp «Vis på kart», som åpner kartvisning med fartøy og brukerposisjon.
 6.	Appen viser også en liste over nødnumre (f.eks. Redningsselskapet, Politi, Brannvesen, Ambulanse).
@@ -82,7 +82,7 @@
 
     - Dato
 
-    - Fangstart
+    - Fiskeart
 
     - Vekt og antall
 
@@ -94,21 +94,21 @@
 
 3. Brukeren kan gå tilbake til listen ved å bruke tilbakeknapp.
 
-## Use-case 4 – Lagre mine favorittområder for å fiske:
-- Navn: Se favorittområder, legge til favorittområde, slette favorittområde og se detaljer
+## Use-case 4 – Lagre mine favorittsteder for å fiske:
+- Navn: Se favorittsteder, legge til favorittsted, slette favorittsted og se detaljer
 - Aktør: Hobbyfiskere
 - Prebetingelser: Brukeren har tilgang til appen og er logget inn
-- Postbetingelser: Listen over favorittområder er oppdatert.
+- Postbetingelser: Listen over favorittsteder er oppdatert.
 Brukeren kan se detaljer, legge til fangster, slette eller se området på kartet.
 
 #### Hovedflyt
-1. Brukeren åpner Favorittområder fra hjemskjermen.
+1. Brukeren åpner Favoritt-steder fra hjemskjermen.
 
-2. Appen henter listen over lagrede favorittområder fra databasen.
+2. Appen henter listen over lagrede favorittsteder fra databasen.
 
-3. Hvis områder finnes, vises de i en liste med navn og kartvisning.
+3. Hvis steder finnes, vises de i en liste med navn og kartvisning.
 
-4. Hvis listen er tom, vises meldingen: «Ingen favorittområder ennå. Trykk + for å legge til.»
+4. Hvis listen er tom, vises meldingen: «Trykk + for å legge til.»
 
 5. Brukeren trykker på «+» for å registrere et nytt område.
 
@@ -124,7 +124,7 @@ Brukeren kan se detaljer, legge til fangster, slette eller se området på karte
 
 9. Listen over favoritter oppdateres.
 
-#### Alternativ flyt 1 - Se detaljer for et favorittområde
+#### Alternativ flyt 1 - Se detaljer for et favoritt-sted
 1. Brukeren trykker på et område i favorittlisten.
 
 2. Appen viser detaljer - Navn, beskrivelse, statistikk over fangster. Beste fangst, siste fangst
@@ -135,7 +135,9 @@ Brukeren kan se detaljer, legge til fangster, slette eller se området på karte
 
     3b. Trykke «Vis på kart», og området vises i kartvisning med markering
 
-#### Alternativ flyt 2 - Slette et spesfikk favorittområde
+    3c. Trykke "Se været for dette stedet", og det vises værvarselt for dette stedet i værvarsel skjermen
+
+#### Alternativ flyt 2 - Slette et spesfikk favoritt-sted
 1. Brukeren trykker på søppelbøtte-ikonet ved et område
 
 2. Brukeren får meldingen: «Er du sikker på at du vil slette dette området?»
@@ -144,17 +146,17 @@ Brukeren kan se detaljer, legge til fangster, slette eller se området på karte
 
 4. Området slettes fra databasen
 
-5. Listen oppdateres i favorittområde siden
+5. Listen oppdateres i favorittsted siden
 
-#### Alternativ flyt 3 - Slette alle favorittområder
-1. Brukeren trykker på søppelboks i favorittområde-"hovedsiden"
+#### Alternativ flyt 3 - Slette alle favoritt-steder
+1. Brukeren trykker på søppelbøtte ikonet i favorittsted-skjermen
 
-2. Brukeren får en advarsel: «Dette vil slette alle lagrede favorittområder. Fortsette?»
+2. Brukeren får en advarsel: «Er du sikker på at du vil slette alle favoritter?"
 
 3. Ved bekreftelse slettes alle områder og siden viser en tom liste
 
-#### Alternativ flyt 4 - Favorittområde som lagres med eksisterende navn
-1. Brukeren skriver inn et navn som allerede finnes i listen over favorittområder.
+#### Alternativ flyt 4 - Favorittsted som lagres med eksisterende navn
+1. Brukeren skriver inn et navn som allerede finnes i listen over favorittsteder.
 
 2. Validerer navnet og oppdager duplikaten.
 
@@ -165,7 +167,7 @@ Brukeren kan se detaljer, legge til fangster, slette eller se området på karte
 ## Use-case 5 – Se været for i dag eller tre dager frem i tid
 - Navn: Se værvarsel for valgt posisjon
 - Aktør: Hobbyfisker
-- Prebetingelser: Brukeren er koblet til internett Posisjonstjenester er aktivert hvis brukeren vil se været der de er.
+- Prebetingelser: Brukeren er koblet til internett. Posisjonstjenester er aktivert hvis brukeren vil se været der de er.
 - Postbetingelser: Brukeren har sett oppdatert værinfo for valgt sted
 
 #### Hovedflyt

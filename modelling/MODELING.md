@@ -6,7 +6,7 @@ Denne "modelling" mappen innholder både use-case diagram og use-case beskrivels
 #### 1. Use-case og use-case beskrivelse
 ##### Filer: use_case.png, use-case_beskrivelse.md
 
-Modelleringen startet med å utvikle use-case diagram for å få en visualisering av hovedfunksjonalitetene til appen, samt relasjonen mellom aktørene og systemet. Dette hjalp oss med å identifisere og vise hva som er funskjonene til appen, og hvilke handlinger brukeren kan utføre. I tillegg skrev vi detaljerte use-case-beskrivelser for hver funksjonalitet. Beskrivelsen viser hvordan appen fungerer i praksis basert på bestemte use-case oppgaver. Dette er for å tydelig dokumentere de viktigste brukerreisene og funskjonalitetene: åpne kart, bruke SOS-funksjonen, registrere fangst, lagre favorittområder og se værdata.
+Modelleringen startet med å utvikle use-case diagram for å få en visualisering av hovedfunksjonalitetene til appen, samt relasjonen mellom aktørene og systemet. Dette hjalp oss med å identifisere og vise hva som er funskjonene til appen, og hvilke handlinger brukeren kan utføre. I tillegg skrev vi detaljerte use-case-beskrivelser for hver funksjonalitet. Beskrivelsen viser hvordan appen fungerer i praksis basert på bestemte use-case oppgaver. Dette er for å tydelig dokumentere de viktigste brukerreisene og funskjonalitetene: åpne kart, bruke SOS-funksjonen, registrere fangst, lagre favorittsteder og se værdata.
 
 
 
@@ -15,10 +15,10 @@ Modelleringen startet med å utvikle use-case diagram for å få en visualiserin
 - sekvens_diagram_SOS.md
 - sekvens_diagram_kartskjerm.md
 - sekvens_diagram_fiskelogg.md
-- sekvens_diagram_favorittområder.md
+- sekvens_diagram_favorittsteder.md
 - sekvens_diagram_vaervarsel.md
 
-Det er laget totalt 5 ulike sekvensdiagramer for de ulike funksjonalitetene. Vi valgte å lage ett diagram per hovedfunksjonalitet i appen (kart, SOS, fiskelogg, favorittområder og værvarsel), slik at vi får belyst hver delprosess detaljert. Dette er for å visualisere hvordan appen kommuniserer med databasen, kartvisningen og eksterne API-er. De gir innsikt i hvordan ulike komponenter kommuniserer og i hvilken rekkefølge hendelser skjer. Ved å bruke alt og opt i Mermaid kunne vi tydelig skille mellom hovedflyt og alternative scenarier, noe som gjør diagrammene både informative og lette å lese.
+Det er laget totalt 5 ulike sekvensdiagramer for de ulike funksjonalitetene. Vi valgte å lage ett diagram per hovedfunksjonalitet i appen (kart, SOS, fiskelogg, favorittsteder og værvarsel), slik at vi får belyst hver delprosess detaljert. Dette er for å visualisere hvordan appen kommuniserer med databasen, kartvisningen og eksterne API-er. De gir innsikt i hvordan ulike komponenter kommuniserer og i hvilken rekkefølge hendelser skjer. Ved å bruke alt og opt i Mermaid kunne vi tydelig skille mellom hovedflyt og alternative scenarier, noe som gjør diagrammene både informative og lette å lese.
 
 #### 3. Klassediagram
 #### Filer: klasse_diagram.md
@@ -27,15 +27,15 @@ Klassediagrammet gir en strukturert oversikt over appens indre arkitektur, inklu
 
 - Visualisere datastrukturen i appen (f.eks. hvordan en Fangst er bygd opp med art, vekt, bilde osv.).
 
-- Avdekke sammenhenger og avhengigheter mellom objekter, som at Hobbyfisker har en Fiskelog, og kan legge til Favorittområde.
+- Avdekke sammenhenger og avhengigheter mellom objekter, som at Hobbyfisker har en Fiskelog, og kan legge til Favorittsted.
 
-- Skille mellom modellklasser (som Fangst, Favorittområde, Værvarsel) og tjenester eller API-er (Database, FiskeInfoAPI, VærdataAPI).
+- Skille mellom modellklasser (som Fangst, Favorittsted, Værvarsel) og tjenester eller API-er (Database, FiskeInfoAPI, VærdataAPI).
 
-Vi valgte å inkludere både attributter og metoder for å gjøre diagrammet mer konkret og knytte det tettere til faktisk funksjonalitet i appen. Multiplikiteter ble brukt der det er naturlig, f.eks. at én fiskelog inneholder mange fangster (1..*), og at en hobbyfisker kan ha flere favorittområder. Diagrammet er viktig i videre utvikling fordi det fungerer som et grunnlag for klasser i koden, spesielt hvis man bruker OOP. I tillegg hjelper det nye utviklere å raskt forstå datastrukturen.
+Vi valgte å inkludere både attributter og metoder for å gjøre diagrammet mer konkret og knytte det tettere til faktisk funksjonalitet i appen. Multiplikiteter ble brukt der det er naturlig, f.eks. at én fiskelog inneholder mange fangster (1..*), og at en hobbyfisker kan ha flere favorittsteder. Diagrammet er viktig i videre utvikling fordi det fungerer som et grunnlag for klasser i koden, spesielt hvis man bruker OOP. I tillegg hjelper det nye utviklere å raskt forstå datastrukturen.
 
 #### 4. Aktivitetsdiagram
 #### Filer: 
-- aktivitetsdiagram_favorittomrade.md
+- aktivitetsdiagram_favorittsteder.md
 - aktivtetsdiagram_kart.md
 - aktivitetsdiagram_SOS.md
 

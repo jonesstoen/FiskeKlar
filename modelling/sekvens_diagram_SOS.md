@@ -13,12 +13,13 @@ sequenceDiagram
     AISAPI -->> App: Returnerer fartøyinformasjon
 
     alt Fartøy funnet
-        App ->> Hobbyfisker: Viser posisjon og nærmeste fartøy på kart
+        App -->> Hobbyfisker: Viser posisjon og nærmeste fartøy på kart
     else Ingen fartøy i nærheten
-        App ->> Hobbyfisker: Viser varsel "Ingen fartøy i nærheten"
+        App -->> Hobbyfisker: Viser varsel "Ingen fartøy i nærheten"
     end
 
     Hobbyfisker ->> App: Trykker på "Ring nødhjelp"
     App ->> Redning: Starter anrop til nødnummer
+
 
 ```
