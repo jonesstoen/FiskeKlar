@@ -25,21 +25,29 @@ import org.maplibre.android.style.layers.PropertyFactory
 import org.maplibre.android.style.layers.SymbolLayer
 import org.maplibre.android.style.sources.GeoJsonSource
 
+// composable that renders AIS vessel layer on map and shows vessel info dialog
+// main function: observes vessel positions and toggle state, updates map layers, handles map interactions, and displays vessel info
 
 @Composable
 fun AisLayer(
     mapView: MapView,
     aisViewModel: AisViewModel
 ) {
+    // tag for logging
     val TAG = "AisLayerComponent"
+    // collect latest vessel positions from viewmodel
     val vesselPositions by aisViewModel.vesselPositions.collectAsState()
+    // collect visibility flag for the layer
     val isLayerVisible by aisViewModel.isLayerVisible.collectAsState()
+    // coroutine scope for async map interactions
     val coroutineScope = rememberCoroutineScope()
 
+    // initial icon loading into map style
     LaunchedEffect(Unit) {
         VesselIcons.initializeIcons(mapView.context)
         mapView.getMapAsync { maplibreMap ->
             maplibreMap.getStyle { style ->
+                // add each vessel icon to map style
                 VesselIcons.getIcons().forEach { (iconName, bitmap) ->
                     style.addImage(iconName, bitmap)
                 }
@@ -47,6 +55,7 @@ fun AisLayer(
         }
     }
 
+    // update or remove AIS layer when vessel data or visibility changes
     LaunchedEffect(vesselPositions, isLayerVisible) {
         if (isLayerVisible) {
             updateAisLayer(mapView, vesselPositions)
@@ -55,6 +64,7 @@ fun AisLayer(
         }
     }
 
+    // listen to camera moves to update visible region in viewmodel
     LaunchedEffect(isLayerVisible) {
         if (isLayerVisible) {
             mapView.getMapAsync { maplibreMap ->
@@ -71,6 +81,7 @@ fun AisLayer(
         }
     }
 
+    // handle map clicks to show vessel info dialog
     LaunchedEffect(Unit) {
         mapView.getMapAsync { maplibreMap ->
             maplibreMap.addOnMapClickListener { point ->
@@ -81,8 +92,9 @@ fun AisLayer(
                 )
 
                 if (features.isNotEmpty()) {
+                    // parse vessel properties and show dialog via viewmodel
                     val vessel = features[0]
-                    val properties = vessel.properties()  // Use getProperties() instead of properties
+                    val properties = vessel.properties()
 
                     aisViewModel.showVesselInfo(
                         mmsi = properties?.get("mmsi")?.asString ?: "",
@@ -100,6 +112,7 @@ fun AisLayer(
         }
     }
 
+    // show vessel info dialog if a vessel is selected
     if (aisViewModel.selectedVessel.value != null) {
         VesselInfoDialog(
             vessel = aisViewModel.selectedVessel.value!!,
@@ -113,36 +126,40 @@ private fun VesselInfoDialog(
     vessel: AisVesselPosition,
     onDismiss: () -> Unit
 ) {
+    // alert dialog displaying detailed info about selected vessel
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(vessel.name, fontSize = 25.sp) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // display vessel properties in rows
                 Row {
                     Text("MMSI: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Text("${vessel.mmsi}", fontSize = 20.sp)
                 }
                 Row {
                     Text("Type: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
-                    Text(VesselTypes.ALL_TYPES.entries.find { it.value == vessel.shipType }?.key ?: "Ukjent", fontSize = 20.sp)
+                    Text(VesselTypes.ALL_TYPES.entries.find { it.value == vessel.shipType }?.key
+                        ?: "ukjent", fontSize = 20.sp)
                 }
                 Row {
-                    Text("Fart: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text("fart: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Text("${vessel.speedOverGround} knop", fontSize = 20.sp)
                 }
                 Row {
-                    Text("Kurs: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text("kurs: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Text("${vessel.courseOverGround}°", fontSize = 20.sp)
                 }
                 Row {
-                    Text("Stevning: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text("stevning: ", fontWeight = FontWeight.Bold, fontSize = 20.sp)
                     Text("${vessel.trueHeading}°", fontSize = 20.sp)
                 }
             }
         },
         confirmButton = {
+            // close button for dialog
             TextButton(onClick = onDismiss) {
-                Text("Lukk")
+                Text("lukk")
             }
         }
     )
@@ -150,6 +167,7 @@ private fun VesselInfoDialog(
 
 private fun updateViewportBounds(bounds: LatLngBounds, viewModel: AisViewModel) {
     try {
+        // update viewmodel with current map bounds
         viewModel.updateVisibleRegion(
             minLon = bounds.longitudeWest,
             minLat = bounds.latitudeSouth,
@@ -163,7 +181,7 @@ private fun updateViewportBounds(bounds: LatLngBounds, viewModel: AisViewModel) 
 
 private fun updateAisLayer(mapView: MapView, vessels: List<AisVesselPosition>) {
     val TAG = "AisLayerComponent"
-
+    // return early if no vessels to draw
     if (vessels.isEmpty()) {
         Log.d(TAG, "No vessels to display")
         return
@@ -172,16 +190,16 @@ private fun updateAisLayer(mapView: MapView, vessels: List<AisVesselPosition>) {
     mapView.getMapAsync { maplibreMap ->
         maplibreMap.getStyle { style ->
             try {
-                // Remove existing layers and source
+                // remove existing AIS layers and source
                 style.getLayer("ais-vessels-text-layer")?.let { style.removeLayer(it) }
                 style.getLayer("ais-vessels-layer")?.let { style.removeLayer(it) }
                 style.getSource("ais-vessels-source")?.let { style.removeSource(it) }
 
-                val features = JSONArray()
-                vessels.forEach { vessel ->
-                    try {
+                // build geojson feature collection from vessel data
+                val features = JSONArray().apply {
+                    vessels.forEach { vessel ->
                         val vesselStyle = VesselIcons.getVesselStyle(vessel.shipType)
-                        val feature = JSONObject().apply {
+                        put(JSONObject().apply {
                             put("type", "Feature")
                             put("geometry", JSONObject().apply {
                                 put("type", "Point")
@@ -200,35 +218,33 @@ private fun updateAisLayer(mapView: MapView, vessels: List<AisVesselPosition>) {
                                 put("iconType", vesselStyle.iconType)
                                 put("color", String.format("#%06X", 0xFFFFFF and vesselStyle.color))
                             })
-                        }
-                        features.put(feature)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error processing vessel ${vessel.mmsi}", e)
+                        })
                     }
                 }
 
                 val featureCollection = JSONObject().apply {
+                    // assemble feature collection for map source
                     put("type", "FeatureCollection")
                     put("features", features)
                 }
 
-                // Add source first
+                // add geojson source to map style
                 val sourceId = "ais-vessels-source"
                 val source = GeoJsonSource(sourceId, featureCollection.toString())
                 style.addSource(source)
 
-                // Add symbol layer first
+                // symbol layer for vessel icons
                 val symbolLayer = SymbolLayer("ais-vessels-layer", sourceId).withProperties(
                     PropertyFactory.iconImage(Expression.get("iconType")),
                     PropertyFactory.iconSize(1.0f),
                     PropertyFactory.iconAllowOverlap(true),
                     PropertyFactory.iconRotate(Expression.get("courseOverGround")),
                     PropertyFactory.iconColor(Expression.get("color")),
-                    PropertyFactory.iconOpacity(1f)  // Ensure full opacity
+                    PropertyFactory.iconOpacity(1f)
                 )
                 style.addLayer(symbolLayer)
 
-                // Add text layer on top
+                // text layer for vessel names
                 val textLayer = SymbolLayer("ais-vessels-text-layer", sourceId).withProperties(
                     PropertyFactory.textField(Expression.get("name")),
                     PropertyFactory.textSize(12f),
@@ -249,6 +265,7 @@ private fun updateAisLayer(mapView: MapView, vessels: List<AisVesselPosition>) {
 }
 
 private fun removeAisLayer(mapView: MapView) {
+    // remove AIS layers and source from map style
     mapView.getMapAsync { maplibreMap ->
         maplibreMap.getStyle { style ->
             try {

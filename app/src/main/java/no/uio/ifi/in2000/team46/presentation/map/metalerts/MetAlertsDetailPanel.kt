@@ -15,6 +15,7 @@ import no.uio.ifi.in2000.team46.domain.metalerts.Feature
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 
+// This file contains the UI for the details panel that displays information about a selected weather alert
 @Composable
 fun MetAlertsDetailsPanel(
     selectedMetAlert: Feature?,

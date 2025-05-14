@@ -21,11 +21,11 @@ private const val MARKER_ICON_ID = "selected-location-icon"
 
 /**
  * Add a marker on the map on the clicked position.
- * @param map MapLibreMap-objektet
- * @param style Style-objektet
- * @param latitude Breddegrad
- * @param longitude Lengdegrad
- * @param context Context-objektet
+ * @param map MapLibreMap-object
+ * @param style Style-object
+ * @param latitude
+ * @param longitude
+ * @param context
  */
 fun addMapMarker(
     map: MapLibreMap,
@@ -35,19 +35,16 @@ fun addMapMarker(
     context: Context
 ) {
     try {
-        // Sjekk om markøren allerede er initialisert
         if (style.getLayer(MARKER_LAYER_ID) == null) {
-            // Første gang: Opprett markør
+
             val drawable = ContextCompat.getDrawable(context, R.drawable.map_marker)
             val bitmap = drawable?.toBitmap()
             if (bitmap != null) {
                 style.addImage(MARKER_ICON_ID, bitmap)
-                
-                // Opprett GeoJsonSource
+
                 val source = GeoJsonSource(MARKER_SOURCE_ID)
                 style.addSource(source)
 
-                // Opprett SymbolLayer med optimaliserte egenskaper
                 val layer = SymbolLayer(MARKER_LAYER_ID, MARKER_SOURCE_ID)
                     .withProperties(
                         PropertyFactory.iconImage(MARKER_ICON_ID),
@@ -62,8 +59,7 @@ fun addMapMarker(
                 style.addLayer(layer)
             }
         }
-        
-        // Oppdater bare posisjonen hvis laget allerede eksisterer
+        //only update position if layer already exists
         val source = style.getSource(MARKER_SOURCE_ID) as? GeoJsonSource
         source?.setGeoJson(createPointFeature(latitude, longitude))
     } catch (e: Exception) {
@@ -71,9 +67,6 @@ fun addMapMarker(
     }
 }
 
-/**
- * Fjern markøren fra kartet
- */
 fun removeMapMarker(style: Style) {
     try {
         style.getLayer(MARKER_LAYER_ID)?.let { style.removeLayer(it) }
@@ -84,17 +77,16 @@ fun removeMapMarker(style: Style) {
 }
 
 private fun initializeMarker(style: Style, context: Context) {
-    // Last inn ikon
+
     val drawable = ContextCompat.getDrawable(context, R.drawable.map_marker)
     val bitmap = drawable?.toBitmap()
     if (bitmap != null) {
         style.addImage(MARKER_ICON_ID, bitmap)
-        
-        // Opprett GeoJsonSource
+
+        // create GeoJsonSource
         val source = GeoJsonSource(MARKER_SOURCE_ID)
         style.addSource(source)
 
-        // Opprett SymbolLayer med optimaliserte egenskaper
         val layer = SymbolLayer(MARKER_LAYER_ID, MARKER_SOURCE_ID)
             .withProperties(
                 PropertyFactory.iconImage(MARKER_ICON_ID),
@@ -135,7 +127,7 @@ private fun Drawable.toBitmap(): Bitmap? {
     val scale = 0.4f
     val width = (intrinsicWidth * scale).toInt()
     val height = (intrinsicHeight * scale).toInt()
-    
+
     return try {
         val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)

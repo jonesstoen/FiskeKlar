@@ -15,7 +15,7 @@ import no.uio.ifi.in2000.team46.domain.metalerts.MetAlertsResponse
 import no.uio.ifi.in2000.team46.domain.metalerts.Properties
 import no.uio.ifi.in2000.team46.domain.metalerts.WhenInfo
 
-
+// This file contains the UI for the details panel that displays information about a selected weather alert
 @Composable
 fun MetAlertsDetails(metAlertsViewModel: MetAlertsViewModel) {
     val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()

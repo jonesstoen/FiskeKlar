@@ -11,23 +11,21 @@ import no.uio.ifi.in2000.team46.data.repository.FavoriteRepository
 import org.json.JSONArray
 import org.json.JSONObject
 
-/**
- * ViewModel for håndtering av favorittlag på kartet.
- * Ansvarlig for å hente favoritter og styre synligheten til laget.
- */
+// summary: manages favorite layer on map, responsible for loading favorites, controlling layer visibility and converting favorites to geojson
+
 class FavoritesLayerViewModel(
     private val favoriteRepository: FavoriteRepository
 ) : ViewModel() {
 
-    // Favorittlokasjoner
+    // favorite locations state flow
     private val _favorites = MutableStateFlow<List<FavoriteLocation>>(emptyList())
     val favorites: StateFlow<List<FavoriteLocation>> = _favorites.asStateFlow()
 
-    // Synlighet for laget
+    // visibility state flow for the favorites layer
     private val _isLayerVisible = MutableStateFlow(false)
     val isLayerVisible: StateFlow<Boolean> = _isLayerVisible.asStateFlow()
 
-    // Valgt favoritt for visning av detaljer
+    // selected favorite for showing details
     private val _selectedFavorite = MutableStateFlow<FavoriteLocation?>(null)
     val selectedFavorite: StateFlow<FavoriteLocation?> = _selectedFavorite.asStateFlow()
 
@@ -35,9 +33,7 @@ class FavoritesLayerViewModel(
         loadFavorites()
     }
 
-    /**
-     * Henter alle favorittlokasjoner fra repository
-     */
+    // loads all favorite locations from repository and updates state flow
     fun loadFavorites() {
         viewModelScope.launch {
             favoriteRepository.getAllFavoritesFlow().collect { favoritesList ->
@@ -46,37 +42,29 @@ class FavoritesLayerViewModel(
         }
     }
 
-    /**
-     * Skrur favorittlaget på eller av
-     */
+    // toggles visibility of the favorites layer on the map
     fun toggleLayerVisibility() {
         _isLayerVisible.value = !_isLayerVisible.value
     }
 
-    /**
-     * Setter synligheten til laget
-     */
+    // sets visibility of the favorites layer explicitly
     fun setLayerVisibility(isVisible: Boolean) {
         _isLayerVisible.value = isVisible
     }
 
-    /**
-     * Velger en favoritt for visning av detaljer
-     */
+    // selects a favorite location to show its details
     fun selectFavorite(favorite: FavoriteLocation?) {
         _selectedFavorite.value = favorite
     }
 
-    /**
-     * Konverterer favorittlokasjoner til GeoJSON for kartet
-     */
+    // converts favorite locations into GeoJSON string for map display
     fun getFavoritesGeoJson(): String {
         val features = JSONArray()
-        
+
         favorites.value.forEach { favorite ->
             try {
-                if (favorite.locationType == "POINT" && favorite.latitude != null && favorite.longitude != null) {
-                    // Punkt
+                if (favorite.locationType == "POINT") {
+                    // create feature for point location
                     val feature = JSONObject().apply {
                         put("type", "Feature")
                         put("geometry", JSONObject().apply {
@@ -95,21 +83,22 @@ class FavoritesLayerViewModel(
                     }
                     features.put(feature)
                 } else if (favorite.locationType == "AREA" && favorite.areaPoints != null) {
-                    // Område
+                    // create feature for polygon area
                     try {
                         val areaPointsArray = JSONArray(favorite.areaPoints)
                         val coordinates = JSONArray()
-                        
+
                         for (i in 0 until areaPointsArray.length()) {
                             val point = areaPointsArray.getJSONObject(i)
+                            // extract lng and lat for each point
                             val coord = JSONArray().apply {
                                 put(point.getDouble("lng"))
                                 put(point.getDouble("lat"))
                             }
                             coordinates.put(coord)
                         }
-                        
-                        // Lukk polygonet ved å legge til første punkt igjen
+
+                        // close polygon by adding first point at end
                         if (areaPointsArray.length() > 0) {
                             val firstPoint = areaPointsArray.getJSONObject(0)
                             val firstCoord = JSONArray().apply {
@@ -118,7 +107,8 @@ class FavoritesLayerViewModel(
                             }
                             coordinates.put(firstCoord)
                         }
-                        
+
+                        // build polygon feature object
                         val feature = JSONObject().apply {
                             put("type", "Feature")
                             put("geometry", JSONObject().apply {
@@ -136,19 +126,20 @@ class FavoritesLayerViewModel(
                         }
                         features.put(feature)
                     } catch (e: Exception) {
-                        // Håndter feil ved parsing av areaPoints
+                        // handle parsing errors for areaPoints
                     }
                 }
             } catch (e: Exception) {
-                // Håndter generelle feil
+                // handle any general errors during geojson conversion
             }
         }
-        
+
+        // assemble final feature collection
         val featureCollection = JSONObject().apply {
             put("type", "FeatureCollection")
             put("features", features)
         }
-        
+
         return featureCollection.toString()
     }
 }

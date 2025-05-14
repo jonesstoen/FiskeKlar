@@ -1,7 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.map.metalerts
 
 
-import android.animation.ValueAnimator
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.util.Log
@@ -47,7 +46,6 @@ fun MetAlertsLayerComponent(
                             Log.e("MetAlertsLayerComponent", "Kunne ikke sette GeoJson", e)
                         }
                     } else {
-                        // Call filterAndAssignIcons and pass the result to addMetAlertsLayer
                     val featuresWithIcons = metAlertsResponse?.let { response ->
                         metAlertsViewModel.filterAndAssignIcons(response)
                     }
@@ -90,7 +88,6 @@ fun addMetAlertsLayer(
     val source = GeoJsonSource("metalerts-source", json)
     style.addSource(source)
     // creating a map of icon names to their resource IDs
-    //TODO: maybe move this to a separate file? not in this method
     val iconResourceMap = mapOf(
         "icon-warning-wind-yellow" to R.drawable.icon_warning_wind_yellow,
         "icon-warning-wind-orange" to R.drawable.icon_warning_wind_orange,
@@ -105,9 +102,9 @@ fun addMetAlertsLayer(
         "icon-warning-generic-orange" to R.drawable.icon_warning_generic_orange_png,
         "icon-warning-generic-red" to R.drawable.icon_warning_generic_red_png
     )
-    // Add icons dynamically based on featuresWithIcons
+    // add icons dynamically based on featuresWithIcons
     featuresWithIcons?.forEach { (_, iconName) ->
-        // Check if the iconName exists in the resource map
+        // check if the iconName exists in the resource map
         val resourceId = iconResourceMap[iconName]
         Log.d("addMetAlertsLayer", "Icon name: $iconName, Resource ID: $resourceId")
         // decoding the resource to bitmap

@@ -6,7 +6,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
@@ -47,7 +46,6 @@ import no.uio.ifi.in2000.team46.presentation.favorites.screen.FavoritesScreen
 import no.uio.ifi.in2000.team46.presentation.favorites.viewmodel.FavoritesViewModel
 import no.uio.ifi.in2000.team46.presentation.map.screens.MapPickerScreen
 import no.uio.ifi.in2000.team46.presentation.favorites.screen.AddFavoriteScreen
-import no.uio.ifi.in2000.team46.data.repository.UserRepository
 import no.uio.ifi.in2000.team46.presentation.weather.screens.WeatherDetailScreen
 import no.uio.ifi.in2000.team46.domain.weather.WeatherData
 import org.maplibre.android.maps.MapView
@@ -61,15 +59,13 @@ import androidx.compose.ui.graphics.Color
 import no.uio.ifi.in2000.team46.domain.weather.WeatherDetails
 import no.uio.ifi.in2000.team46.presentation.map.screens.MapScreen
 import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.OnboardingViewModel
-import no.uio.ifi.in2000.team46.presentation.ui.theme.backgroundLight
+
 import no.uio.ifi.in2000.team46.presentation.profile.screens.ThemeSettingsScreen
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.Alignment
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
+
 import java.net.URLEncoder
 
+//defines app navigation host with bottom navigation bar and routes to all screens
+// main function: sets up scaffold with navigation bar, observes current route, and wires composable routes with arguments
 
 @Composable
 fun AppNavHost(
@@ -174,7 +170,6 @@ fun AppNavHost(
                     navController = navController,
                     profileViewModel = profileViewModel,
                     showFavorites = showFavorites
-                    // GribViewModel og CurrentViewModel opprettes inne i MapScreen-funksjonen
                 )
             }
 
@@ -245,10 +240,6 @@ fun AppNavHost(
                 )
             }
 
-            composable("alerts") {
-                // TODO: implement AlertsScreen
-            }
-
             composable("weather") {
                 val viewModel = remember { WeatherDetailViewModel(weatherService) }
                 val userLocation by mapViewModel.userLocation.collectAsState()
@@ -257,29 +248,29 @@ fun AppNavHost(
                 var isLoading by remember { mutableStateOf(true) }
                 var customLocationName by remember { mutableStateOf<String?>(null) }
                 
-                // Get the location name from MapViewModel
+                // get the location name from MapViewModel
                 val mapLocationName by mapViewModel.locationName.collectAsState()
                 
-                // Force location name update and wait for it to complete
+                // force location name update and wait for it to complete
                 LaunchedEffect(Unit) {
                     isLoading = true
                     userLocation?.let { location ->
                         try {
-                            // First get the location name directly using getLocationName
+                            // first get the location name directly using getLocationName
                             val locationName = mapViewModel.getLocationName(
                                 location.latitude,
                                 location.longitude
                             )
                             
-                            // Store the result in our local state
+                            // store the result in our local state
                             customLocationName = locationName
                             
-                            // Also update the MapViewModel's state for consistency
+                            // also update the MapViewModel's state for consistency
                             mapViewModel.updateLocationName(location.latitude, location.longitude)
                             
                             android.util.Log.d("AppNavHost", "Direct location name result: $locationName")
                             
-                            // Get weather details
+                            // get weather details
                             weatherDetails = weatherService.getWeatherDetails(location.latitude, location.longitude)
                             weatherDetails?.let { details ->
                                 weatherData = WeatherData(
@@ -299,9 +290,9 @@ fun AppNavHost(
                     }
                 }
                 
-                // Show loading indicator while we're getting the location name
+                // show loading indicator while  getting the location name
                 if (isLoading) {
-                    androidx.compose.material3.CircularProgressIndicator()
+                    CircularProgressIndicator()
                     return@composable
                 }
 
@@ -309,7 +300,7 @@ fun AppNavHost(
                     WeatherDetailScreen(
                         navController = navController,
                         weatherData = weatherData!!,
-                        locationName = customLocationName ?: "Nåværende posisjon",  // Use our directly obtained location name
+                        locationName = customLocationName ?: "Nåværende posisjon",
                         feelsLike = weatherDetails!!.feelsLike ?: 0.0,
                         highTemp = weatherDetails!!.highTemp ?: 0.0,
                         lowTemp = weatherDetails!!.lowTemp ?: 0.0,
@@ -342,7 +333,7 @@ fun AppNavHost(
 
                 MapPickerScreen(
                     navController = navController,
-                    selectionMode = "POINT", // vi starter med punkt (eller område, hvis du vil la brukeren velge senere)
+                    selectionMode = "POINT",
                     navigateToAddFavorite = { pickedPoint, pickedArea, locationType ->
                         navController.currentBackStackEntry?.savedStateHandle?.apply {
                             set("savedName", name)
@@ -448,8 +439,6 @@ fun AppNavHost(
                     )
                 }
                 
-                // We'll use the weatherService directly instead of creating a view model here
-                
                 FavoriteDetailScreen(
                     favoriteId = favoriteId,
                     viewModel = viewModel,
@@ -459,22 +448,13 @@ fun AppNavHost(
                     },
                     onNavigateToMap = { lat, lon, areaPoints ->
                         if (lat != null && lon != null) {
-                            // For punkter - naviger til map/{lat}/{lng}
                             navController.navigate("map/${lat}/${lon}")
                         } else if (areaPoints != null) {
-                            // For områder - naviger til mapArea/{areaPointsJson}
                             navController.navigate("mapArea/${areaPoints}")
                         }
                     },
                     onNavigateToWeather = { lat, lon, locationName ->
-                        // Get weather details and navigate to weather detail screen
                         val encodedLocationName = URLEncoder.encode(locationName, StandardCharsets.UTF_8.toString())
-                        
-                        // We'll use hardcoded values for now and let the WeatherDetailViewModel
-                        // fetch the actual data when the screen loads
-                        
-                        // Navigate directly to weather detail screen with coordinates
-                        // The WeatherDetailViewModel will fetch the actual data
                         navController.navigate(
                             "weather_detail/0.0/0.0/" +
                             "0.0/0.0/clearsky_day/" +
@@ -502,7 +482,7 @@ fun AppNavHost(
                 )
             }
 
-            //Weather detail screen that appears on map
+            //weather detail screen that appears on map
             composable(
                 route = "weather_detail/{temperature}/{feelsLike}/{highTemp}/{lowTemp}/{symbolCode}/{description}/{locationName}/{windSpeed}/{windDirection}/{latitude}/{longitude}",
                 arguments = listOf(

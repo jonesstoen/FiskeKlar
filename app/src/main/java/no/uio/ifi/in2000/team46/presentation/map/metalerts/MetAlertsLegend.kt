@@ -33,14 +33,13 @@ fun MetAlertsLegend(modifier: Modifier = Modifier) {
         )
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Fargeforklaring
+        // color legend
         LegendRow(color = Color.Red, label = "Stor fare (rød)")
         LegendRow(color = Color(0xFFFFA500), label = "Moderat fare (oransje)")
         LegendRow(color = Color.Yellow, label = "Lav fare (gul)")
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        // Ikonforklaring
         IconLegendRow(R.drawable.icon_warning_wind_yellow, "Vind")
         IconLegendRow(R.drawable.icon_warning_rain_yellow, "Regn")
         IconLegendRow(R.drawable.icon_warning_flood_yellow, "Flom")
