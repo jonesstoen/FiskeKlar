@@ -21,14 +21,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Card
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -72,38 +68,37 @@ import no.uio.ifi.in2000.team46.presentation.map.utils.rememberMapViewWithLifecy
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.lifecycle.viewmodel.compose.viewModel
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
+import org.maplibre.android.annotations.MarkerOptions
+import org.maplibre.android.annotations.PolygonOptions
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
-    viewModel : FavoritesViewModel,
+    viewModel: FavoritesViewModel,
     onNavigate: (String) -> Unit,
     profileViewModel: ProfileViewModel
 ) {
-    // ----------- State og data -----------
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val favoritesWithStats by viewModel.favoritesWithStats.collectAsState()
     val currentFilter by viewModel.filterType.collectAsState()
     var showDeleteAllDialog by rememberSaveable { mutableStateOf(false) }
     var userLocation by remember { mutableStateOf<android.location.Location?>(null) }
 
-    // ----------- Filtrering for punkt og omraade -----------
     val filteredFavorites = favoritesWithStats.filter {
         val matchesSearch = it.favorite.name.contains(searchQuery, ignoreCase = true)
         val type = it.favorite.locationType?.trim()
         val matchesType = when (currentFilter) {
-            null -> true // Alle
+            null -> true
             "Punkter" -> type.equals("POINT", ignoreCase = true)
             "Områder" -> type.equals("AREA", ignoreCase = true)
             else -> true
         }
         matchesSearch && matchesType
     }
+
     val showSuggestions = searchQuery.isNotBlank() && filteredFavorites.isNotEmpty()
 
-    // ----------- Scaffold (AppBar, FAB) -----------
     Scaffold(
         topBar = {
             TopAppBar(
@@ -142,7 +137,6 @@ fun FavoritesScreen(
                 .padding(paddingValues)
                 .padding(16.dp)
         ) {
-            // ----------- Søkefelt og autocomplete -----------
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -189,7 +183,6 @@ fun FavoritesScreen(
             }
             Spacer(modifier = Modifier.height(8.dp))
 
-            // ----------- MiniMap (kartutsnitt) -----------
             MiniMap(
                 onMapClick = { onNavigate("map?showFavorites=true") },
                 userLocation = userLocation,
@@ -199,7 +192,6 @@ fun FavoritesScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // ----------- Filterknapper -----------
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -213,18 +205,14 @@ fun FavoritesScreen(
                     onClick = { viewModel.filterByType(null) },
                     modifier = Modifier.weight(1f)
                 )
-                VerticalDivider(
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
-                )
+                VerticalDivider(color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f))
                 FilterButton(
                     text = "Punkter",
                     selected = currentFilter == "Punkter",
                     onClick = { viewModel.filterByType("Punkter") },
                     modifier = Modifier.weight(1f)
                 )
-                VerticalDivider(
-                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f)
-                )
+                VerticalDivider(color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.2f))
                 FilterButton(
                     text = "Områder",
                     selected = currentFilter == "Områder",
@@ -235,17 +223,13 @@ fun FavoritesScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ----------- Favorittliste -----------
             if (filteredFavorites.isEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            "Trykk + for å legge til favoritter",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Text("Trykk + for å legge til favoritter", style = MaterialTheme.typography.bodyLarge)
                     }
                 }
             } else {
@@ -264,7 +248,6 @@ fun FavoritesScreen(
             }
         }
 
-        // ----------- Dialoger -----------
         if (showDeleteAllDialog) {
             AlertDialog(
                 onDismissRequest = { showDeleteAllDialog = false },
@@ -290,8 +273,6 @@ fun FavoritesScreen(
     }
 }
 
-
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FilterButton(
     text: String,
@@ -299,33 +280,45 @@ fun FilterButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // container for button content, applies click and background
     Box(
         modifier = modifier
+            // make box fill the max height of its parent
             .fillMaxHeight()
+            // apply click action when pressed
             .clickable(onClick = onClick)
+            // set background color depending on selection state
             .background(
                 if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer
             ),
         contentAlignment = Alignment.Center
     ) {
+        // display label text with dynamic color and style
         Text(
             text = text,
+            // choose text color based on whether button is selected
             color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
             style = MaterialTheme.typography.bodyMedium,
+            // apply medium font weight for emphasis
             fontWeight = FontWeight.Medium
         )
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+
+
+// this composable displays a favorite location card with stats including count of catches, last catch date, and best catch details
+
 @Composable
 fun FavoriteCard(
     favoriteWithStats: FavoriteWithStats,
     onClick: () -> Unit
 ) {
+    // extract favorite data and determine if location type is point
     val favorite = favoriteWithStats.favorite
     val isPoint = favorite.locationType == "POINT"
 
+    // clickable card full width
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick
@@ -336,13 +329,13 @@ fun FavoriteCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            // Type-indikator (punkt eller område)
+            // type indicator: circle for point or rounded rectangle for area
             if (isPoint) {
                 Box(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(CircleShape)
-                        .background(Color(0xFFE53935)), // Rød for punkt
+                        .background(Color(0xFFE53935)), // red for point
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -356,7 +349,7 @@ fun FavoriteCard(
                     modifier = Modifier
                         .size(24.dp)
                         .clip(RoundedCornerShape(4.dp))
-                        .background(Color(0xFF4CAF50)), // Grønn for område
+                        .background(Color(0xFF4CAF50)), // green for area
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -369,7 +362,7 @@ fun FavoriteCard(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Informasjon
+            // information column for name and catch summary
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = favorite.name,
@@ -378,9 +371,9 @@ fun FavoriteCard(
 
                 Spacer(modifier = Modifier.height(4.dp))
 
-                // Info om antall fangster og dato for siste fangst
+                // build text for total catches and last catch date
                 val lastCatchInfo = favoriteWithStats.lastCatch?.let {
-                    "• Sist: ${it.date}"
+                    "• sist: ${it.date}"
                 } ?: ""
 
                 Text(
@@ -390,7 +383,7 @@ fun FavoriteCard(
                 )
             }
 
-            // Beste fangst-info
+            // display best catch stats if available
             favoriteWithStats.bestCatch?.let { bestCatch ->
                 Surface(
                     modifier = Modifier.width(110.dp),
@@ -427,6 +420,9 @@ fun FavoriteCard(
     }
 }
 
+
+// this composable renders a small map preview showing user and favorite locations, with clickable overlay to expand
+
 @Composable
 fun MiniMap(
     onMapClick: () -> Unit,
@@ -434,12 +430,15 @@ fun MiniMap(
     favorites: List<FavoriteWithStats>,
     profileViewModel: ProfileViewModel
 ) {
+    // create map view lifecycle aware
     val mapView = rememberMapViewWithLifecycle()
     val context = LocalContext.current
+    // repository for location retrieval
     val locationRepository = remember { LocationRepository(context) }
+    // coroutine scope for async calls
     val scope = rememberCoroutineScope()
-    
-    // Get the theme from ProfileViewModel and determine if dark mode should be used
+
+    // observe app theme from viewmodel to set map style
     val appTheme by profileViewModel.theme.collectAsState()
     val isDarkMode = when (appTheme) {
         "dark" -> true
@@ -447,16 +446,17 @@ fun MiniMap(
         else -> isSystemInDarkTheme()
     }
 
-    // State for user location
-    var userLocation by remember { mutableStateOf<android.location.Location?>(null) }
+    // local state for accurate user location
+    var currentLocation by remember { mutableStateOf<android.location.Location?>(null) }
 
-    // Get user location
+    // fetch fast location once
     LaunchedEffect(Unit) {
         locationRepository.getFastLocation()?.let { location ->
-            userLocation = location
+            currentLocation = location
         }
     }
 
+    // clean up map view resources on dispose
     DisposableEffect(Unit) {
         onDispose {
             mapView.onPause()
@@ -465,40 +465,42 @@ fun MiniMap(
         }
     }
 
+    // container box for map and overlay
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .height(130.dp)
             .clip(RoundedCornerShape(8.dp))
     ) {
-        // Kart
+        // display map view
         AndroidView(
             factory = { mapView },
             modifier = Modifier.fillMaxSize()
         ) { view ->
             view.getMapAsync { map ->
+                // set style url based on theme
                 val apiKey = "kPH7fJZHXa4Pj6d1oIuw"
                 val style = if (isDarkMode) "streets-v2-dark" else "basic"
                 val styleUrl = "https://api.maptiler.com/maps/$style/style.json?key=$apiKey"
                 map.setStyle(styleUrl) {
 
-                    // Legg til favorittsteder
-                    favorites.forEach { favoriteWithStats ->
-                        val favorite = favoriteWithStats.favorite
-                        if (favorite.locationType == "POINT") {
-                            // Legg til punkt
-                            val markerOptions = org.maplibre.android.annotations.MarkerOptions()
-                                .position(LatLng(favorite.latitude, favorite.longitude))
-                                .title(favorite.name)
-                            map.addMarker(markerOptions)
+                    // add markers or polygons for each favorite
+                    favorites.forEach { favWithStats ->
+                        val fav = favWithStats.favorite
+                        if (fav.locationType == "POINT") {
+                            // add point marker
+                            val marker = MarkerOptions()
+                                .position(LatLng(fav.latitude, fav.longitude))
+                                .title(fav.name)
+                            map.addMarker(marker)
                         } else {
-                            // Legg til område
-                            val points = favorite.areaPoints?.let { pointsJson ->
+                            // parse area points json and draw polygon
+                            val points = fav.areaPoints?.let { json ->
                                 try {
-                                    val jsonArray = org.json.JSONArray(pointsJson)
-                                    List(jsonArray.length()) { i ->
-                                        val point = jsonArray.getJSONObject(i)
-                                        LatLng(point.getDouble("lat"), point.getDouble("lng"))
+                                    val arr = org.json.JSONArray(json)
+                                    List(arr.length()) { i ->
+                                        val obj = arr.getJSONObject(i)
+                                        LatLng(obj.getDouble("lat"), obj.getDouble("lng"))
                                     }
                                 } catch (e: Exception) {
                                     emptyList()
@@ -506,32 +508,36 @@ fun MiniMap(
                             } ?: emptyList()
 
                             if (points.isNotEmpty()) {
-                                val polygonOptions = org.maplibre.android.annotations.PolygonOptions()
+                                val polygon = PolygonOptions()
                                     .addAll(points)
-                                    .fillColor(0x334CAF50) // Grønn med 20% opacity
-                                    .strokeColor(0xFF4CAF50.toInt()) // Grønn
-                                map.addPolygon(polygonOptions)
+                                    .fillColor(0x334CAF50) // green fill with opacity
+                                    .strokeColor(0xFF4CAF50.toInt()) // green border
+                                map.addPolygon(polygon)
                             }
                         }
                     }
 
-                    // Flytt kamera til brukerens posisjon eller første favoritt
-                    val centerLatLng = userLocation?.let { LatLng(it.latitude, it.longitude) }
-                        ?: favorites.firstOrNull()?.favorite?.let { LatLng(it.latitude, it.longitude) }
-                        ?: LatLng(59.9139, 10.7522) // Oslo som fallback
+                    // center camera on user or first favorite or fallback to oslo
+                    val center = currentLocation?.let {
+                        LatLng(it.latitude, it.longitude)
+                    } ?: favorites.firstOrNull()?.favorite?.let {
+                        LatLng(it.latitude, it.longitude)
+                    } ?: LatLng(59.9139, 10.7522)
 
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(centerLatLng, 10.0))
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(center, 10.0))
                 }
             }
         }
-        // Klikkbar overlay
+
+        // transparent overlay to capture clicks
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .clickable { onMapClick() }
                 .background(Color.Transparent)
         )
-        // Tekstboks nederst
+
+        // caption bar at bottom prompting full screen
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -540,9 +546,8 @@ fun MiniMap(
                 .background(Color(0x993B5F8A))
         ) {
             Text(
-                text = "Trykk for fullskjermkart",
+                text = "trykk for fullskjermkart",
                 color = Color.White,
-                fontWeight = FontWeight.Bold,
                 fontSize = 12.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier

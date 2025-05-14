@@ -242,8 +242,18 @@ fun MapScreen(
     // ----------- Snackbar fra ViewModel -----------
     LaunchedEffect(mapViewModel.uiEvents) {
         mapViewModel.uiEvents.collect { event ->
-            if (event is MapUiEvent.ShowAlertSnackbar) {
-                snackbarHostState.showSnackbar(event.message, actionLabel = "Vis mer")
+            when (event) {
+                is MapUiEvent.ShowAlertSnackbar -> {
+                    // Vis snackbar med “Vis mer”-knapp
+                    val result = snackbarHostState.showSnackbar(
+                        message = event.message,
+                        actionLabel = "Vis mer"
+                    )
+                    // Hvis brukeren trykker “Vis mer”, åpne bottom sheet for akkurat denne feature
+                    if (result == SnackbarResult.ActionPerformed) {
+                        mapViewModel.selectMetAlert(event.feature)
+                    }
+                }
             }
         }
     }

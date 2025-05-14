@@ -50,7 +50,11 @@ import no.uio.ifi.in2000.team46.presentation.map.utils.removeMapMarker
 
 /** Hendelser som MapViewModel kan skyte ut til UI (snackbar osv). */
 sealed class MapUiEvent {
-    data class ShowAlertSnackbar(val message: String) : MapUiEvent()
+
+    data class ShowAlertSnackbar(
+                val message: String,
+                val feature: Feature
+            ) : MapUiEvent()
 }
 
 
@@ -84,6 +88,8 @@ class MapViewModel(
     // MetAlerts (filtrert til marine)
     private val _metAlertsResponse = MutableStateFlow<MetAlertsResponse?>(null)
     val metAlertsResponse: StateFlow<MetAlertsResponse?> = _metAlertsResponse
+    //to keep track of which areas have been alerted for
+    private val alertedFeatureIds = mutableSetOf<String>()
 
     // Hendelser til UI (snackbar)
     private val _uiEvents = MutableSharedFlow<MapUiEvent>()
@@ -209,18 +215,30 @@ class MapViewModel(
         if (location == null) return
 
         for (feature in alerts.features) {
-            if (feature.geometry.type.equals("Polygon", ignoreCase = true)) {
-                val polygon = extractPolygonCoordinates(feature)
-                if (isPointInPolygon(location.latitude, location.longitude, polygon)) {
-                    val raw = feature.properties.eventAwarenessName
-                    val trimmed = raw.replace("fare", "").trim()
-                    _uiEvents.emit(
+            if (!feature.geometry.type.equals("Polygon", ignoreCase = true)) continue
+
+            // Hent en unik ID for varselet (bruk f.eks. eventAwarenessName eller et felt "id" om tilgjengelig)
+            val featureId = feature.properties.eventAwarenessName
+
+            val polygon = extractPolygonCoordinates(feature)
+            val inside = isPointInPolygon(location.latitude, location.longitude, polygon)
+
+            if (inside && !alertedFeatureIds.contains(featureId)) {
+                // Brukeren har gått inn i området for første gang
+                alertedFeatureIds += featureId
+                val raw = feature.properties.eventAwarenessName
+                val trimmed = raw.replace("fare", "").trim()
+                _uiEvents.emit(
                         MapUiEvent.ShowAlertSnackbar(
-                            "ADVARSEL: Du er i et område med utsatt $trimmed farevarsel"
-                        )
-                    )
-                    return
-                }
+                                message = "ADVARSEL: Du er i et område med utsatt $trimmed farevarsel",
+                                feature = feature
+                                    )
+                            )
+                // Vi kan velge å returnere her hvis vi bare vil varsle for én feature om gangen
+                return
+            } else if (!inside && alertedFeatureIds.contains(featureId)) {
+                // Brukeren har forlatt området — fjern flagget så vi kan varsle neste gang
+                alertedFeatureIds -= featureId
             }
         }
     }

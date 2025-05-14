@@ -21,6 +21,7 @@ import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
 import no.uio.ifi.in2000.team46.presentation.favorites.viewmodel.FavoritesViewModel
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.ui.geometry.Size
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Map
@@ -32,7 +33,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoriteDetailScreen(
     favoriteId: Int,
@@ -42,14 +42,13 @@ fun FavoriteDetailScreen(
     onNavigateToMap: (Double?, Double?, String?) -> Unit,
     onNavigateToWeather: (Double, Double, String) -> Unit
 ) {
-    // ----------- State -----------
     var favorite by remember { mutableStateOf<FavoriteLocation?>(null) }
     var fishingLogs by remember { mutableStateOf<List<FishingLog>>(emptyList()) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var isEditingNotes by remember { mutableStateOf(false) }
     var notesEdit by remember { mutableStateOf("") }
 
-    // ----------- Hent favoritt og fiskelogger -----------
+
     LaunchedEffect(favoriteId) {
         viewModel.getFavoriteById(favoriteId).collectLatest { favoriteLocation ->
             favorite = favoriteLocation
@@ -61,7 +60,7 @@ fun FavoriteDetailScreen(
         }
     }
 
-    // ----------- Slettedialog -----------
+
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
@@ -88,10 +87,9 @@ fun FavoriteDetailScreen(
         )
     }
 
-    // ----------- UI: Scaffold, TopAppBar, hovedinnhold -----------
     Scaffold(
         topBar = {
-            // Header med gradient og ikon
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -103,20 +101,20 @@ fun FavoriteDetailScreen(
                     ),
                 contentAlignment = Alignment.BottomStart
             ) {
-                // Tilbake-knapp øverst til venstre
+
                 IconButton(
                     onClick = onBack,
                     modifier = Modifier.align(Alignment.TopStart).padding(12.dp)
                 ) {
                     Icon(
-                        Icons.Default.ArrowBack,
+                        Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Tilbake",
                         tint = Color.White
                     )
                 }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(start = 56.dp, bottom = 16.dp) // flytt navn litt til høyre for pil
+                    modifier = Modifier.padding(start = 56.dp, bottom = 16.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Favorite,
@@ -132,7 +130,7 @@ fun FavoriteDetailScreen(
                         fontWeight = FontWeight.Bold
                     )
                 }
-                // Slett-knapp øverst til høyre
+                // delete button
                 IconButton(
                     onClick = { showDeleteDialog = true },
                     modifier = Modifier.align(Alignment.TopEnd).padding(12.dp)
@@ -155,7 +153,7 @@ fun FavoriteDetailScreen(
                     .padding(0.dp, 0.dp, 0.dp, 16.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                // Type-indikator som badge
+                // type indicator
                 Row(
                     modifier = Modifier.padding(start = 24.dp, top = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -187,7 +185,7 @@ fun FavoriteDetailScreen(
                 }
                 Spacer(modifier = Modifier.height(18.dp))
 
-                // Notater med tydelig redigeringsknapp
+                // Notes
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -250,7 +248,7 @@ fun FavoriteDetailScreen(
                 }
                 Spacer(modifier = Modifier.height(18.dp))
 
-                // Fangstinformasjon med ikoner og beste fangst på én linje
+                // info and fishing logs
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -332,7 +330,7 @@ fun FavoriteDetailScreen(
                 }
                 Spacer(modifier = Modifier.height(18.dp))
 
-                // Fangststatistikk med ramme
+                // statistics
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -365,7 +363,7 @@ fun FavoriteDetailScreen(
                 }
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Runde knapper med ikoner og skygge
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()

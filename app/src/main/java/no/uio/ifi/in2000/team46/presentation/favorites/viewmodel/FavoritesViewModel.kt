@@ -19,41 +19,44 @@ import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
 import no.uio.ifi.in2000.team46.data.repository.FavoriteRepository
 import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
 
+// viewmodel managing favorites and their related fishing log statistics
+
 class FavoritesViewModel (
     private val favoriteRepo: FavoriteRepository,
     private val fishLogRepo: FishLogRepository
 ) : ViewModel() {
 
-    // ----------- Favoritter -----------
+    // stateflow holding list of favorites
     private val _favorites = MutableStateFlow<List<FavoriteLocation>>(emptyList())
     val favorites: StateFlow<List<FavoriteLocation>> = _favorites
 
-    // ----------- Fangstlogger -----------
+    // stateflow of all fishing logs from repository
     private val fishingLogs: StateFlow<List<FishingLog>> = fishLogRepo
         .getAllLogsFlow()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
-    // ----------- Init: Laster favoritter -----------
+    // initialize by collecting favorites into _favorites state
     init {
         viewModelScope.launch {
-            favoriteRepo.getAllFavoritesFlow().collect { favorites ->
-                _favorites.value = favorites
+            favoriteRepo.getAllFavoritesFlow().collect { favs ->
+                _favorites.value = favs
             }
         }
     }
 
-    // ----------- Filtertype for favorittliste -----------
+    // filter type for favorites list (point or area or null for no filter)
     private val _filterType = MutableStateFlow<String?>(null)
     val filterType: StateFlow<String?> = _filterType.asStateFlow()
 
-    // ----------- Kombinert favoritt + statistikk -----------
+    // combined state of favorites with calculated stats
     val favoritesWithStats: StateFlow<List<FavoriteWithStats>> = combine(
         favorites,
         fishingLogs
     ) { favs, logs ->
         favs.map { favorite ->
-            val logsForLocation = logs.filter { 
-                it.location.equals(favorite.name, ignoreCase = true) && it.count > 0 
+            // filter logs matching this favorite and count > 0
+            val logsForLocation = logs.filter {
+                it.location.equals(favorite.name, ignoreCase = true) && it.count > 0
             }
             FavoriteWithStats(
                 favorite = favorite,
@@ -64,10 +67,12 @@ class FavoritesViewModel (
         }
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
+    // update the current filter type
     fun filterByType(type: String?) {
         _filterType.value = type
     }
 
+    // add a new favorite to repository
     fun addFavorite(
         name: String,
         locationType: String,
@@ -91,26 +96,31 @@ class FavoritesViewModel (
         }
     }
 
+    // delete an existing favorite
     fun deleteFavorite(favorite: FavoriteLocation) {
         viewModelScope.launch {
             favoriteRepo.deleteFavorite(favorite)
         }
     }
 
+    // get flow of a single favorite by its id
     fun getFavoriteById(id: Int): Flow<FavoriteLocation?> {
         return favoriteRepo.getFavoriteById(id)
     }
 
+    // get fishing logs for a specific favorite location name
     fun getFishingLogsForLocation(locationName: String): Flow<List<FishingLog>> {
         return fishingLogs.map { logs ->
-            logs.filter { log -> log.location.equals(locationName, ignoreCase = true) }
+            logs.filter { it.location.equals(locationName, ignoreCase = true) }
         }
     }
 
+    // calculate area in square kilometers from list of lat-lng points
     fun calculateAreaInSquareKm(points: List<Pair<Double, Double>>): Double {
         return favoriteRepo.calculateAreaInSquareKm(points)
     }
 
+    // update notes for a favorite and save to repository
     fun updateFavoriteNotes(favorite: FavoriteLocation, newNotes: String) {
         viewModelScope.launch {
             val updated = favorite.copy(notes = newNotes)
@@ -118,6 +128,7 @@ class FavoritesViewModel (
         }
     }
 
+    // factory for creating this viewmodel with required repos
     class Factory(
         private val favoriteRepo: FavoriteRepository,
         private val fishLogRepo: FishLogRepository
@@ -127,10 +138,12 @@ class FavoritesViewModel (
                 @Suppress("UNCHECKED_CAST")
                 return FavoritesViewModel(favoriteRepo, fishLogRepo) as T
             }
-            throw IllegalArgumentException("Unknown ViewModel class")
+            throw IllegalArgumentException("unknown viewmodel class")
         }
     }
 }
+
+// data class combining favorite with its stats
 
 data class FavoriteWithStats(
     val favorite: FavoriteLocation,
