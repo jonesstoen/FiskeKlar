@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -13,6 +14,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
+
+// this file defines the ThemeSettingsScreen composable which lets the user select the app theme
+// user can choose between system default, light mode, or dark mode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,7 +32,7 @@ fun ThemeSettingsScreen(
                 title = { Text("Temainnstillinger") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Tilbake")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Tilbake")
                     }
                 }
             )

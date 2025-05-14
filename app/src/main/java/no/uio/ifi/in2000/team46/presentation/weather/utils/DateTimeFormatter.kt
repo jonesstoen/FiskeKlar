@@ -1,11 +1,8 @@
 package no.uio.ifi.in2000.team46.presentation.weather.utils
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import kotlinx.datetime.*
 
 object DateTimeFormatter {
-    @RequiresApi(Build.VERSION_CODES.O)
     fun formatDate(dateString: String): String {
         try {
             val instant = Instant.parse(dateString)
@@ -24,7 +21,7 @@ object DateTimeFormatter {
             val month = formatMonth(localDateTime.monthNumber)
             return "$dayOfWeek ${localDateTime.dayOfMonth}. $month"
         } catch (e: Exception) {
-            // Hvis datoen er i format "YYYY-MM-DD"
+            // if date if in format "YYYY-MM-DD"
             try {
                 val date = LocalDate.parse(dateString)
                 val dayOfWeek = when (date.dayOfWeek) {
@@ -40,7 +37,7 @@ object DateTimeFormatter {
                 val month = formatMonth(date.monthNumber)
                 return "$dayOfWeek ${date.dayOfMonth}. $month"
             } catch (e: Exception) {
-                return dateString // Returner original streng hvis parsing feiler
+                return dateString
             }
         }
     }
@@ -53,7 +50,7 @@ object DateTimeFormatter {
             
             String.format("%02d:%02d", hour, localDateTime.minute)
         } catch (e: Exception) {
-            timeString // Returner original streng hvis parsing feiler
+            timeString
         }
     }
     

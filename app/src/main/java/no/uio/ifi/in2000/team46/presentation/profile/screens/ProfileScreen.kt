@@ -1,14 +1,10 @@
 package no.uio.ifi.in2000.team46.presentation.profile.screens
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -22,7 +18,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import android.net.Uri
 
-
+// this file defines the ProfileScreen composable, which allows users to either view their profile
+// or edit it using a form that supports setting name, username, and profile image from camera or gallery
 
 @Composable
 fun ProfileScreen(
@@ -44,6 +41,7 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
+            // show input form if user is not registered or in edit mode
             if (user == null || isEditing) {
                 UserInputForm(
                     modifier         = Modifier
@@ -57,6 +55,7 @@ fun ProfileScreen(
                     isEditing = false
                 }
             } else {
+                // show profile content with statistics and navigation
                 ProfileContent(
                     modifier    = Modifier
                         .fillMaxSize(),
@@ -92,7 +91,8 @@ fun UserInputForm(
         mutableStateOf(imageUriDefault?.let { Uri.parse(it) })
     }
     var tmpUri by remember { mutableStateOf<Uri?>(null) }
-    
+
+    // launcher for taking a picture with the camera
     val takePictureLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
@@ -103,27 +103,24 @@ fun UserInputForm(
             imageUri = null
         }
     }
-    
+
+    // launcher for picking an image from gallery
     val pickImageLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        // Only update the imageUri if a valid URI was returned
         if (uri != null) {
-            // Create a permanent copy of the selected image
             try {
                 val inputStream = context.contentResolver.openInputStream(uri)
                 val profileImageFile = File(context.filesDir, "profile_image_${System.currentTimeMillis()}.jpg")
-                
+
                 inputStream?.use { input ->
                     profileImageFile.outputStream().use { output ->
                         input.copyTo(output)
                     }
                 }
-                
-                // Use the URI of the copied file
+
                 imageUri = Uri.fromFile(profileImageFile)
             } catch (e: Exception) {
-                // If copying fails, use the original URI as fallback
                 imageUri = uri
             }
         }
@@ -140,6 +137,7 @@ fun UserInputForm(
         Text("Rediger profil", style = MaterialTheme.typography.titleLarge)
         Spacer(Modifier.height(16.dp))
 
+        // input for name
         OutlinedTextField(
             value = name,
             onValueChange = { name = it },
@@ -150,24 +148,25 @@ fun UserInputForm(
 
         Spacer(Modifier.height(12.dp))
 
+        // input for username
         OutlinedTextField(
             value = username,
             onValueChange = { username = it },
             label = { Text("Kallenavn") },
             singleLine = true,
-            modifier = Modifier.fillMaxWidth(),
-
-            )
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Spacer(Modifier.height(24.dp))
 
+        // buttons for selecting profile picture
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(
                 onClick = {
-                    // Opprett midlertidig fil og ta bilde
+                    // create temporary file and launch camera
                     val tmpFile = File.createTempFile("profile_", ".jpg", context.cacheDir).apply {
                         createNewFile()
                         deleteOnExit()
@@ -184,7 +183,7 @@ fun UserInputForm(
             ) {
                 Text("Ta bilde")
             }
-            
+
             Button(
                 onClick = {
                     pickImageLauncher.launch("image/*")
@@ -195,6 +194,7 @@ fun UserInputForm(
             }
         }
 
+        // preview selected image
         if (imageUri != null) {
             Spacer(Modifier.height(12.dp))
             Text("Valgt bilde:", style = MaterialTheme.typography.titleMedium)
@@ -205,11 +205,12 @@ fun UserInputForm(
                     .fillMaxWidth()
                     .height(180.dp)
             )
-            
+
             Spacer(modifier = Modifier.height(8.dp))
+
+            // remove selected image and delete temp file if it was created
             OutlinedButton(
                 onClick = {
-                    // Try to delete temp camera image if it's from our app cache
                     imageUri?.let { uri ->
                         if (uri.toString().contains("profile_")) {
                             val file = File(uri.path ?: "")
@@ -224,11 +225,16 @@ fun UserInputForm(
                 Text("Fjern bilde")
             }
         } else {
-            Text("Ingen bilde valgt", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(
+                "Ingen bilde valgt",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
 
         Spacer(Modifier.height(24.dp))
 
+        // save profile data
         Button(
             onClick = {
                 onSave(name.trim(), username.trim(), imageUri?.toString())
@@ -239,5 +245,3 @@ fun UserInputForm(
         }
     }
 }
-
-

@@ -11,11 +11,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -42,7 +40,7 @@ fun ProfileContent(
         verticalArrangement = Arrangement.spacedBy(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 1) Header: tittel + knapper
+        //  Header
         item {
             Row(
                 Modifier.fillMaxWidth(),
@@ -73,7 +71,7 @@ fun ProfileContent(
             }
         }
 
-        // 2) Profilbilde + info
+        // profile picture and user info
         item {
             if (user.profileImageUri != null) {
                 AsyncImage(
@@ -90,8 +88,6 @@ fun ProfileContent(
                     contentDescription = "Profilbilde",
                     modifier = Modifier
                         .size(100.dp)
-                        //FIXME: FIX THIS AFTER THEME IS IMPLEMENTED IN THE APP
-                        // .border( ),
                 )
             }
 

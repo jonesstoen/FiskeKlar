@@ -1,7 +1,5 @@
 package no.uio.ifi.in2000.team46.presentation.weather.viewmodel
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
@@ -63,16 +61,16 @@ class WeatherDetailViewModel(
             val currentDateTime = now.toLocalDateTime(TimeZone.currentSystemDefault())
             val currentHour = currentDateTime.hour
 
-            // Standard tidsblokker
+            //standard time blocks
             val timeBlocks = listOf(0 to 6, 6 to 12, 12 to 18, 18 to 0)
 
-            // Finn dagens første relevante blokk
+            //find the first relevant block for today
             val firstForecast = forecasts.firstOrNull()?.let {
                 Instant.parse(it.time).toLocalDateTime(TimeZone.currentSystemDefault())
             }
 
             if (firstForecast != null && firstForecast.date == currentDateTime.date) {
-                // Dette er for dagens prognoser
+                // this is for today, use the current time to determine the blocks
                 val currentBlock = when (currentHour) {
                     in 0..5 -> 0 to 6
                     in 6..11 -> 6 to 12
@@ -80,7 +78,7 @@ class WeatherDetailViewModel(
                     else -> 18 to 0
                 }
 
-                // Hvis vi er i en påbegynt blokk, lag en spesialblokk fra nåværende time til slutten av blokken
+                //if we are in a started block, create a special block from the current hour to the end of the block
                 if (currentHour in currentBlock.first until currentBlock.second ||
                     (currentBlock.first == 18 && currentHour >= 18)) {
                     val endHour = if (currentBlock.first == 18) 0 else currentBlock.second
@@ -105,7 +103,7 @@ class WeatherDetailViewModel(
                         )
                     }
 
-                    // Add remaining whole blocks for the day
+                    // add remaining whole blocks for the day
                     for (block in timeBlocks) {
                         if (block.first > currentBlock.first) {
                             val blockForecasts = forecasts.filter { forecast ->
@@ -132,7 +130,8 @@ class WeatherDetailViewModel(
                     }
                 }
             } else {
-                // Dette er for fremtidige dager - bruk standard blokker
+
+                //this is for future days, use standard blocks
                 for ((startHour, endHour) in timeBlocks) {
                     val blockForecasts = forecasts.filter { forecast ->
                         val forecastHour = Instant.parse(forecast.time)
@@ -161,7 +160,6 @@ class WeatherDetailViewModel(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun onEvent(event: WeatherDetailEvent) {
         when (event) {
             is WeatherDetailEvent.OnTimeRangeSelected -> {
@@ -202,7 +200,6 @@ class WeatherDetailViewModel(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun updateLocation(latitude: Double, longitude: Double, locationName: String) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -237,7 +234,6 @@ class WeatherDetailViewModel(
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun loadForecast(latitude: Double, longitude: Double) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }

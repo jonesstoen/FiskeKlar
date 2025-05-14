@@ -549,6 +549,7 @@ fun MapOnboardingScreen(
                                         OnboardingStepType.LOCATION -> features[4].color
                                         OnboardingStepType.COMPLETE -> Color(0xFF4CAF50)
                                     }
+
                                 )
                             ) {
                                 Text(

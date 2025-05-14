@@ -1,13 +1,11 @@
 package no.uio.ifi.in2000.team46.presentation.profile.viewmodel
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.stateIn
 import no.uio.ifi.in2000.team46.data.repository.UserRepository
 import kotlinx.coroutines.launch
@@ -22,6 +20,9 @@ import no.uio.ifi.in2000.team46.data.local.database.dao.FavoriteLocation
 import no.uio.ifi.in2000.team46.data.local.database.dao.MostCaughtFish
 import no.uio.ifi.in2000.team46.data.repository.FishLogRepository
 
+// this viewmodel provides profile-related state and logic such as user data, theme setting,
+// and statistics about fishing logs (most caught fish and favorite location)
+
 class ProfileViewModel(
     private val userRepository: UserRepository,
     private val dataStore: DataStore<Preferences>,
@@ -32,6 +33,7 @@ class ProfileViewModel(
         private val THEME_KEY = stringPreferencesKey("theme")
     }
 
+    // current user stored as stateflow
     val user: StateFlow<User?> = userRepository.getCurrentUser()
         .stateIn(
             scope = viewModelScope,
@@ -39,8 +41,9 @@ class ProfileViewModel(
             initialValue = null
         )
 
+    // current theme setting stored in datastore
     val theme: StateFlow<String> = dataStore.data
-        .map { preferences -> 
+        .map { preferences ->
             preferences[THEME_KEY] ?: "system"
         }
         .stateIn(
@@ -48,14 +51,16 @@ class ProfileViewModel(
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = "system"
         )
-        
+
+    // most frequently caught fish based on local database
     val mostCaughtFish: StateFlow<MostCaughtFish?> = fishLogRepository.getMostCaughtFishFlow()
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = null
         )
-        
+
+    // favorite fishing location based on frequency
     val favoriteLocation: StateFlow<FavoriteLocation?> = fishLogRepository.getFavoriteLocationFlow()
         .stateIn(
             scope = viewModelScope,
@@ -63,6 +68,7 @@ class ProfileViewModel(
             initialValue = null
         )
 
+    // updates the current theme in datastore
     fun setTheme(newTheme: String) {
         viewModelScope.launch {
             dataStore.edit { preferences ->
@@ -71,6 +77,7 @@ class ProfileViewModel(
         }
     }
 
+    // saves a new or updated user profile
     fun saveUser(name: String, username: String, imageUri: String?) {
         viewModelScope.launch {
             val memberSince = generateMemberSince()
@@ -86,13 +93,14 @@ class ProfileViewModel(
         }
     }
 
+    // deletes user profile from storage
     fun clearUser() {
         viewModelScope.launch {
             userRepository.clearUser()
         }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
+    // formats current date to a string like "May 2025"
     private fun generateMemberSince(): String {
         val now = LocalDate.now()
         val monthFormatted = now.month.name.lowercase().replaceFirstChar { it.uppercase() }
@@ -100,6 +108,7 @@ class ProfileViewModel(
     }
 }
 
+// factory for constructing profileviewmodel with custom arguments
 class ProfileViewModelFactory(
     private val repo: UserRepository,
     private val dataStore: DataStore<Preferences>,
