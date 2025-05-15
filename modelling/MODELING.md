@@ -2,7 +2,7 @@
 
 - [Introduction](#introduction)  
 - [Tools](#tools)
-- [Use Case Diagrams and use-case-descriptions](#use-case-diagrams-and-descriptions)
+- [Use Case Diagrams and use-case-descriptions](#use-case-diagrams-and-use-case-descriptions)
 - [Sequence Diagrams](#sequence-diagrams)
 - [Class Diagram](#class-diagram)
 - [Activity Diagrams](#activity-diagrams)
