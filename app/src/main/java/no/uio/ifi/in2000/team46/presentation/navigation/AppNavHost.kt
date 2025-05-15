@@ -444,7 +444,7 @@ fun AppNavHost(
                     viewModel = viewModel,
                     onBack = { navController.popBackStack() },
                     onAddFishingLog = { locationName ->
-                        navController.navigate("add_fishing_entry/$locationName")
+                        navController.navigate("addFishingEntry")
                     },
                     onNavigateToMap = { lat, lon, areaPoints ->
                         if (lat != null && lon != null) {

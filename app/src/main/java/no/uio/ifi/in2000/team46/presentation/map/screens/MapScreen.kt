@@ -88,6 +88,7 @@ import no.uio.ifi.in2000.team46.presentation.map.utils.SetupSnackbar
 import no.uio.ifi.in2000.team46.presentation.map.utils.SetupBottomSheetReset
 import no.uio.ifi.in2000.team46.presentation.map.utils.SetupInitialMapView
 import androidx.compose.ui.geometry.Rect
+import org.maplibre.android.annotations.PolygonOptions
 
 /**
  * WARNINGS: This file contains usage of deprecated MapLibre classes such as MarkerOptions and PolygonOptions.
@@ -214,16 +215,29 @@ fun MapScreen(
     val selectedSearchResult = remember { mutableStateOf<Feature?>(null) }
 
     //Initial map setup (area or point)
-
-    SetupInitialMapView(
-        map                    = mapLibreMap,
-        hasPerformedInitialZoom= hasPerformedInitialZoom,
-        initialLocation        = initialLocation,
-        areaPoints             = areaPoints,
-        onZoomToUser           = { map -> mapViewModel.zoomToUserLocationInitial(map, context) },
-        markZoomDone           = { mapViewModel.setInitialZoomPerformed() }
-    )
-
+    LaunchedEffect(mapLibreMap, areaPoints, initialLocation) {
+        mapLibreMap?.let { map ->
+            map.clear()
+            if (areaPoints != null && areaPoints.isNotEmpty()) {
+                val polygonOptions = PolygonOptions()
+                    .addAll(areaPoints.map { LatLng(it.first, it.second) })
+                    .fillColor(0x5500BCD4)
+                    .strokeColor(android.graphics.Color.BLUE)
+                map.addPolygon(polygonOptions)
+                val bounds = LatLngBounds.Builder()
+                areaPoints.forEach { bounds.include(LatLng(it.first, it.second)) }
+                map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50))
+            } else if (initialLocation != null) {
+                val (lat, lng) = initialLocation
+                // Legg til markør for favorittplasseringen (punkter)
+                map.addMarker(MarkerOptions()
+                    .position(LatLng(lat, lng))
+                    .title("Favorittpunkt")
+                )
+                map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 14.0))
+            }
+        }
+    }
     // ----------- Snackbar from ViewModel events -----------
 
     SetupSnackbar(
