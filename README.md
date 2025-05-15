@@ -81,6 +81,8 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 ## Screenshots
 
 ## 📷 Screenshots
+### Home Screen
+![Weather Alert](./screenshots/homscreen_img.png)
 
 ###  Catch Log (Fiskelogg)
 
@@ -92,7 +94,7 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 
 ###  Weather Alert Screen
 
-![Weather Alert](./screenshots/wheaterscreen.png)
+![Weather Alert](./screenshots/warning_screen)
 
 ---
 
