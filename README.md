@@ -80,7 +80,29 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 
 ## Screenshots
 
-*(To be added later)*
+## 📷 Screenshots
+
+###  Catch Log (Fiskelogg)
+
+|                       |                       |                       |
+|-----------------------|-----------------------|-----------------------|
+| ![](./screenshots/fiskelogg2.png) | ![](./screenshots/fiskelogg1.png) | ![](./screenshots/fiskelogg3.png) |
+
+---
+
+###  Weather Alert Screen
+
+![Weather Alert](./screenshots/wheaterscreen.png)
+
+---
+
+###  SOS Screen
+
+![SOS Screen](./screenshots/Sosscreen.png)
+
+### Wheater Screen
+![warning Screen](./screenshots/wheaterscreen.png)
+
 
 ---
 
