@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.grib.components
 
+import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
@@ -30,6 +31,7 @@ import org.maplibre.android.style.layers.SymbolLayer
 // icons are selected dynamically based on speed, threshold and theme mode
 // the layer is zoom-aware and reduces clutter when zoomed out
 
+@SuppressLint("DiscouragedApi")
 @Composable
 fun GribWindLayer(
     gribViewModel: GribViewModel,
@@ -43,17 +45,17 @@ fun GribWindLayer(
     val filteredVectors by gribViewModel.filteredWindVectors.collectAsState()
 
     // monitor zoom level
-    val zoomState = remember { mutableStateOf(0.0) }
+    val zoomState = remember { mutableDoubleStateOf(0.0) }
     LaunchedEffect(map, isVisible) {
         while (isVisible) {
-            zoomState.value = map.cameraPosition.zoom
+            zoomState.doubleValue = map.cameraPosition.zoom
             delay(200)
         }
     }
 
     // draw vectors when layer is visible and data is ready
     if (isVisible && filteredVectors.isNotEmpty()) {
-        LaunchedEffect(filteredVectors, threshold, zoomState.value) {
+        LaunchedEffect(filteredVectors, threshold, zoomState.doubleValue) {
             map.getStyle { style ->
                 val sourceId = "wind_source"
                 val layerId = "wind_layer"
@@ -101,9 +103,9 @@ fun GribWindLayer(
 
                 // determine how much to filter vectors based on zoom level
                 val dynamicStep = when {
-                    zoomState.value >= 7.5 -> 1
-                    zoomState.value >= 6.5 -> 3
-                    zoomState.value >= 5.0 -> 5
+                    zoomState.doubleValue >= 7.5 -> 1
+                    zoomState.doubleValue >= 6.5 -> 3
+                    zoomState.doubleValue >= 5.0 -> 5
                     else                   -> 8
                 }
 
@@ -169,7 +171,7 @@ fun GribWindLayer(
 
     // warning when zoom level is too low
     AnimatedVisibility(
-        visible = isVisible && zoomState.value < 7.0,
+        visible = isVisible && zoomState.doubleValue < 7.0,
         enter = fadeIn(),
         exit = fadeOut()
     ) {

@@ -5,7 +5,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
@@ -405,13 +404,11 @@ fun FavoriteDetailScreen(
                         onClick = {
                             // For both point and area locations, we can use the latitude and longitude
                             // Area locations also store a center point in the same fields
-                            if (favoriteLocation.latitude != null && favoriteLocation.longitude != null) {
-                                onNavigateToWeather(
-                                    favoriteLocation.latitude, 
-                                    favoriteLocation.longitude, 
-                                    favoriteLocation.name
-                                )
-                            }
+                            onNavigateToWeather(
+                                favoriteLocation.latitude,
+                                favoriteLocation.longitude,
+                                favoriteLocation.name
+                            )
                         },
                         shape = RoundedCornerShape(50),
                         modifier = Modifier.fillMaxWidth(0.8f)

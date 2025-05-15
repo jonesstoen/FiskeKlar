@@ -12,8 +12,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import no.uio.ifi.in2000.team46.data.local.database.dao.FavoriteLocationDao
-import no.uio.ifi.in2000.team46.data.local.database.dao.FishingLogDao
 import no.uio.ifi.in2000.team46.data.local.database.entities.FavoriteLocation
 import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
 import no.uio.ifi.in2000.team46.data.repository.FavoriteRepository

@@ -19,7 +19,7 @@ import no.uio.ifi.in2000.team46.data.repository.Result
 
 class AisViewModel : ViewModel() {
     // tag used for logging errors or debug info
-    private val TAG = "AisViewModel"
+    private val tag = "AisViewModel"
     // repository for fetching ais data
     private val repository = AisRepository()
 
@@ -116,27 +116,6 @@ class AisViewModel : ViewModel() {
         } else {
             startUpdateJob()
         }
-    }
-
-    // keep only specified vessel type selected
-    fun selectOnlyVesselType(vesselType: Int) {
-        _selectedVesselTypes.value = setOf(vesselType)
-    }
-
-    // deselect a vessel type and update layer if needed
-    fun deselectVesselType(vesselType: Int) {
-        val newSet = _selectedVesselTypes.value - vesselType
-        _selectedVesselTypes.value = newSet
-        if (newSet.isEmpty() && _isLayerVisible.value) {
-            deactivateLayer()
-        } else if (_isLayerVisible.value) {
-            fetchVesselPositions()
-        }
-    }
-
-    // return whether a vessel type is selected
-    fun isVesselTypeSelected(vesselType: Int): Boolean {
-        return _selectedVesselTypes.value.contains(vesselType)
     }
 
     // select all available vessel types for filtering

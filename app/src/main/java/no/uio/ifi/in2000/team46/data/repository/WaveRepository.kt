@@ -12,6 +12,8 @@ import java.io.IOException
 // waverepository downloads, caches, and parses wave data from grib files
 // uses gribparser to convert binary data into structured wavevector objects
 
+//WARNINGS: the warning in this file are related to  setup for fucntionality that can be added in the future
+
 class WaveRepository(
     private val api: GribDataSource,
     private val context: Context

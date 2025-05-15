@@ -34,7 +34,7 @@ class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewMode
         }
     }
     //method  to filter out marine alerts, we dont need alerts for forest fires or other land related alerts
-    fun filterSeaAlerts(response: MetAlertsResponse): MetAlertsResponse {
+    private fun filterSeaAlerts(response: MetAlertsResponse): MetAlertsResponse {
         val filteredFeatures = response.features.filter {
             it.properties.geographicDomain == "marine" // only show marine related warnings
         }
@@ -114,12 +114,6 @@ class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewMode
                     Log.e("MetAlertsViewModel", "Error fetching alerts: ${result.exception.message}")
                 }
             }
-        }
-    }
-
-    fun activateLayer() {
-        if (!_isLayerVisible.value) {
-            _isLayerVisible.value = true
         }
     }
 

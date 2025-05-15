@@ -34,7 +34,7 @@ fun AisLayer(
     aisViewModel: AisViewModel
 ) {
     // tag for logging
-    val TAG = "AisLayerComponent"
+    val tag = "AisLayerComponent"
     // collect latest vessel positions from viewmodel
     val vesselPositions by aisViewModel.vesselPositions.collectAsState()
     // collect visibility flag for the layer
@@ -180,10 +180,10 @@ private fun updateViewportBounds(bounds: LatLngBounds, viewModel: AisViewModel) 
 }
 
 private fun updateAisLayer(mapView: MapView, vessels: List<AisVesselPosition>) {
-    val TAG = "AisLayerComponent"
+    val tag = "AisLayerComponent"
     // return early if no vessels to draw
     if (vessels.isEmpty()) {
-        Log.d(TAG, "No vessels to display")
+        Log.d(tag, "No vessels to display")
         return
     }
 
@@ -258,7 +258,7 @@ private fun updateAisLayer(mapView: MapView, vessels: List<AisVesselPosition>) {
                 style.addLayer(textLayer)
 
             } catch (e: Exception) {
-                Log.e(TAG, "Error updating AIS layer", e)
+                Log.e(tag, "Error updating AIS layer", e)
             }
         }
     }

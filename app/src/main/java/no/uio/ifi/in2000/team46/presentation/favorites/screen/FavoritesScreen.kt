@@ -72,6 +72,13 @@ import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import org.maplibre.android.annotations.MarkerOptions
 import org.maplibre.android.annotations.PolygonOptions
 
+/**
+ * WARNINGS: This file contains usage of deprecated MapLibre classes such as MarkerOptions and PolygonOptions.
+ * These are used intentionally due to the lack of stable or well-documented alternatives in the current SDK.
+ * The functionality remains reliable for our purposes and was prioritized for simplicity and compatibility.
+ * Other warnings (unused variables) are minor and do not affect functionality.
+ */
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
@@ -83,11 +90,11 @@ fun FavoritesScreen(
     val favoritesWithStats by viewModel.favoritesWithStats.collectAsState()
     val currentFilter by viewModel.filterType.collectAsState()
     var showDeleteAllDialog by rememberSaveable { mutableStateOf(false) }
-    var userLocation by remember { mutableStateOf<android.location.Location?>(null) }
+    val userLocation by remember { mutableStateOf<android.location.Location?>(null) }
 
     val filteredFavorites = favoritesWithStats.filter {
         val matchesSearch = it.favorite.name.contains(searchQuery, ignoreCase = true)
-        val type = it.favorite.locationType?.trim()
+        val type = it.favorite.locationType.trim()
         val matchesType = when (currentFilter) {
             null -> true
             "Punkter" -> type.equals("POINT", ignoreCase = true)

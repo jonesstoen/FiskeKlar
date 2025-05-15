@@ -24,6 +24,7 @@ import no.uio.ifi.in2000.team46.utils.BulletText
 import no.uio.ifi.in2000.team46.utils.formatTime
 import no.uio.ifi.in2000.team46.utils.timeUntilStart
 // this file contains the UI for the bottom sheet that displays details about a selected weather alert
+// warnings in this file is related to some claryfing parenthesis etc, which we did not find necessary to remove, because we couldnt fin other way to make it work
 @Composable
 fun MetAlertsBottomSheetContent(
     feature: Feature,

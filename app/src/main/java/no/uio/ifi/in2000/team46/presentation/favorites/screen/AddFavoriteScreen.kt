@@ -39,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -68,6 +69,9 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
  * suggestions list of suggested names for autocompletion
  */
 
+// WARNINGS:
+// in addtion for finding the right icon we have an direct approach whic can be a source of bug when the app dont find the right icon,
+// but we considered this is a minor issue bevause of the small number of icons
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,8 +101,8 @@ fun AddFavoriteScreen(
     var locationType by remember { mutableStateOf("POINT") }
     var notes by remember { mutableStateOf("") }
     var selectedFishTypes by remember { mutableStateOf(setOf<String>()) }
-    var latitude by remember { mutableStateOf(59.91) }
-    var longitude by remember { mutableStateOf(10.75) }
+    var latitude by remember { mutableDoubleStateOf(59.91) }
+    var longitude by remember { mutableDoubleStateOf(10.75) }
     var areaPoints by remember { mutableStateOf(emptyList<Pair<Double, Double>>()) }
     var showDuplicateDialog by remember { mutableStateOf(false) }
     var showNameInfo by remember { mutableStateOf(false) }

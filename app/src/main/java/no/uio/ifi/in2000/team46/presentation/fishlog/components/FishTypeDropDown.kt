@@ -13,6 +13,8 @@ import androidx.compose.ui.unit.dp
 // summary: provides a dropdown menu for selecting a fish type and offers a dialog to add a new type
 // main function: displays current selection, handles expanding list of options, and shows input dialog for adding types
 
+//WARNINGS: the warning in this fole is beause of a dprecated modifier, which we didnt realize. and refactoring at this point would be hard
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FishTypeDropdown(

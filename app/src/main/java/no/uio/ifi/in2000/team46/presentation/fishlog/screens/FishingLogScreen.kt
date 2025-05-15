@@ -194,7 +194,7 @@ fun FishingEntryCard(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "$dateText",
+                    text = dateText,
                     style = MaterialTheme.typography.titleSmall
                 )
                 Text(

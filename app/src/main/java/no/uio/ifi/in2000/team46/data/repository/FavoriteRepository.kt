@@ -9,6 +9,8 @@ import org.json.JSONObject
 // favoriterepository provides data operations for managing favorite locations
 // it includes helpers for serializing area points and estimating polygon area
 
+//WARNINGS: the warning in this file is becaue we are using a java library for the math calculations in the calculateAreaInSquareKm function
+
 class FavoriteRepository(
     private val favoriteLocationDao: FavoriteLocationDao
 ) {
@@ -35,21 +37,6 @@ class FavoriteRepository(
     // deletes a specific favorite location
     suspend fun deleteFavorite(favorite: FavoriteLocation) {
         favoriteLocationDao.delete(favorite)
-    }
-
-    // parses a json string of area points into a list of lat/lng pairs
-    fun getAreaPoints(favorite: FavoriteLocation): List<Pair<Double, Double>> {
-        return favorite.areaPoints?.let {
-            try {
-                val jsonArray = JSONArray(it)
-                List(jsonArray.length()) { i ->
-                    val point = jsonArray.getJSONObject(i)
-                    Pair(point.getDouble("lat"), point.getDouble("lng"))
-                }
-            } catch (e: Exception) {
-                emptyList()
-            }
-        } ?: emptyList()
     }
 
     // serializes a list of lat/lng pairs into a json string

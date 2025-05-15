@@ -2,7 +2,6 @@ package no.uio.ifi.in2000.team46.presentation.map.components
 
 
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import no.uio.ifi.in2000.team46.presentation.grib.components.*

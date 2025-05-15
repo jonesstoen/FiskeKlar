@@ -76,37 +76,6 @@ fun removeMapMarker(style: Style) {
     }
 }
 
-private fun initializeMarker(style: Style, context: Context) {
-
-    val drawable = ContextCompat.getDrawable(context, R.drawable.map_marker)
-    val bitmap = drawable?.toBitmap()
-    if (bitmap != null) {
-        style.addImage(MARKER_ICON_ID, bitmap)
-
-        // create GeoJsonSource
-        val source = GeoJsonSource(MARKER_SOURCE_ID)
-        style.addSource(source)
-
-        val layer = SymbolLayer(MARKER_LAYER_ID, MARKER_SOURCE_ID)
-            .withProperties(
-                PropertyFactory.iconImage(MARKER_ICON_ID),
-                PropertyFactory.iconSize(0.05f),
-                PropertyFactory.iconAnchor(Property.ICON_ANCHOR_BOTTOM),
-                PropertyFactory.iconAllowOverlap(true),
-                PropertyFactory.iconIgnorePlacement(true),
-                PropertyFactory.symbolSortKey(1.0f),
-                PropertyFactory.iconPitchAlignment(Property.ICON_PITCH_ALIGNMENT_MAP),
-                PropertyFactory.iconRotationAlignment(Property.ICON_ROTATION_ALIGNMENT_MAP)
-            )
-        style.addLayer(layer)
-    }
-}
-
-private fun updateMarkerPosition(style: Style, latitude: Double, longitude: Double) {
-    val source = style.getSource(MARKER_SOURCE_ID) as? GeoJsonSource
-    source?.setGeoJson(createPointFeature(latitude, longitude))
-}
-
 private fun createPointFeature(latitude: Double, longitude: Double): String {
     return """
         {

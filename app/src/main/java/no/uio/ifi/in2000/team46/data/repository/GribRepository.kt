@@ -14,6 +14,8 @@ import java.io.IOException
 // gribrepository handles downloading, caching, and parsing grib weather files (wind and precipitation)
 // it uses a local file to reduce repeated downloads and parses data using the gribparser
 
+//WARNINGS: the warning in this file are related to  setup for fucntionality that can be added in the future
+
 class GribRepository(
     private val api: GribDataSource,
     private val context: Context

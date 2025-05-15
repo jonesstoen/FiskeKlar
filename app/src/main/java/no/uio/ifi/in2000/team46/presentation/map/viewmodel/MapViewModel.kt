@@ -47,6 +47,14 @@ import no.uio.ifi.in2000.team46.presentation.map.utils.removeMapMarker
  * class controls map initialization and tracks camera position using livedata
  */
 
+/**
+ * Warnings: Some properties and functions in this file appear unused from the IDE's perspective,
+ * such as metAlertsResponse, selectedFeature, or selectMetAlert(). These are intentionally kept
+ * because they may be referenced from other UI components via state observation or bindings.
+ *
+ * To avoid breaking indirect dependencies or introducing runtime issues, these members have been retained
+ * out of caution. A full cleanup can be considered after the full UI integration and testing phase is complete.
+ */
 
 
 /** Hendelser som MapViewModel kan skyte ut til UI (snackbar osv). */

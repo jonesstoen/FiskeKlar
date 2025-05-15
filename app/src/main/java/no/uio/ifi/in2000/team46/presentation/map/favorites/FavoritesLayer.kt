@@ -35,7 +35,7 @@ fun FavoritesLayer(
     mapView: MapView,
     viewModel: FavoritesLayerViewModel
 ) {
-    val TAG = "FavoritesLayer"
+
     val favorites by viewModel.favorites.collectAsState()
     val isLayerVisible by viewModel.isLayerVisible.collectAsState()
     val selectedFavorite by viewModel.selectedFavorite.collectAsState()
@@ -135,7 +135,7 @@ fun FavoriteInfoDialog(
  * updates the favorites layer on the map
  */
 private fun updateFavoritesLayer(mapView: MapView, viewModel: FavoritesLayerViewModel, primaryColorInt: Int) {
-    val TAG = "FavoritesLayer"
+
 
     mapView.getMapAsync { maplibreMap ->
         maplibreMap.getStyle { style ->
@@ -249,7 +249,9 @@ private fun updateFavoritesLayer(mapView: MapView, viewModel: FavoritesLayerView
                 style.addLayer(areaTextLayer)
 
             } catch (e: Exception) {
-                Log.e(TAG, "Error updating favorites layer", e)
+                Log.e("FavoritesLayer", "Error updating favorites layer", e)
+            } finally {
+                //Log.d(TAG, "Favorittlag oppdatert")
             }
         }
     }

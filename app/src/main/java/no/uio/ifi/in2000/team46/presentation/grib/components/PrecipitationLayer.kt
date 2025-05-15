@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.grib.components
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.*
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.style.expressions.Expression.*
@@ -8,13 +9,13 @@ import org.maplibre.android.style.sources.GeoJsonSource
 import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
-import no.uio.ifi.in2000.team46.domain.grib.PrecipitationPoint
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModel
 import org.maplibre.android.style.layers.CircleLayer
 import org.maplibre.android.style.layers.SymbolLayer
 
 // composable that updates map with precipitation points as colored circles and labels based on threshold and zoom
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun PrecipitationLayer(vm: PrecipitationViewModel, map: MapLibreMap) {
     // observe visibility flag from viewmodel

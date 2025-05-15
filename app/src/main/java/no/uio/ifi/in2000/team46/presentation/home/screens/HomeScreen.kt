@@ -37,6 +37,8 @@ private val Navy = Color(0xFF1B4965)
 
 // composable that shows home screen with greeting, quick actions and random fishing tip
 
+// the unused parameters is  related to screens we have npt implemented
+
 @Composable
 fun HomeScreen(
     viewModel: ProfileViewModel,

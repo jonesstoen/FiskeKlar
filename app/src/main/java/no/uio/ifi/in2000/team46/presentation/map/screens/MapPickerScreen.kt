@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -39,9 +39,15 @@ import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.Style
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
+import org.maplibre.android.camera.CameraPosition.Builder
 
 // summary: displays a map picker screen allowing user to select either a single point or a polygonal area on the map and returns the chosen coordinates via callback or navigation
-
+/**
+ * WARNINGS: This file contains usage of deprecated MapLibre classes such as MarkerOptions and PolygonOptions.
+ * These are used intentionally due to the lack of stable or well documented alternatives in the current SDK.
+ * The functionality remains reliable for our purposes and was prioritized for simplicity and compatibility.
+ * Other warnings (unused variables, unnecessary safe calls) are minor and do not affect functionality.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapPickerScreen(
@@ -88,7 +94,7 @@ fun MapPickerScreen(
                 title = { Text("Velg ${if (selectionMode == "POINT") "punkt" else "område"}") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Tilbake")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Tilbake")
                     }
                 },
                 actions = {
@@ -177,12 +183,10 @@ fun MapPickerScreen(
                         // move camera to user location when available
                         userLocation?.let {
                             val latLng = LatLng(it.latitude, it.longitude)
-                            map.setCameraPosition(
-                                org.maplibre.android.camera.CameraPosition.Builder()
-                                    .target(latLng)
-                                    .zoom(10.0)
-                                    .build()
-                            )
+                            map.cameraPosition = Builder()
+                                .target(latLng)
+                                .zoom(10.0)
+                                .build()
                         }
                     }
                 }

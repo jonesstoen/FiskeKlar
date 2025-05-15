@@ -10,7 +10,7 @@ import retrofit2.HttpException
 // supports optional client-side filtering by bounding box coordinates
 
 class AisRepository {
-    private val TAG = "AisRepository"
+    private val tag = "AisRepository"
     private val authService = BarentsWatchAuthService()
     private val api = BarentsWatchRetrofitInstance.aisApi
 
@@ -44,11 +44,11 @@ class AisRepository {
 
                 return Result.Success(filteredVessels)
             } else {
-                Log.e(TAG, "API request failed: ${response.code()} ")
+                Log.e(tag, "API request failed: ${response.code()} ")
                 return Result.Error(HttpException(response))
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Exception getting vessel positions", e)
+            Log.e(tag, "Exception getting vessel positions", e)
             return Result.Error(e)
         }
     }

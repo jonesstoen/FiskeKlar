@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.grib.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -17,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 // this composable shows a legend box with icons representing different wind speed ranges
 // it supports switching between light and dark versions of each icon depending on theme
 
+@SuppressLint("DiscouragedApi")
 @Composable
 fun WindLegend(
     modifier: Modifier = Modifier,

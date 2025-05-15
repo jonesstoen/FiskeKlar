@@ -15,6 +15,8 @@ import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.GribViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModel
 
+//Warnings: the warnings here is beacuase of unused parameters after refactoring parts of the project
+
 // defines all sub-navigation options for GRIB layers
 sealed class GribMenuState {
     data object Main : GribMenuState()

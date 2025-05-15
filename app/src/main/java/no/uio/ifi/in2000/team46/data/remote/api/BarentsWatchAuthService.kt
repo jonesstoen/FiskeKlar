@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 // it uses a mutex to ensure thread-safe access and caches the token until it is near expiry
 
 class BarentsWatchAuthService {
-    private val TAG = "BarentsWatchAuth"
+    private val tAG = "BarentsWatchAuth"
     private val mutex = Mutex()
 
     private var accessToken: String? = null
@@ -70,17 +70,17 @@ class BarentsWatchAuthService {
 
                         return@withContext accessToken
                     } catch (e: Exception) {
-                        Log.e(TAG, "Error parsing token response", e)
+                        Log.e(tAG, "Error parsing token response", e)
                         return@withContext null
                     }
                 } else {
-                    Log.e(TAG, "Failed to get token: ${response.code} ${response.message}")
-                    Log.e(TAG, "Response body: $responseBody")
+                    Log.e(tAG, "Failed to get token: ${response.code} ${response.message}")
+                    Log.e(tAG, "Response body: $responseBody")
                     return@withContext null
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Exception getting token", e)
+            Log.e(tAG, "Exception getting token", e)
             return null
         }
     }

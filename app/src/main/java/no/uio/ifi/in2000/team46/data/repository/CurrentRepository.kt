@@ -14,6 +14,8 @@ import java.io.IOException
 // currentrepository handles downloading, caching, and parsing ocean current data from grib files
 // uses a local file cache and the gribparser to extract vector data of type currentvector
 
+// WARNNINGS: the wearings in this file are related to  setup for fucntionality that can be added in the future
+// for example filtering area of interest, or downloading grib files for other content types
 class CurrentRepository(
     private val api: GribDataSource,
     private val context: Context

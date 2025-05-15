@@ -9,7 +9,6 @@ import no.uio.ifi.in2000.team46.domain.grib.WaveVector
 import no.uio.ifi.in2000.team46.domain.grib.WindVector
 import ucar.ma2.ArrayFloat
 import ucar.ma2.Index4D
-import ucar.nc2.NetcdfFile
 import ucar.nc2.NetcdfFiles
 import ucar.nc2.time.CalendarDateUnit
 import kotlin.math.atan2
@@ -105,10 +104,8 @@ class GribParser {
 
         val timeUnits = timeVar.unitsString
         val calendarDateUnit = CalendarDateUnit.of(Calendar.gregorian.toString(), timeUnits)
-        val timeArray = timeVar.read().reduce().storage
-
         // converts time values to epoch millis
-        val timeSteps = when (timeArray) {
+        val timeSteps = when (val timeArray = timeVar.read().reduce().storage) {
             is FloatArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it.toDouble()).millis }
             is DoubleArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it).millis }
             else -> throw IllegalArgumentException("Ukjent time-array-type: ${timeArray::class.java}")

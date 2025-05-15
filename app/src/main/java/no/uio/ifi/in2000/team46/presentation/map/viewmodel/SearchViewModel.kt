@@ -122,11 +122,6 @@ class SearchViewModel : ViewModel() {
         _searchHistory.value = currentHistory.take(10)
     }
 
-    /** clears all saved search history */
-    fun clearHistory() {
-        _searchHistory.value = emptyList()
-    }
-
     /** cancels ongoing search, clears results and history display state */
     fun clearResults() {
         _searchResults.value = emptyList()

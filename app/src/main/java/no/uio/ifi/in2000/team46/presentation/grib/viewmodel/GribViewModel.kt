@@ -13,6 +13,8 @@ import no.uio.ifi.in2000.team46.presentation.map.components.layermenu.GribMenuSt
 // this viewmodel handles wind layer visibility, data loading, user settings like wind threshold,
 // timestamp selection, and menu state for grib-based weather visualization
 
+// WARNIGNS: the warning is related to functionality not yet implemented in the app
+
 class GribViewModel(
     private val repository: GribRepository
 ) : ViewModel() {

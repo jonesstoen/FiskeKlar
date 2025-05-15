@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit
 // it ensures thread-safe access using a mutex and refreshes the token when expired
 
 class BarentsWatchForbudService {
-    private val TAG = "ForbudAuthService"
+    private val tag = "ForbudAuthService"
     private val mutex = Mutex()
 
     private var accessToken: String? = null
@@ -56,7 +56,7 @@ class BarentsWatchForbudService {
 
                 val response = client.newCall(request).execute()
                 val responseBody = response.body?.string()
-                Log.d(TAG, "Response: $responseBody")
+                Log.d(tag, "Response: $responseBody")
 
                 if (response.isSuccessful && !responseBody.isNullOrEmpty()) {
                     val json = JSONObject(responseBody)
@@ -67,11 +67,11 @@ class BarentsWatchForbudService {
                     tokenExpiry = Date(now.time + expiresIn * 1000)
                     return@withContext accessToken
                 } else {
-                    Log.e(TAG, "Token-feil: ${response.code} ${response.message}")
+                    Log.e(tag, "Token-feil: ${response.code} ${response.message}")
                     return@withContext null
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Token exception", e)
+                Log.e(tag, "Token exception", e)
                 return@withContext null
             }
         }

@@ -29,7 +29,6 @@ import no.uio.ifi.in2000.team46.presentation.map.utils.addUserLocationIndicator
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsBottomSheetContent
 import no.uio.ifi.in2000.team46.presentation.map.ais.AisViewModel
 import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
-import no.uio.ifi.in2000.team46.presentation.map.viewmodel.MapUiEvent
 import no.uio.ifi.in2000.team46.presentation.map.viewmodel.MapViewModel
 import no.uio.ifi.in2000.team46.presentation.map.viewmodel.SearchViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
@@ -49,7 +48,6 @@ import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.DriftViewModelFactor
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.PrecipitationViewModelFactory
 import org.maplibre.android.annotations.MarkerOptions
-import org.maplibre.android.annotations.PolygonOptions
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.geometry.LatLngBounds
@@ -58,7 +56,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.zIndex
-import kotlinx.coroutines.flow.distinctUntilChanged
 import no.uio.ifi.in2000.team46.data.repository.WaveRepository
 import no.uio.ifi.in2000.team46.presentation.navigation.HighlightVesselData
 import org.maplibre.android.annotations.IconFactory
@@ -92,6 +89,12 @@ import no.uio.ifi.in2000.team46.presentation.map.utils.SetupBottomSheetReset
 import no.uio.ifi.in2000.team46.presentation.map.utils.SetupInitialMapView
 import androidx.compose.ui.geometry.Rect
 
+/**
+ * WARNINGS: This file contains usage of deprecated MapLibre classes such as MarkerOptions and PolygonOptions.
+ * These are used intentionally due to the lack of stable or well documented alternatives in the current SDK.
+ * The functionality remains reliable for our purposes and was prioritized for simplicity and compatibility.
+ * Other warnings (unused variables, unnecessary safe calls) are minor and do not affect functionality.
+ */
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -203,7 +206,6 @@ fun MapScreen(
     // Track whether the user is currently dragging the map (to differentiate from programmatic camera moves)
     var isUserDragging by remember { mutableStateOf(false) }
 
-    //  User location & search state
 
     val userLocation by mapViewModel.userLocation.collectAsState()
     val selectedLocation by mapViewModel.selectedLocation.collectAsState()
@@ -400,7 +402,6 @@ fun MapScreen(
             if (mapViewModel.selectedLocation.value != null && mapViewModel.isLocationExplicitlySelected()) {
                 val selectedLoc = mapViewModel.selectedLocation.value!!
                 addMapMarker(map, style, selectedLoc.first, selectedLoc.second, context)
-            } else {
             }
         }
     }
@@ -516,10 +517,6 @@ fun MapScreen(
             val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
             val isCurrentLayerVisible by currentViewModel.isLayerVisible.collectAsState()
             val isPrecipitationVisible by precipitationViewModel.isLayerVisible.collectAsState()
-            val isMetAlertsVisible by metAlertsViewModel.isLayerVisible.collectAsState()
-
-
-
 
 
         // Ddefining a map to hold the bounds of UI elements
@@ -610,7 +607,6 @@ fun MapScreen(
             }
             val showWaveSliders by waveViewModel.showWaveSliders.collectAsState()
             val isWaveVisible   by waveViewModel.isLayerVisible.collectAsState()
-            val waveResult      by waveViewModel.waveData.collectAsState()
 
             if (isWaveVisible && showWaveSliders) {
                 WaveOverlaySliders(

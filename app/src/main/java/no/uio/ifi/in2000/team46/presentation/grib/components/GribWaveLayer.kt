@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.grib.components
 
+import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.*
@@ -100,6 +101,7 @@ fun GribWaveLayer(
 }
 
 // extension to convert list of wave vectors to geojson feature collection
+@SuppressLint("DefaultLocale")
 private fun List<WaveVector>.toFeatureCollection(): FeatureCollection {
     val features = mapNotNull { w ->
         try {

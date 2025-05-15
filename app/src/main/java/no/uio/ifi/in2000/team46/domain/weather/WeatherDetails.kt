@@ -10,5 +10,4 @@ data class WeatherDetails(
     val windSpeed: Double?,
     val windDirection: Double?,
     val weatherSymbol: String?
-) {
-}
+)

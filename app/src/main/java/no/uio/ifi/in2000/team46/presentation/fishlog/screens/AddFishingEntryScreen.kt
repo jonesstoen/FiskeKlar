@@ -58,7 +58,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.shape.RoundedCornerShape
 
-
+//WARNINGS: the warning is related to removed fucntionality from the app, and a deprecated modfiger parameter.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddFishingEntryScreen(
@@ -91,7 +91,7 @@ fun AddFishingEntryScreen(
     var imageUri by remember { mutableStateOf<android.net.Uri?>(null) }
     var date by remember { mutableStateOf(LocalDate.now()) }
     var time by remember { mutableStateOf(LocalTime.now()) }
-    var fishCount by remember { mutableStateOf(1) }
+    var fishCount by remember { mutableIntStateOf(1) }
     var showLocationInfo by remember { mutableStateOf(false) }
     var showAreaInfo by remember { mutableStateOf(false) }
     var showFishTypeInfo by remember { mutableStateOf(false) }

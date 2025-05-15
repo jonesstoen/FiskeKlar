@@ -13,11 +13,11 @@ import java.util.concurrent.TimeUnit
 
 object BarentsWatchRetrofitInstance {
     private const val BASE_URL = "https://live.ais.barentswatch.no/"
-    private const val fiks_url = "https://www.barentswatch.no/bwapi/"
+    private const val FISK_URL = "https://www.barentswatch.no/bwapi/"
 
     // shared http client with logging and default headers
     private val client: OkHttpClient by lazy {
-        val loggingInterceptor = HttpLoggingInterceptor { message ->
+        val loggingInterceptor = HttpLoggingInterceptor { _ ->
             // logging output can be handled here if needed
         }.apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -50,7 +50,7 @@ object BarentsWatchRetrofitInstance {
     // retrofit instance for fish health / forbud (fiks) api
     val fishHealthApi: ForbudDataSource by lazy {
         Retrofit.Builder()
-            .baseUrl(fiks_url)
+            .baseUrl(FISK_URL)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

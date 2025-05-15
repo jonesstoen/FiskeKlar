@@ -1,5 +1,7 @@
 package no.uio.ifi.in2000.team46.domain.ais
 
+
+// WARNINGS: the warning here is because of a function that is not used, but can be used for tracking historical data
 // represents a single AIS position report for a vessel
 data class AisVesselPosition(
     val courseOverGround: Double?,

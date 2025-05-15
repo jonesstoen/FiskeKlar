@@ -69,10 +69,6 @@ class WaveViewModel(private val repo: WaveRepository) : ViewModel() {
         _waves.value = null
     }
 
-    // sets raster loading state (for UI use)
-    fun setRasterLoading(loading: Boolean) {
-        _isRasterLoading.value = loading
-    }
 
     // sets new threshold value for wave height
     fun setWaveThreshold(value: Double) {

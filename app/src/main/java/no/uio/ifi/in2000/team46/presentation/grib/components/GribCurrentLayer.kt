@@ -10,7 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
-import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.R
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.CurrentViewModel
 import org.maplibre.android.maps.MapLibreMap
