@@ -17,7 +17,7 @@ This document shows our system modeling used in our application. It contains use
 
 ## Tools
 
-We used Mermaid for sequence, class and activity diagrams. For the use-case diagram, we used draw.io, which is a graphical tool familiar from previous courses (IN1030). 
+Mermaid has been used to design the diagrams, except for the use-case diagram. There we have chosen to use draw.io to make it simpler and easier to draw, as it is a tool that is familiar from previous courses (IN1030).
 
 ---
 
@@ -101,4 +101,4 @@ We intentionally limited the number of diagrams to keep them relevant and clear.
 
 ## Summary
 
-These models collectively describe how the app functions and responds to user actions. Each diagram offers a different lens where use case diagram offer what users can do,  sequence diagram offer how the system reacts over time, class diagram offer how data is structured and activity diagram offer how decisions and flows occur.
+These models collectively describe how the app functions and responds to user actions. Each diagram offers a different lens where use case diagram offer what users can do, sequence diagram offer how the system reacts over time, class diagram offer how data is structured and activity diagram offer how decisions and flows occur.
