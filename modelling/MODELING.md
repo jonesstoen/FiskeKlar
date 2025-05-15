@@ -1,8 +1,8 @@
 # Modeling Documentation
 
 - [Introduction](#introduction)  
-- [Tools](#tools-and-format)
-- [Use Case Diagrams and use-case-descriptions](#use-case-diagrams-and-description)
+- [Tools](#tools)
+- [Use Case Diagrams and use-case-descriptions](#use-case-diagrams-and-descriptions)
 - [Sequence Diagrams](#sequence-diagrams)
 - [Class Diagram](#class-diagram)
 - [Activity Diagrams](#activity-diagrams)
