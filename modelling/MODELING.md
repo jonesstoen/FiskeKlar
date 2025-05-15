@@ -1,52 +1,104 @@
-## Om diagrammene og våre valg for modelleringen
+# Modeling Documentation
 
-Denne "modelling" mappen innholder både use-case diagram og use-case beskrivelse, sekvensdiagram, aktivitetsdiagram og klassediagrma. Det er blitt brukt mermaid til å utforme diagrammene, utenom use-case diagrammet. Der har vi valgt å bruke draw.io for å gjøre det enklere og lettere å tegne, ettersom det er et verktøy man er kjent fra tidligere emner. 
+- [Introduction](#introduction)  
+- [Tools](#tools-and-format)
+- [Use Case Diagrams and use-case-descriptions](#use-case-diagrams-and-description)
+- [Sequence Diagrams](#sequence-diagrams)
+- [Class Diagram](#class-diagram)
+- [Activity Diagrams](#activity-diagrams)
+- [Summary](#summary)
 
-### Valg av diagrammer og begrunnelse:
-#### 1. Use-case og use-case beskrivelse
-##### Filer: use_case.png, use-case_beskrivelse.md
 
-Modelleringen startet med å utvikle use-case diagram for å få en visualisering av hovedfunksjonalitetene til appen, samt relasjonen mellom aktørene og systemet. Dette hjalp oss med å identifisere og vise hva som er funskjonene til appen, og hvilke handlinger brukeren kan utføre. I tillegg skrev vi detaljerte use-case-beskrivelser for hver funksjonalitet. Beskrivelsen viser hvordan appen fungerer i praksis basert på bestemte use-case oppgaver. Dette er for å tydelig dokumentere de viktigste brukerreisene og funskjonalitetene: åpne kart, bruke SOS-funksjonen, registrere fangst, lagre favorittsteder og se værdata.
+## Introduction
+
+This document show our system modeling used in our application. It contains use case diagrams and use-case-description, a class diagram and activity diagrams. The models help to visualize and explain the structure for the app, behavior and user interactions.
+
+---
+
+## Tools
+
+We used Mermaid for sequence, class and activity diagrams. For the use-case diagram, we used draw.io, which is a graphical tool familiar from previous courses (IN1030). 
+
+---
+
+## Use Case Diagrams and use-case-descriptions
+
+### Files:
+- [use_case.png](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/use-case.png)
+- [use-case_beskrivelse.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/use-case_beskrivelse.md)
+
+Our modeling process began by creating a use case diagram to visualize the app's main functionalities and the interactions between users and the system. This helped us identify what actions users can perform in the app. 
+
+We wrote detailed use-case descriptions for each core feature, such as: 
+- Opening the map
+- Using the SOS button
+- Logging a catch
+- Saving favorite fishing spots
+- Viewing weather data
+
+These descriptions provide a textual walkthrough of key user stories and expected behavior.
+
+---
+
+## Sequence Diagrams
+
+### Files:
+- [sekvens_diagram_SOS.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/sekvens_diagram_SOS.md)
+- [sekvens_diagram_kartskjerm.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/sekvens_diagram_kartskjerm.md)
+- [sekvens_diagram_fiskelogg.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/sekvens_diagram_fiskelogg.md)
+- [sekvens_diagram_favorittsteder.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/sekvens_diagram_favorittsteder.md)
+- [sekvens_diagram_vaervarsel.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/sekvens_diagram_vaervarsel.md)
 
 
+We created five sequence diagrams, one for each major feature. These diagrams illustrate how the app interacts with internal components (e.g., database) and external APIs during a specific process.
 
-#### 2. Sekvensdiagrammer
-#### Filer: 
-- sekvens_diagram_SOS.md
-- sekvens_diagram_kartskjerm.md
-- sekvens_diagram_fiskelogg.md
-- sekvens_diagram_favorittsteder.md
-- sekvens_diagram_vaervarsel.md
+Using alt and opt blocks in Mermaid allowed us to clearly separate normal and alternative flows.
 
-Det er laget totalt 5 ulike sekvensdiagramer for de ulike funksjonalitetene. Vi valgte å lage ett diagram per hovedfunksjonalitet i appen (kart, SOS, fiskelogg, favorittsteder og værvarsel), slik at vi får belyst hver delprosess detaljert. Dette er for å visualisere hvordan appen kommuniserer med databasen, kartvisningen og eksterne API-er. De gir innsikt i hvordan ulike komponenter kommuniserer og i hvilken rekkefølge hendelser skjer. Ved å bruke alt og opt i Mermaid kunne vi tydelig skille mellom hovedflyt og alternative scenarier, noe som gjør diagrammene både informative og lette å lese.
+Benefits of these diagrams:
 
-#### 3. Klassediagram
-#### Filer: klasse_diagram.md
+- Clarify order of operations
+- Highlight component responsibilities
+- Useful for debugging and onboarding new developers
 
-Klassediagrammet gir en strukturert oversikt over appens indre arkitektur, inkludert objektene vi benytter, deres egenskaper og metodene som hører til hver klasse. Vi valgte å bruke klassediagram fordi det er særlig nyttig for å:
+--- 
 
-- Visualisere datastrukturen i appen (f.eks. hvordan en Fangst er bygd opp med art, vekt, bilde osv.).
 
-- Avdekke sammenhenger og avhengigheter mellom objekter, som at Hobbyfisker har en Fiskelog, og kan legge til Favorittsted.
+## Class diagram
 
-- Skille mellom modellklasser (som Fangst, Favorittsted, Værvarsel) og tjenester eller API-er (Database, FiskeInfoAPI, VærdataAPI).
+### Files
+-  [klasse_diagram.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/klasse_diagram.md)
 
-Vi valgte å inkludere både attributter og metoder for å gjøre diagrammet mer konkret og knytte det tettere til faktisk funksjonalitet i appen. Multiplikiteter ble brukt der det er naturlig, f.eks. at én fiskelog inneholder mange fangster (1..*), og at en hobbyfisker kan ha flere favorittsteder. Diagrammet er viktig i videre utvikling fordi det fungerer som et grunnlag for klasser i koden, spesielt hvis man bruker OOP. I tillegg hjelper det nye utviklere å raskt forstå datastrukturen.
+The class diagram outlines the internal data architecture. It includes classes like Catch, FavoriteSpot, WeatherAlert, and services like Database, FishInfoAPI, and WeatherDataAPI.
 
-#### 4. Aktivitetsdiagram
-#### Filer: 
-- aktivitetsdiagram_favorittsteder.md
-- aktivtetsdiagram_kart.md
-- aktivitetsdiagram_SOS.md
+We included:
+- Attributes and methods per class
 
-Vi valgte å bruke aktivitetsdiagrammer for å illustrere flyten av kontroll og beslutninger i de mest interaktive delene av applikasjonen. Diagrammene viser hvordan brukeren navigerer gjennom funksjonaliteten og hvordan appen responderer avhengig av valgene som tas.
+- Multiplicities (e.g., 1 fisherman → many catches)
 
-Aktivitetsdiagrammer er nyttige fordi:
+- Relationships between model classes and services
 
-- De fremhever valg, grener og betingelser i brukerflyten.
+This gives a clear structural overview and supports future object-oriented development.
 
-- De visualiserer kompleks logikk på en intuitiv måte.
+---
 
-- De hjelper med å planlegge og forstå hva som skjer bak hver knapp og hvert valg i UI.
+## Activity Diagrams
+### Files
+- [aktivitetsdiagram_favorittsteder.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/aktivitetsdiagram_favorittsteder.md)
+- [aktivitetsdiagram_kart.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/aktivitetsdiagram_kart.md)
+- [aktivitetsdiagram_SOS.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/aktivitetsdiagram_SOS.md)
 
-For å holde modellen oversiktlig og fokusert, er det valgt å lage tre aktivitetsdiagrammer – ett for hver funksjon der det skjer mest logikk og brukeren har mange valg. Disse representerer de mest dynamiske delene av appen. Målet var ikke å vise alle funksjoner med aktivitetsdiagram, men å bruke dem for å få frem et annet perspektiv – nemlig brukerens beslutningspunkter og systemets reaksjoner.
+These diagrams describe control flow and user decisions in the most interactive parts of the app. We chose to focus on the three most dynamic features:
+
+- Saving/viewing favorite places
+
+- Using the map (e.g., toggling layers, filters)
+
+- SOS emergency functionality
+
+We intentionally limited the number of diagrams to keep them relevant and clear. They serve as a complementary perspective to the use case and sequence models, focusing on decision paths and flow control.
+
+---
+
+## Summary
+
+These models collectively describe how the app functions and responds to user actions. Each diagram offers a different lens where use case diagram offer what users can do,  sequence diagram offer how the system reacts over time, class diagram offer how data is structured and activity diagram offer how decisions and flows occur.
