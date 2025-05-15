@@ -85,7 +85,7 @@ This gives a clear structural overview and supports future object-oriented devel
 ### Files
 - [aktivitetsdiagram_favorittsteder.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/aktivitetsdiagram_favorittsteder.md)
 - [aktivitetsdiagram_kart.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/aktivitetsdiagram_kart.md)
-- [aktivitetsdiagram_SOS.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/aktivitetsdiagram_SOS.md)
+- [aktivitetsdiagram_SOS.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/aktivtetsdiagram_SOS.md)
 
 These diagrams describe control flow and user decisions in the most interactive parts of the app. We chose to focus on the three most dynamic features:
 
