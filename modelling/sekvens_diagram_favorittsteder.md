@@ -22,7 +22,7 @@ sequenceDiagram
             App -->> Hobbyfisker: Viser fangstdata og alternativer
 
             alt Velger: Legg til fangst
-                Hobbyfisker ->> App: Går til fangstregistrering
+                Hobbyfisker ->> App: Legg til ny fangst for stedet
                 App -->> Hobbyfisker: Viser skjema
                 Hobbyfisker ->> App: Fyller ut og trykker "Lagre"
                 App ->> Database: Lagre fangstdata
