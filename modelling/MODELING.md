@@ -50,7 +50,7 @@ These descriptions provide a textual walkthrough of key user stories and expecte
 - [sekvens_diagram_vaervarsel.md](https://github.uio.no/IN2000-V25/team-46/blob/main/modelling/sekvens_diagram_vaervarsel.md)
 
 
-We created five sequence diagrams, one for each major feature. These diagrams illustrate how the app interacts with internal components (e.g., database) and external APIs during a specific process.
+We created five sequence diagrams, one for each major feature. These diagrams illustrate how the app interacts with internal components (database) and external APIs during a specific process.
 
 Using alt and opt blocks in Mermaid allowed us to clearly separate normal and alternative flows.
 
