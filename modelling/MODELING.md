@@ -34,7 +34,7 @@ We wrote detailed use-case descriptions for each core feature, such as:
 - Using the SOS button
 - Logging a catch
 - Saving favorite fishing spots
-- Viewing weather data
+- Viewing weather forecast
 
 These descriptions provide a textual walkthrough of key user stories and expected behavior.
 
