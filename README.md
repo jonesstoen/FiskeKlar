@@ -40,14 +40,33 @@
 ## How to Run the App
 
 ### Requirements
-- Android 8.0 (API 26) or higher (***to be confirmed***)
+- Minimum Android version: API 26 (Android 8.0 Oreo)
 - Location permission (`ACCESS_FINE_LOCATION`)
 - Camera access for profile and catch photos
 
 ### Build and Run
-- Open the project in **Android Studio**
-- Run the app on a physical device or emulator with location enabled
-- On first launch, the app will request required permissions. It also runs without location permission.
+1. **Download or clone the repository** from GitHub:
+   ```bash
+   git clone https://github.uio.no/IN2000-V25/team-46.git
+
+Alternatively, use the "Download ZIP" button on GitHub and extract the project.
+
+2. **Open the project in Android Studio **  
+- Choose *"Open an existing project"*
+- Navigate to the extracted/cloned folder and open it
+
+3. **Wait for Gradle sync to complete**  
+- Android Studio will automatically download dependencies
+  
+4. **Connect a physical device** or start an **emulator**  
+- The device/emulator must run **Android 8.0 (API 26)** or newer  
+- Enable **location services** for full functionality  
+- Ensure **internet access** is available for full functionality
+5. **Build and run the app**  
+- Click the run button or use **Shift + F10**  
+- On first launch, **grant permissions** when prompted:
+  - Location (optional but recommended)
+  - Camera (for profile/catch photos)
 
 ### Features
 - Displays AIS data from BarentsWatch with real-time vessel updates
@@ -116,3 +135,11 @@ Used by Room and Hilt to generate binding and injection code at compile time, re
 | `ACCESS_FINE_LOCATION`       | To show the user’s location and trigger relevant weather alerts         |
 | `CAMERA`                     | To take photos for profile and catch log                                |
 | `READ/WRITE_EXTERNAL_STORAGE`| Required if images are saved to the file system                         |
+
+## Further Documentation
+
+For architectural details, file structure, design patterns and modeling diagrams:
+
+- [ARCHITECTURE.md](./ARCHITECTURE.md): Detailed overview of the app's structure, MVVM implementation, and rationale behind chosen patterns and technologies.
+- [MODELING.md](./MODELING.md): UML diagrams and system design illustrations supporting key use cases and flows.
+
