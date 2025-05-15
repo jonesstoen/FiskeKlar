@@ -9,6 +9,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+/// summary: displays controls for the wave layer with toggle and button for opening sliders
+
 @Composable
 fun WaveLayerSettings(
     isChecked: Boolean,

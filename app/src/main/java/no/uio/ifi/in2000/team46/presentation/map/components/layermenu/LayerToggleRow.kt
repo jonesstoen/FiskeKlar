@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 
+// made for reuseability in the layer menu to have a switch with a label
 @Composable
 fun LayerToggleRow(
     label: String,

@@ -65,21 +65,13 @@ import org.maplibre.android.annotations.IconFactory
 import no.uio.ifi.in2000.team46.domain.ais.VesselIcons
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModel
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.WaveViewModelFactory
-import no.uio.ifi.in2000.team46.presentation.grib.components.WaveLegend
-import no.uio.ifi.in2000.team46.data.repository.Result
-import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsLegend
 import androidx.compose.runtime.saveable.rememberSaveable
-import no.uio.ifi.in2000.team46.presentation.grib.components.WindLegend
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.CurrentViewModelFactory
-import no.uio.ifi.in2000.team46.presentation.map.components.controls.LegendToggle
 import no.uio.ifi.in2000.team46.presentation.map.utils.removeMapMarker
-import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
-import androidx.compose.material.icons.filled.Help
 import androidx.compose.material3.*
 import no.uio.ifi.in2000.team46.presentation.grib.components.CurrentOverlaySliders
-import no.uio.ifi.in2000.team46.presentation.grib.components.PrecipitationLegend
 import no.uio.ifi.in2000.team46.presentation.grib.components.PrecipitationOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.grib.components.WaveOverlaySliders
 import no.uio.ifi.in2000.team46.presentation.grib.components.WindOverlaySliders
@@ -87,10 +79,7 @@ import no.uio.ifi.in2000.team46.presentation.map.components.layermenu.GribMenuSt
 import no.uio.ifi.in2000.team46.presentation.onboarding.screens.MapOnboardingScreen
 import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.MapOnboardingViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import androidx.lifecycle.viewModelScope
 import no.uio.ifi.in2000.team46.data.local.database.AppDatabase
-
 import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModel
 import no.uio.ifi.in2000.team46.utils.NetworkUtils
 import no.uio.ifi.in2000.team46.presentation.map.components.NetworkConnectivityAlert
@@ -98,9 +87,10 @@ import no.uio.ifi.in2000.team46.presentation.map.components.LegendPanel
 import no.uio.ifi.in2000.team46.presentation.map.components.controls.LegendController
 import no.uio.ifi.in2000.team46.presentation.map.favorites.FavoritesLayerViewModel
 import no.uio.ifi.in2000.team46.data.repository.FavoriteRepository
-// =====================
-// MAP SCREEN
-// =====================
+import no.uio.ifi.in2000.team46.presentation.map.utils.SetupSnackbar
+import no.uio.ifi.in2000.team46.presentation.map.utils.SetupBottomSheetReset
+import no.uio.ifi.in2000.team46.presentation.map.utils.SetupInitialMapView
+import androidx.compose.ui.geometry.Rect
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -120,252 +110,222 @@ fun MapScreen(
     profileViewModel: ProfileViewModel,
     showFavorites: Boolean = false
 ) {
-    // Opprett FavoritesLayerViewModel
+    // Create the FavoritesLayerViewModel using the local database DAO
     val context = LocalContext.current
     val db = AppDatabase.getDatabase(context)
     val favoritesViewModel = remember {
         FavoritesLayerViewModel(FavoriteRepository(db.favoriteLocationDao()))
     }
-    // Fjern lokal showOnboarding state og bruk ViewModel state direkte
+
+    // use the shared onboarding state from the ViewModel rather than local state
     val showMapOnboarding by mapOnboardingViewModel.showMapOnboarding.collectAsState()
-    
-    // Aktiver favorittlaget hvis showFavorites er true
+
+    // when showFavorites is true, automatically enable the favorites layer
     LaunchedEffect(showFavorites) {
         if (showFavorites) {
             favoritesViewModel.setLayerVisibility(true)
         }
     }
 
-    // noen av verdiene som vi kunne brukt remembersavable på støtter ikke den funksjonaliteten derfor er de bare remember
-    // ----------- State og permissions -----------
-    
-    // Check for internet connectivity
+    // track whether we have internet connectivity
     var isNetworkConnected by remember { mutableStateOf(NetworkUtils.isNetworkAvailable(context)) }
     var showNetworkAlert by remember { mutableStateOf(false) }
-    
-    // Show alert if network is not connected
+
+    // if not connected, show a one-time alert dialog
     LaunchedEffect(Unit) {
         if (!isNetworkConnected) {
             showNetworkAlert = true
         }
     }
-    
-    // Simple network connectivity alert dialog
+
+    // simple dialog component to notify user of lost connectivity
     NetworkConnectivityAlert(
         show = showNetworkAlert,
         onDismiss = { showNetworkAlert = false }
     )
-    
-    // Get the theme from ProfileViewModel
+
+
+    // observe the users chosen app theme from ProfileViewModel
     val appTheme by profileViewModel.theme.collectAsState()
-    
-    // Determine if dark theme should be used based on app settings, not just system theme
+
+    // determine whether to use dark theme based on user setting or system default
     val isDark = when (appTheme) {
         "dark" -> true
         "light" -> false
-        else -> isSystemInDarkTheme()
+        else   -> isSystemInDarkTheme()
     }
-    
+
+    // get the appropriate MapLibre style URL according to the theme
     val styleUrl = mapViewModel.getStyleUrl(isDark)
+
+    // control visibility of the layer selection menu
     var isLayerMenuExpanded by remember { mutableStateOf(false) }
 
+    // ----------- Initial map zoom state -----------
 
-
-    // Hent tilstanden for om initial zoom er utført fra ViewModel
+    // track whether we have already performed the initial camera zoom
     val hasPerformedInitialZoom by mapViewModel.hasPerformedInitialZoom.collectAsState()
 
 
-    // Request location permission
+
     var hasLocationPermission by rememberSaveable { mutableStateOf(false) }
+
+    // Launcher to request the ACCESS_FINE_LOCATION permission on demand
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { granted -> hasLocationPermission = granted }
+    ) { granted ->
+        hasLocationPermission = granted
+    }
+
+    // Automatically request permission once when this composable enters composition
     LaunchedEffect(Unit) {
         permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
-    // ----------- Snackbar og bottom sheet state -----------
+
+    // Host for showing transient snackbars
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Bottom sheet state — allow Hidden initial value by disabling skipHiddenState
     val sheetState = rememberStandardBottomSheetState(
         initialValue = SheetValue.Hidden,
         skipHiddenState = false
     )
+
+    // Scaffold that ties together the map content, snackbar, and bottom sheet
     val scaffoldState = rememberBottomSheetScaffoldState(
         bottomSheetState = sheetState,
         snackbarHostState = snackbarHostState
     )
 
-    // ----------- MapLibreMap referanse -----------
-    var mapLibreMap by remember  { mutableStateOf<MapLibreMap?>(null) }
+    // Hold a reference to the underlying MapLibreMap instance
+    var mapLibreMap by remember { mutableStateOf<MapLibreMap?>(null) }
 
-    // Track whether user is currently dragging the map
-    var isUserDragging by remember  { mutableStateOf(false) }
+    // Track whether the user is currently dragging the map (to differentiate from programmatic camera moves)
+    var isUserDragging by remember { mutableStateOf(false) }
 
-    // ----------- Brukerposisjon og indikator -----------
+    //  User location & search state
+
     val userLocation by mapViewModel.userLocation.collectAsState()
     val selectedLocation by mapViewModel.selectedLocation.collectAsState()
     val searchResults by searchViewModel.searchResults.collectAsState()
+    // Hold the last search result the user tapped on
     val selectedSearchResult = remember { mutableStateOf<Feature?>(null) }
 
-    // Hent temperatur og værsymbol fra mapViewModel
-    //FIXME: is this being  used ?
-//    val temperature by mapViewModel.temperature.collectAsState()
-//    val weatherSymbol by mapViewModel.weatherSymbol.collectAsState()
+    //Initial map setup (area or point)
 
-    //handling for initialLocation and areaPoints
-    LaunchedEffect(mapLibreMap, areaPoints, initialLocation) {
-        mapLibreMap?.let { map ->
-            map.clear()
-            if (areaPoints != null && areaPoints.isNotEmpty()) {
-                val polygonOptions = PolygonOptions()
-                    .addAll(areaPoints.map { LatLng(it.first, it.second) })
-                    .fillColor(0x5500BCD4)
-                    .strokeColor(android.graphics.Color.BLUE)
-                map.addPolygon(polygonOptions)
-                val bounds = LatLngBounds.Builder()
-                areaPoints.forEach { bounds.include(LatLng(it.first, it.second)) }
-                map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds.build(), 50))
-            } else if (initialLocation != null) {
-                val (lat, lng) = initialLocation
-                // Legg til markør for favorittplasseringen (punkter)
-                map.addMarker(MarkerOptions()
-                    .position(LatLng(lat, lng))
-                    .title("Favorittpunkt")
-                )
-                map.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(lat, lng), 14.0))
-            }
-        }
-    }
+    SetupInitialMapView(
+        map                    = mapLibreMap,
+        hasPerformedInitialZoom= hasPerformedInitialZoom,
+        initialLocation        = initialLocation,
+        areaPoints             = areaPoints,
+        onZoomToUser           = { map -> mapViewModel.zoomToUserLocationInitial(map, context) },
+        markZoomDone           = { mapViewModel.setInitialZoomPerformed() }
+    )
 
-    // ----------- Snackbar fra ViewModel -----------
-    LaunchedEffect(mapViewModel.uiEvents) {
-        mapViewModel.uiEvents.collect { event ->
-            when (event) {
-                is MapUiEvent.ShowAlertSnackbar -> {
-                    // Vis snackbar med “Vis mer”-knapp
-                    val result = snackbarHostState.showSnackbar(
-                        message = event.message,
-                        actionLabel = "Vis mer"
-                    )
-                    // Hvis brukeren trykker “Vis mer”, åpne bottom sheet for akkurat denne feature
-                    if (result == SnackbarResult.ActionPerformed) {
-                        mapViewModel.selectMetAlert(event.feature)
-                    }
-                }
-            }
-        }
-    }
+    // ----------- Snackbar from ViewModel events -----------
 
-    // ----------- GribViewModel for værdata -----------
+    SetupSnackbar(
+        uiEvents          = mapViewModel.uiEvents,
+        snackbarHostState = snackbarHostState,
+        onShowFeature     = { feature -> mapViewModel.selectMetAlert(feature) }
+    )
+
+
+    // Main GRIB data ViewModel (wind, pressure, etc.)
     val gribViewModel: GribViewModel = viewModel(
         factory = GribViewModelFactory(
-            GribRepository(
-                GribRetrofitInstance.GribApi,
-                context
-            )
+            GribRepository(GribRetrofitInstance.GribApi, context)
         )
     )
+    // Current flow ViewModel
     val currentViewModel: CurrentViewModel = viewModel(
         factory = CurrentViewModelFactory(
-            CurrentRepository(
-                api = GribRetrofitInstance.GribApi,
-                context = context
-            )
+            CurrentRepository(GribRetrofitInstance.GribApi, context)
         )
     )
+    // Drift (combined) ViewModel
     val driftViewModel: DriftViewModel = viewModel(
         factory = DriftViewModelFactory(
             GribRepository(GribRetrofitInstance.GribApi, context),
             CurrentRepository(GribRetrofitInstance.GribApi, context)
         )
     )
-    // ------------- Bølger -------------
+    // Wave height ViewModel
     val waveViewModel: WaveViewModel = viewModel(
         factory = WaveViewModelFactory(
-            WaveRepository(
-                api     = GribRetrofitInstance.GribApi,
-                context = context
-            )
+            WaveRepository(GribRetrofitInstance.GribApi, context)
         )
     )
-    // for tracking wave loading
-    val isWaveLoading by waveViewModel.isRasterLoading.collectAsState()
-    if (isWaveLoading) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.3f))
-                .zIndex(10f)        // sørg for at det ligger over kart‐lagene
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier
-                    .align(Alignment.Center)
-            )
-        }
-    }
-    // for showing the wave legend
-    val isWaveVisible   by waveViewModel.isLayerVisible.collectAsState()
-    val waveResult      by waveViewModel.waveData.collectAsState()
-
     val precipitationViewModel: PrecipitationViewModel = viewModel(
         factory = PrecipitationViewModelFactory(
             GribRepository(GribRetrofitInstance.GribApi, context)
         )
     )
     // controller for showing the legends
+
+
+    // Show a loading overlay while wave data is being fetched
+    val isWaveLoading by waveViewModel.isRasterLoading.collectAsState()
+    if (isWaveLoading) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.3f))
+                .zIndex(10f)
+        ) {
+            CircularProgressIndicator(Modifier.align(Alignment.Center))
+        }
+    }
+
+    // Legend controller for switching between overlays
     val legendController = remember { LegendController() }
 
     LegendPanel(
-        isDark = isDark,
-        legendController = legendController,
-        gribViewModel = gribViewModel,
-        waveViewModel = waveViewModel,
-        precipitationViewModel = precipitationViewModel,
-        currentViewModel = currentViewModel,
-        metAlertsViewModel = metAlertsViewModel
+        isDark                  = isDark,
+        legendController        = legendController,
+        gribViewModel           = gribViewModel,
+        waveViewModel           = waveViewModel,
+        precipitationViewModel  = precipitationViewModel,
+        currentViewModel        = currentViewModel,
+        metAlertsViewModel      = metAlertsViewModel
     )
 
-    // ----------- MetAlerts bottom sheet -----------
+    //  Bottom sheet expand/collapse logic
+
+    // Expand or hide the MetAlerts bottom sheet when a feature is selected
     val selectedFeature by metAlertsViewModel.selectedFeature.collectAsState()
     LaunchedEffect(selectedFeature) {
         if (selectedFeature != null) scaffoldState.bottomSheetState.expand()
         else scaffoldState.bottomSheetState.hide()
-        if (selectedFeature != null) {
-            scaffoldState.bottomSheetState.expand()
-        } else {
-            scaffoldState.bottomSheetState.hide()
-        }
     }
 
-    // Observe bottom sheet state and reset MetAlert when it's fully hidden
-    LaunchedEffect(scaffoldState.bottomSheetState) {
-        snapshotFlow { scaffoldState.bottomSheetState.currentValue }
-            .distinctUntilChanged()
-            .collect { state ->
-                Log.d("MapScreen", "Bottom sheet state: $state")
+    // Automatically clear the selected alert when the sheet hides
+    SetupBottomSheetReset(
+        scaffoldState      = scaffoldState,
+        metAlertsViewModel = metAlertsViewModel
+    )
 
-                // Reset MetAlert only when the bottom sheet is fully hidden
-                if (state != SheetValue.Expanded) {
-                    metAlertsViewModel.selectFeature(null)  // Reset the selected MetAlert
-                    Log.d("MapScreen", "Selected alert cleared because bottom sheet is Hidden.")
-                }
-            }
-    }
 
-    // Tegn strek og marker hvis highlightVessel er satt
+
+    // draw a line and marker when a vessel is highlighted
     LaunchedEffect(mapLibreMap, highlightVessel) {
+        // exit early if the map instance isn't ready yet
         val map = mapLibreMap ?: return@LaunchedEffect
+
+        // Remove any existing selected-location marker from the map style
         map.getStyle { style ->
-            removeMapMarker(style) // Fjern markøren for valgt posisjon
+            removeMapMarker(style)
         }
+
+        // Only proceed if we actually have a vessel to highlight
         if (highlightVessel != null) {
-            mapViewModel.clearSelectedLocation() // Fjern valgt posisjon i ViewModel også
+            mapViewModel.clearSelectedLocation()
             map.clear()
-            // Viktig: Initialiser AIS-ikoner før bruk!
+
+            // IMPORTANT: Ensure AIS icon bitmaps are loaded before adding vessel markers
             VesselIcons.initializeIcons(context)
-            // Tegn vanlig rød linje mellom bruker og båt
+
+            // Draw a red polyline between the user and the vessel
             map.addPolyline(
                 PolylineOptions()
                     .add(
@@ -376,10 +336,10 @@ fun MapScreen(
                     .width(6f)
             )
 
-            // Marker båtposisjon med AIS-ikon og navn
             val vesselIconType = VesselIcons.getVesselStyle(highlightVessel.shipType).iconType
             val bitmap = VesselIcons.getIcons()[vesselIconType]
             val iconFactory = IconFactory.getInstance(context)
+
             if (bitmap != null) {
                 map.addMarker(
                     MarkerOptions()
@@ -395,33 +355,45 @@ fun MapScreen(
                 )
             }
 
-            // Zoom til området mellom bruker og båt
+            // Compute a LatLngBounds that includes both user and vessel positions
             val bounds = LatLngBounds.Builder()
                 .include(LatLng(highlightVessel.userLat, highlightVessel.userLon))
                 .include(LatLng(highlightVessel.vesselLat, highlightVessel.vesselLon))
                 .build()
+
             map.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 150))
-            // Oppdater vær for brukerposisjon og båtposisjon uten å sette valgt markør
-            mapViewModel.updateWeatherForLocation(highlightVessel.userLat, highlightVessel.userLon, explicit = false)
-            mapViewModel.updateWeatherForLocation(highlightVessel.vesselLat, highlightVessel.vesselLon, explicit = false)
+
+            // Refresh weather data for both locations without creating a new marker
+            mapViewModel.updateWeatherForLocation(
+                highlightVessel.userLat,
+                highlightVessel.userLon,
+                explicit = false
+            )
+            mapViewModel.updateWeatherForLocation(
+                highlightVessel.vesselLat,
+                highlightVessel.vesselLon,
+                explicit = false
+            )
         }
     }
 
+
     // Oppdater brukerposisjons-indikator når kartet er klart eller brukerposisjon endres
+    //updating user location indicator, when map is ready or the user location changes
     LaunchedEffect(mapLibreMap, userLocation) {
         val map = mapLibreMap ?: return@LaunchedEffect
         val loc = userLocation ?: return@LaunchedEffect
         map.getStyle { style ->
             addUserLocationIndicator(map, style, loc.latitude, loc.longitude)
 
-            // Oppdater vær basert på brukerens posisjon ved oppstart
+            //update weather based on user location at startup
             if (!mapViewModel.isLocationExplicitlySelected()) {
                 mapViewModel.updateTemperature(loc.latitude, loc.longitude)
             }
         }
     }
 
-    // Oppdater markør når kartet er klart eller når selectedLocation endres
+    //updating marker when map is ready or when selectedLocation changes
     LaunchedEffect(mapLibreMap, mapViewModel.selectedLocation.collectAsState().value) {
         val map = mapLibreMap ?: return@LaunchedEffect
         map.getStyle { style ->
@@ -433,33 +405,28 @@ fun MapScreen(
         }
     }
 
-    // Initialiseringseffekter
-    // 1. Sjekk om dette er første launch når komponenten monteres
+    //chek it it is the first time launching in order to show onboarding
     LaunchedEffect(Unit) {
         mapOnboardingViewModel.checkFirstLaunch(context)
     }
-    
-    // 2. Zoom til brukerens posisjon kun første gang kartet åpnes direkte fra hjemskjermen
+
+    //zoom to user location only the first time the map opens from the homescreen
     LaunchedEffect(mapLibreMap) {
-        // Utfør initial zoom kun hvis:
-        // 1. Initial zoom ikke er utført tidligere
-        // 2. Det er ingen initialLocation (ikke navigert fra favoritter/punkt)
-        // 3. Det er ingen areaPoints (ikke navigert fra favoritter/område)
+
         if (!hasPerformedInitialZoom && initialLocation == null && areaPoints == null) {
             mapLibreMap?.let { map ->
-                // Kort forsinkelse for å sikre at kartet er fullstendig initialisert
+                //delay to be sure the map is ready
                 delay(300)
-                // Zoom til brukerens posisjon med zoom-nivå fra MapConstants
+
                 mapViewModel.zoomToUserLocationInitial(map, context)
             }
         } else if (!hasPerformedInitialZoom && (initialLocation != null || areaPoints != null)) {
-            // Hvis vi navigerer fra favoritter, marker initial zoom som utført
-            // for å unngå at det skjer når man går tilbake til kartet senere
+            // if the map is opened from the homescreen with a location or area, we don't want to zoom to user location
             mapViewModel.setInitialZoomPerformed()
         }
     }
 
-    // ----------- UI: BottomSheetScaffold med kart, lag og kontroller -----------
+    //bottom scaffold for showing the metalerts
     BottomSheetScaffold(
         scaffoldState = scaffoldState,
         containerColor = MaterialTheme.colorScheme.background,
@@ -481,7 +448,6 @@ fun MapScreen(
                 .fillMaxSize()
                 .padding(sheetPadding)
         ) {
-            // 1) Kartcontainer
             MapViewContainer(
                 mapView = mapView,
                 styleUrl = styleUrl,
@@ -491,7 +457,7 @@ fun MapScreen(
                     mapLibreMap = map
                     mapViewModel.initializeMap(map, context,styleUrl)
                     
-                    // Add listeners to detect when user is dragging the map
+                    // add listeners to detect when user is dragging the map
                     map.addOnCameraMoveStartedListener { reason ->
                         if (reason == MapLibreMap.OnCameraMoveStartedListener.REASON_API_GESTURE) {
                             isUserDragging = true
@@ -501,7 +467,7 @@ fun MapScreen(
                         isUserDragging = false
                     }
 
-                    // Add click listener for the map
+                    // add click listener for the map
                     map.addOnMapLongClickListener { point ->
                         if (!isUserDragging) {
                             val screenPoint = map.projection.toScreenLocation(point)
@@ -529,7 +495,7 @@ fun MapScreen(
                     }
                 }
             )
-            // 2) Lag
+            // layer set up
             mapLibreMap?.let { map ->
                 MapLayers(
                     map        = map,
@@ -546,6 +512,7 @@ fun MapScreen(
                     isDarkTheme = isDark
                 )
             }
+            //variables for keeping track of the layer visibility
             val isWindLayerVisible by gribViewModel.isLayerVisible.collectAsState()
             val isCurrentLayerVisible by currentViewModel.isLayerVisible.collectAsState()
             val isPrecipitationVisible by precipitationViewModel.isLayerVisible.collectAsState()
@@ -554,9 +521,9 @@ fun MapScreen(
 
 
 
-            // 3) Kontroller
-        // Definer en Map for å holde på bounds for hvert element
-        val elementBounds = remember { mutableMapOf<String, androidx.compose.ui.geometry.Rect>() }
+
+        // Ddefining a map to hold the bounds of UI elements
+        val elementBounds = remember { mutableMapOf<String, Rect>() }
         
         mapLibreMap?.let { map ->
             MapControls(
@@ -581,11 +548,10 @@ fun MapScreen(
                     searchViewModel.addToHistory(feature)
                     selectedSearchResult.value = feature
 
-                    // Hent koordinater fra søkeresultatet
+                    // fetching the coordinates from the search result
                     val latitude = feature.geometry.coordinates[1]
                     val longitude = feature.geometry.coordinates[0]
 
-                    // Zoom til lokasjonen
                     map.animateCamera(
                         CameraUpdateFactory.newLatLngZoom(
                             LatLng(latitude, longitude),
@@ -593,13 +559,12 @@ fun MapScreen(
                         )
                     )
 
-                    // Legg til markør på kartet
                     map.getStyle { style ->
-                        // Fjern eksisterende markør først
+
                         mapViewModel.clearSelectedLocation()
-                        // Sett ny lokasjon i ViewModel
+
                         mapViewModel.setSelectedLocation(latitude, longitude)
-                        // Legg til markør
+
                         addMapMarker(map, style, latitude, longitude, context)
                     }
                 },
@@ -610,7 +575,7 @@ fun MapScreen(
                 },
                 onShowWaveSliders = { waveViewModel.setShowWaveSliders(true) },
                 onUserLocationSelected = { location ->
-                    // Oppdater temperatur og værsymbol basert på brukerens posisjon
+
                     mapViewModel.updateTemperature(location.latitude, location.longitude)
                 },
                 elementBounds = elementBounds
@@ -644,6 +609,8 @@ fun MapScreen(
                 )
             }
             val showWaveSliders by waveViewModel.showWaveSliders.collectAsState()
+            val isWaveVisible   by waveViewModel.isLayerVisible.collectAsState()
+            val waveResult      by waveViewModel.waveData.collectAsState()
 
             if (isWaveVisible && showWaveSliders) {
                 WaveOverlaySliders(
@@ -669,7 +636,7 @@ fun MapScreen(
             }
 
 
-            // Legg til hjelpeknapp på kartet
+            // help button for showing the onboarding screen after the map is ready
             IconButton(
                 onClick = { mapOnboardingViewModel.showMapOnboarding() },
                 modifier = Modifier
@@ -684,13 +651,12 @@ fun MapScreen(
                 )
             }
 
-            // Bruk showMapOnboarding fra ViewModel
             if (showMapOnboarding) {
                 MapOnboardingScreen(
                     viewModel = mapOnboardingViewModel,
                     onFinish = { mapOnboardingViewModel.hideMapOnboarding() },
                     onZoom = { 
-                        // Øk zoom-nivået med 1
+
                         mapLibreMap?.let { map ->
                             val currentZoom = map.cameraPosition.zoom
                             val newZoom = currentZoom + 1.0
@@ -698,12 +664,11 @@ fun MapScreen(
                             map.animateCamera(cameraUpdate)
                         }
                     },
-                    onToggleLayers = { 
-                        // Toggle lag-menyen
+                    onToggleLayers = {
                         isLayerMenuExpanded = !isLayerMenuExpanded
                     },
                     onShowLocation = { 
-                        // Zoom til brukerens posisjon
+
                         mapLibreMap?.let { map ->
                             mapViewModel.zoomToUserLocation(map, context)
                         }

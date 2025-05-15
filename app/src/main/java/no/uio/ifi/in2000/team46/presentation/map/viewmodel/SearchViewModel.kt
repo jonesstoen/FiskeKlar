@@ -12,28 +12,42 @@ import no.uio.ifi.in2000.team46.data.remote.api.Feature
 import no.uio.ifi.in2000.team46.data.repository.GeocodingRepository
 import android.util.Log
 
+// summary: handles place search logic with debounce, result refinement, and history management
+
 class SearchViewModel : ViewModel() {
+    // repository used for geocoding API requests
     private val repository = GeocodingRepository()
+    // current search job for debounce and cancellation
     private var searchJob: Job? = null
 
+    // state flow for search results list
     private val _searchResults = MutableStateFlow<List<Feature>>(emptyList())
     val searchResults: StateFlow<List<Feature>> = _searchResults.asStateFlow()
 
+    // state flow indicating whether a search request is ongoing
     private val _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching.asStateFlow()
 
-    // Lagre søkehistorikk
+    // state flow storing recent search history
     private val _searchHistory = MutableStateFlow<List<Feature>>(emptyList())
     val searchHistory: StateFlow<List<Feature>> = _searchHistory.asStateFlow()
 
-    // Tilstand for om vi skal vise søkehistorikk
+    // state flow controlling display of history vs results
     private val _showingHistory = MutableStateFlow(false)
     val showingHistory: StateFlow<Boolean> = _showingHistory.asStateFlow()
 
+    // api key for geocoding service
     private val apiKey = "6f364c45-6e52-499b-95d1-f310d775e490"
 
+    /**
+     * performs search with debounce, refines response, and updates state
+     * @param query search text input
+     * @param focusLat optional latitude to prioritize nearby results
+     * @param focusLon optional longitude to prioritize nearby results
+     */
     fun search(query: String, focusLat: Double? = null, focusLon: Double? = null) {
         if (query.isEmpty()) {
+            // show history when query blank, limit to top 5
             _showingHistory.value = true
             _searchResults.value = _searchHistory.value.take(5)
             return
@@ -42,16 +56,19 @@ class SearchViewModel : ViewModel() {
         }
 
         if (query.length < 2) {
+            // require at least 2 chars for search
             _searchResults.value = emptyList()
             return
         }
 
+        // cancel previous in-flight search
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             try {
                 _isSearching.value = true
-                delay(300) // Debounce delay
+                delay(300) // debounce interval
 
+                // fetch raw results from repository
                 val response = repository.search(
                     query = query,
                     apiKey = apiKey,
@@ -59,31 +76,34 @@ class SearchViewModel : ViewModel() {
                     focusLon = focusLon
                 )
 
-                // Forbedret sortering og filtrering av resultater
+                // refine results: remove duplicates and sort by relevance and distance
                 val refinedResults = response.features
-                    .distinctBy { it.properties.name } // Fjern duplikater basert på navn
-                    .sortedWith(compareBy<Feature> {
-                        // Prioriter adresser og gater høyere
-                        when {
-                            it.properties.name.contains(query, ignoreCase = true) -> 0
-                            it.properties.name.startsWith(query, ignoreCase = true) -> 1
-                            it.properties.name.contains(" $query", ignoreCase = true) -> 2
-                            else -> 3
+                    .distinctBy { it.properties.name } // drop duplicate names
+                    .sortedWith(
+                        compareBy<Feature> {
+                            // prioritize name matches containing or starting with query
+                            when {
+                                it.properties.name.contains(query, ignoreCase = true) -> 0
+                                it.properties.name.startsWith(query, ignoreCase = true) -> 1
+                                it.properties.name.contains(" $query", ignoreCase = true) -> 2
+                                else -> 3
+                            }
+                        }.thenBy { feature ->
+                            // secondary sort by distance if focus provided
+                            if (focusLat != null && focusLon != null && feature.geometry.coordinates.size >= 2) {
+                                val lat = feature.geometry.coordinates[1]
+                                val lon = feature.geometry.coordinates[0]
+                                calculateDistance(focusLat, focusLon, lat, lon)
+                            } else {
+                                Double.MAX_VALUE
+                            }
                         }
-                    }.thenBy { feature ->
-                        // Sekundært sorter på avstand
-                        if (focusLat != null && focusLon != null && feature.geometry.coordinates.size >= 2) {
-                            val lat = feature.geometry.coordinates[1]
-                            val lon = feature.geometry.coordinates[0]
-                            calculateDistance(focusLat, focusLon, lat, lon)
-                        } else {
-                            Double.MAX_VALUE
-                        }
-                    })
+                    )
 
                 _searchResults.value = refinedResults
             } catch (e: Exception) {
-                Log.e("SearchViewModel", "Søkefeil: ${e.message}")
+                // log search errors and clear results
+                Log.e("SearchViewModel", "search error: ${e.message}")
                 _searchResults.value = emptyList()
             } finally {
                 _isSearching.value = false
@@ -91,23 +111,23 @@ class SearchViewModel : ViewModel() {
         }
     }
 
+    /**
+     * adds a feature to search history and maintains max size of 10
+     * removes duplicate names and inserts at top
+     */
     fun addToHistory(feature: Feature) {
         val currentHistory = _searchHistory.value.toMutableList()
-
-        // Fjern duplikater
         currentHistory.removeIf { it.properties.name == feature.properties.name }
-
-        // Legg til den nye på toppen
         currentHistory.add(0, feature)
-
-        // Begrens til 10 elementer
         _searchHistory.value = currentHistory.take(10)
     }
 
+    /** clears all saved search history */
     fun clearHistory() {
         _searchHistory.value = emptyList()
     }
 
+    /** cancels ongoing search, clears results and history display state */
     fun clearResults() {
         _searchResults.value = emptyList()
         _isSearching.value = false
@@ -115,16 +135,19 @@ class SearchViewModel : ViewModel() {
         searchJob?.cancel()
     }
 
-    private fun calculateDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-        val R = 6371e3 // Earth's radius in meters
-        val φ1 = lat1 * Math.PI / 180
-        val φ2 = lat2 * Math.PI / 180
-        val Δφ = (lat2 - lat1) * Math.PI / 180
-        val Δλ = (lon2 - lon1) * Math.PI / 180
+    //disclaimer this formula was given by chatGPT
+    /** calculates distance in meters between two lat/lon points using haversine formula */
+    private fun calculateDistance(startLat: Double, startLon: Double, endLat: Double, endLon: Double): Double {
+        // haversine formula to calculate distance in meters between two geographic coordinates
+        val R = 6371e3 // earth radius in meters
+        val phi1 = startLat * Math.PI / 180
+        val phi2 = endLat * Math.PI / 180
+        val deltaPhi = (endLat - startLat) * Math.PI / 180
+        val deltaLambda = (endLon - startLon) * Math.PI / 180
 
-        val a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-                Math.cos(φ1) * Math.cos(φ2) *
-                Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+        val a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+                Math.cos(phi1) * Math.cos(phi2) *
+                Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2)
         val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
         return R * c

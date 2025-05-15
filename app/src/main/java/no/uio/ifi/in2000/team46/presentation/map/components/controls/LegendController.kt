@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
+// This class is responsible for managing the state of the legend panel in the map view.
 class LegendController {
     private var _openLegend by mutableStateOf<Int?>(null)
 

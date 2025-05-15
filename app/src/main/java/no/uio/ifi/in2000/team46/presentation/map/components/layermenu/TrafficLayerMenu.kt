@@ -14,11 +14,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -33,6 +33,9 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.unit.dp
 import no.uio.ifi.in2000.team46.domain.ais.VesselTypes
 
+// summary: shows traffic layer controls with toggleable list of vessel types, refresh and navigation
+// main function: allow user to enable boat traffic layer, expand type filters, refresh data, and navigate back
+
 @Composable
 fun TrafficLayerMenu(
     isChecked: Boolean,
@@ -45,16 +48,20 @@ fun TrafficLayerMenu(
     onClearAll: () -> Unit,
     onBack: () -> Unit
 ) {
+    // state for expansion of vessel type list
     var expanded by remember { mutableStateOf(false) }
+    // animate arrow rotation based on expansion state
     val arrowRotation by animateFloatAsState(if (expanded) 180f else 0f)
 
     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        // back button to close menu
         TextButton(onClick = onBack) {
-            Icon(Icons.Default.ArrowBack, contentDescription = null)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
             Spacer(Modifier.width(4.dp))
             Text("Tilbake")
         }
 
+        // row with master toggle, dropdown arrow, and refresh indicator or button
         LayerToggleRow(
             label = "All Båttraffik",
             checked = isChecked,
@@ -66,28 +73,33 @@ fun TrafficLayerMenu(
                 .clickable { expanded = !expanded }
                 .fillMaxWidth(),
             trailing = {
+                // dropdown arrow icon rotates
                 Icon(
                     imageVector = Icons.Default.ArrowDropDown,
                     contentDescription = null,
                     modifier = Modifier.rotate(arrowRotation)
                 )
                 if (isChecked) {
+                    // show loading spinner or refresh button
                     if (isLoading) {
                         CircularProgressIndicator(
                             Modifier.size(24.dp).padding(start = 8.dp)
                         )
                     } else {
                         IconButton(onClick = onRefresh) {
-                            Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                            Icon(Icons.Default.Refresh, contentDescription = "refresh")
                         }
                     }
                 }
             }
         )
 
+        // expandable list of vessel types
         AnimatedVisibility(visible = expanded) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Divider()
+
+                HorizontalDivider()
+                // scrollable list with height limit
                 LazyColumn(
                     modifier = Modifier
                         .padding(start = 8.dp)
@@ -95,10 +107,12 @@ fun TrafficLayerMenu(
                         .heightIn(max = 200.dp)
                 ) {
                     items(VesselTypes.ALL_TYPES.toList()) { (name, type) ->
+                        // toggle row for each vessel type
                         LayerToggleRow(
                             label = name,
                             checked = isChecked && selectedTypes.contains(type),
                             onCheckedChange = {
+                                // ensure layer is enabled when toggling individual type
                                 if (!isChecked) {
                                     onToggleLayer(true)
                                     onClearAll()

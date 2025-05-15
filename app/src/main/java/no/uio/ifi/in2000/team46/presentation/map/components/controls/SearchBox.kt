@@ -1,7 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.map.components.controls
 
-import android.R
-import android.R.attr.onClick
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,7 +19,6 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
-import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.text.BasicTextField
@@ -31,22 +29,14 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.colorResource
 import no.uio.ifi.in2000.team46.data.remote.api.Feature
 import org.maplibre.android.maps.MapLibreMap
+import androidx.compose.ui.Alignment
 
 /**
- * En Composable-komponent som implementerer Stadia Maps søkeboks for MapLibre.
- * Denne komponenten legger til en søkeboks i øverste venstre hjørne av kartet
- * og håndterer søkefunksjonaliteten.
- *
- * @param map MapLibreMap-instansen som søkeboksen skal knyttes til
- * @param searchResults Liste over søkeresultater
- * @param onSearch Callback for å håndtere søk
- * @param onResultSelected Callback for å håndtere valg av søkeresultat
- * @param isSearching Boolean for å vise ladeindikator
- * @param isShowingHistory Boolean for å vise søkehistorikk
- * @param modifier Modifier for å tilpasse layouten
+ * this  composable component implements stadia maps search box for maplibre
+ * this component adds a search box in the top-left corner of the map
+ * and handles the search functionality
  */
 @Composable
 fun SearchBox(
@@ -66,17 +56,17 @@ fun SearchBox(
     var searchText by remember { mutableStateOf("") }
     var isInSearchMode by remember { mutableStateOf(false) }
     var shouldShowHistory by remember { mutableStateOf(false) }
-    var hasSearched by remember { mutableStateOf(false) } // New state variable
+    var hasSearched by remember { mutableStateOf(false) } // new state variable
 
-    // State that indicates if the search box is currently focused.
+    // state that indicates if the search box is currently focused.
     var isSearchBoxFocused by remember { mutableStateOf(false) }
 
-    // Update map interaction based on focus state
+    // update map interaction based on focus state
     LaunchedEffect(isSearchBoxFocused) {
         map.uiSettings.setAllGesturesEnabled(!isSearchBoxFocused)
     }
 
-    // Show search history when the text field is focused and no text is present
+    // show search history when the text field is focused and no text is present
     LaunchedEffect(isSearchBoxFocused, searchText) {
         if (isSearchBoxFocused && searchText.isEmpty() && (isShowingHistory || hasSearched)) {
             shouldShowHistory = true
@@ -116,7 +106,7 @@ fun SearchBox(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) {
-                    // Stop event propagation
+                    // stop event propagation
                 }
         ) {
             Surface(
@@ -132,11 +122,11 @@ fun SearchBox(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null
                 ) {
-                    // Enter search mode when clicking on the search box
+                    // enter search mode when clicking on the search box
                     if (!isInSearchMode) {
                         isInSearchMode = true
                         focusRequester.requestFocus()
-                        isSearchBoxFocused = true // Update the focus state here
+                        isSearchBoxFocused = true // update the focus state here
                     }
                 }
             ) {
@@ -146,7 +136,7 @@ fun SearchBox(
                             .fillMaxWidth()
                             .padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         BasicTextField(
                             value = searchText,
@@ -169,9 +159,9 @@ fun SearchBox(
                                 .weight(1f)
                                 .padding(vertical = 8.dp)
                                 .focusRequester(focusRequester)
-                                // Updated focus change handler to show history when focused
+                                // updated focus change handler to show history when focused
                                 .onFocusChanged { focusState ->
-                                    isSearchBoxFocused = focusState.isFocused // Track focus state
+                                    isSearchBoxFocused = focusState.isFocused // track focus state
                                     isInSearchMode = focusState.isFocused
                                     if (focusState.isFocused && searchText.isEmpty() && (isShowingHistory || hasSearched)) {
                                         shouldShowHistory = true
@@ -196,7 +186,7 @@ fun SearchBox(
                         )
 
                         Row(
-                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             if (searchText.isNotEmpty()) {
                                 IconButton(
@@ -244,9 +234,9 @@ fun SearchBox(
 
                     // Show a thin line only when results are visible
                     if (showResults) {
-                        Divider(
-                            color = MaterialTheme.colorScheme.outline,
-                            thickness = 1.dp
+                        HorizontalDivider(
+                            thickness = 1.dp,
+                            color = MaterialTheme.colorScheme.outline
                         )
                     }
                 }
@@ -342,7 +332,7 @@ fun SearchResultItem(
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            // Location indicator icon
+
             Icon(
                 icon,
                 contentDescription = null,
@@ -355,14 +345,14 @@ fun SearchResultItem(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                // Main name (bold)
+
                 Text(
                     text = feature.properties.name,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSecondaryContainer
                 )
 
-                // Location information
+                // location information
                 val location = buildString {
                     feature.properties.locality?.let { locality ->
                         append(locality)

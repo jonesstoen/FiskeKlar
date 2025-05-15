@@ -21,26 +21,29 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 
+// summary: provides an info button to toggle a legend overlay and handles auto-close when layer is hidden
+// main function: display toggle button and legend content with overlay background for dismissing
+
 @Composable
 fun LegendToggle(
     isLayerVisible: Boolean,
-    verticalPosition: Int = 0,   // 0 for første knapp, 1 for andre, osv.
-    iconSpacing: Dp = 50.dp,     // avstand mellom knapper vertikalt
-    isOpen: Boolean,             // om denne legenden er åpen
-    onToggle: () -> Unit,        // toggle-callback fra forelder
+    verticalPosition: Int = 0,
+    iconSpacing: Dp = 50.dp,
+    isOpen: Boolean,
+    onToggle: () -> Unit,        // callback to toggle legend state
     legend: @Composable () -> Unit
 ) {
-    // Sørg for å lukke dersom laget skrus helt av
+    // close legend automatically when layer becomes invisible
     LaunchedEffect(isLayerVisible) {
         if (!isLayerVisible && isOpen) {
             onToggle()
         }
     }
 
-    // Beregn vertical offset for Info-knappen
+    // calculate bottom offset for info button based on position and spacing
     val bottomOffset = 430.dp + iconSpacing * verticalPosition
 
-    // 1) Info-knapp
+    // 1) display info button when layer is visible
     if (isLayerVisible) {
         Box(
             modifier = Modifier
@@ -60,16 +63,16 @@ fun LegendToggle(
             ) {
                 Icon(
                     imageVector = Icons.Default.Info,
-                    contentDescription = "Forklaring",
+                    contentDescription = "forklaring",
                     tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
     }
 
-    // 2) Legend + bakgrunn som fanger trykk utenfor
+    // 2) show legend overlay and transparent background to catch outside clicks
     if (isOpen) {
-        // Transparent fullskjerms-bakgrunn
+        // transparent full screen background that closes legend on click
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -78,7 +81,7 @@ fun LegendToggle(
                 .zIndex(9f)
         )
 
-        // Selve legenden plassert nederst til høyre
+        // container for legend content at bottom right
         Box(
             modifier = Modifier
                 .fillMaxSize()

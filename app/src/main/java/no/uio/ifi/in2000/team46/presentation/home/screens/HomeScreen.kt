@@ -226,13 +226,13 @@ fun HomeScreen(
                 ) {
                     QuickAccessCard(
                         icon = Icons.Default.Map,
-                        text = "kart",
+                        text = "Kart",
                         onClick = onNavigateToMap,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
                         icon = Icons.AutoMirrored.Filled.List,
-                        text = "fiskelogg",
+                        text = "Fiskelogg",
                         onClick = onNavigateToFishLog,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
@@ -243,13 +243,13 @@ fun HomeScreen(
                 ) {
                     QuickAccessCard(
                         icon = Icons.Default.WbSunny,
-                        text = "været",
+                        text = "Været",
                         onClick = onNavigateToWeather,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
                     QuickAccessCard(
                         icon = Icons.Default.Favorite,
-                        text = "favoritt-steder",
+                        text = "Favoritt-steder",
                         onClick = onNavigateToFavorites,
                         modifier = Modifier.weight(1f).aspectRatio(1f)
                     )
