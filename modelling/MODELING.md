@@ -11,7 +11,7 @@
 
 ## Introduction
 
-This document show our system modeling used in our application. It contains use case diagrams and use-case-description, a class diagram and activity diagrams. The models help to visualize and explain the structure for the app, behavior and user interactions.
+This document shows our system modeling used in our application. It contains use case diagrams and use-case-description, a class diagram and activity diagrams. The models help to visualize and explain the structure for the app, behavior and user interactions.
 
 ---
 
