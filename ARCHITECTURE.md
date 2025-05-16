@@ -269,7 +269,8 @@ The app is structured for long-term maintainability and scalability:
 
 - Bottom sheet may overlap content when keyboard is open  
 - Wind arrows crowd the map at lower zoom levels  
-- Heatmap rendering flickers during slider updates  
+- Heatmap rendering for waves flickers during slider updates
+- When there is minimal rain, the rainlayer doesnt show anything, whic can be confusing for the user.   
 
 - **Deprecated methods in MapLibre**  
   Some methods used for polygon and layer styling are marked as deprecated in recent versions of MapLibre. These include APIs for adding polygon actions and related properties.  
@@ -277,7 +278,7 @@ The app is structured for long-term maintainability and scalability:
 
 - **Bottom Navigation Redundancy**  
   Tapping the bottom navigation item for a screen youre already on (especially **"Map"**) could cause unnecessary recompositions or failed navigation, in some cases the app can crash.
-  We are aware of this but did not have the time to fix it.
+  We are aware of this but did not have the time to fix it within the timeline. The way to fix this is not not allow navigation to a screen, if youre already on that screen, in the navhost.
   
 
 
@@ -299,10 +300,11 @@ The app is structured for long-term maintainability and scalability:
   The user interface is not fully optimized for very small screen sizes. While the app works on most devices, some components such as bottom sheets, sliders, or overlapping elements (e.g., weather overlays and layer controls) may appear cramped or clipped on smaller displays. This was not prioritized during development but could be improved in future iterations with more responsive layout handling.
 
 ### Missing Features
-
-- No actual cloud sync for GRIB yet   
-- Fishing log stats/filters are not implemented
+  
+- Fishing log stats/filters are not fully implemented
 - GRIB data area is currently hardcoded to the Norwegian west coast, but the system is designed to allow selectable regions in future versions.
+- The implementaion of the Driftlayer was not finished, it was supposed to be a calculation based on the wind and current data. the struture of this feature is still present in the project.
+- The "Forbud" areas was a layer we implemented, but after implementations we realised that the data from the endpoint wasnt really what we inteded. it only showed permanent forbidden areas in the svalbard area. Therfore we decided to cut it from the final app.
 
 
 
