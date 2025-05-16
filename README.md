@@ -10,7 +10,7 @@
 
 ## Table of Contents
 
-1. [About the App – VærBitt](#værbitt)  
+1. [About the App – FiskeKlar](#FiskeKlar)  
 2. [How to Run the App](#how-to-run-the-app)  
    1. [Requirements](#requirements)  
    2. [Build and Run](#build-and-run)  
@@ -26,14 +26,13 @@
 
 ---
 
-## VærBitt
+## FiskeKlar
 
-<!-- Still deciding on name -->
 <p align="center">
-  <img src="https://github.uio.no/IN2000-V25/team-46/raw/fda1b4150d3e8b074ebcb3d61234382fb63a5f04/app/src/main/res/drawable/app_logo.png" alt="VærBit Logo" width="200"/>
+  <img src="https://github.uio.no/IN2000-V25/team-46/raw/fda1b4150d3e8b074ebcb3d61234382fb63a5f04/app/src/main/res/drawable/app_logo.png" alt="FiskeKlar Logo" width="200"/>
 </p>
 
-**VærBitt** is an Android app developed in Kotlin with Jetpack Compose, designed for hobby fishers and ocean enthusiasts. It displays vessel data, weather alerts, wind and current conditions in real-time on an interactive map, and allows users to log their own catches.
+**FiskeKlar** is an Android app developed in Kotlin with Jetpack Compose, designed for hobby fishers and ocean enthusiasts. It displays vessel data, weather alerts, wind and current conditions in real-time on an interactive map, and allows users to log their own catches.
 
 ---
 
@@ -162,6 +161,12 @@ Used by Room and Hilt to generate binding and injection code at compile time, re
 
 [KSP Docs](https://kotlinlang.org/docs/ksp-overview.html)
 
+### Stadia Maps
+Used for location search and geocoding. We used their REST API to support searching and selecting geographic places from a search bar, which helps users navigate or set a fishing location.
+
+[Stadia Maps Docs](https://docs.stadiamaps.com)
+
+
 ### Datastore (Preferences)
 Jetpack library for storing small amounts of data asynchronously, such as user settings or theme preferences. Used to persist theme mode across app restarts.
 
@@ -207,7 +212,7 @@ For architectural details, file structure, design patterns and modeling diagrams
 - [MODELING.md](./MODELING.md): UML diagrams and system design illustrations supporting key use cases and flows.
 
 
-## References for non native drawaables
+## References for non native drawables
 
 
 **Source of vessel icons**:  
