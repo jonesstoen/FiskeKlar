@@ -113,7 +113,7 @@ fun MapControls(
                             color = MaterialTheme.colorScheme.primaryContainer,
                             shape = RoundedCornerShape(12.dp)
                         )
-                        // Lagre posisjon for søkeknappen for onboarding
+                        // set bounds for search button
                         .onGloballyPositioned { coordinates ->
                             elementBounds?.put("search_field", coordinates.boundsInRoot())
                         }
@@ -176,7 +176,7 @@ fun MapControls(
             }
         }
 
-        // weather + location button in bottom-right
+        // weather and location button in bottom-right
         Column(
             modifier = Modifier
                 .align(Alignment.BottomEnd)

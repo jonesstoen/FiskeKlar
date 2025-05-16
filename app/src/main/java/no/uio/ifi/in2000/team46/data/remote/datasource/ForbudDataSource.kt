@@ -7,7 +7,7 @@ import retrofit2.http.Header
 
 interface ForbudDataSource {
 
-    // Henter GeoJSON for områder med fiskeforbud (f.eks. torskeforbud)
+    //fetches GeoJSON for areas with fishing bans (e.g. cod ban)
     @GET("v1/geodata/forbiddenfishingzone")
     suspend fun hentForbudGeoJson(
         @Header("Authorization") token: String

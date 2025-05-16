@@ -10,7 +10,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.Dialog
-import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.R
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.CurrentViewModel
 import org.maplibre.android.maps.MapLibreMap
@@ -24,6 +23,9 @@ import org.maplibre.geojson.Point
 import org.maplibre.android.style.layers.SymbolLayer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Navigation
+
+// this component renders the current vector layer on the map using maplibre
+// it shows current arrows using icons and allows user to tap for details via dialog
 
 @Composable
 fun GribCurrentLayer(
@@ -41,6 +43,7 @@ fun GribCurrentLayer(
 
     LaunchedEffect(isVisible, filteredVectors, threshold) {
         if (!isVisible) {
+            // remove layer and source if not visible
             map.getStyle { style ->
                 style.removeLayer("current_layer")
                 style.removeSource("current_source")
@@ -54,7 +57,7 @@ fun GribCurrentLayer(
             val normalIconName = "current_icon"
             val redIconName = "current_icon_red"
 
-            // Legg til ikoner hvis de ikke finnes
+            // add normal and red icons to the style if missing
             if (style.getImage(normalIconName) == null) {
                 val normalBitmap = BitmapFactory.decodeResource(mapView.context.resources, R.drawable.current_icon)
                 style.addImage(normalIconName, normalBitmap, false)
@@ -64,10 +67,12 @@ fun GribCurrentLayer(
                 style.addImage(redIconName, redBitmap, false)
             }
 
+            // apply optional filtering to reduce vector density
             val filteredData = if (filterVectors) {
                 filteredVectors.filterIndexed { index, _ -> index % filterStep == 0 }
             } else filteredVectors
 
+            // convert vectors to geojson features with properties
             val features = filteredData.mapNotNull { v ->
                 Feature.fromGeometry(Point.fromLngLat(v.lon, v.lat)).apply {
                     addNumberProperty("direction", v.direction)
@@ -78,9 +83,12 @@ fun GribCurrentLayer(
             }
 
             val featureCollection = FeatureCollection.fromFeatures(features)
+
+            // update or add source
             style.getSourceAs<GeoJsonSource>(sourceId)?.setGeoJson(featureCollection)
                 ?: style.addSource(GeoJsonSource(sourceId, featureCollection))
 
+            // add layer if it doesn't exist
             if (style.getLayer(layerId) == null) {
                 style.addLayer(
                     SymbolLayer(layerId, sourceId).withProperties(
@@ -103,6 +111,7 @@ fun GribCurrentLayer(
                 )
             }
 
+            // listen for user map clicks to show vector info
             map.addOnMapClickListener { point ->
                 val screenPoint = map.projection.toScreenLocation(point)
                 val featuresAtClick = map.queryRenderedFeatures(screenPoint, layerId)
@@ -112,6 +121,7 @@ fun GribCurrentLayer(
         }
     }
 
+    // show dialog with speed and direction if a vector is selected
     selectedFeature?.let { feature ->
         val speed = feature.getNumberProperty("speed")?.toDouble() ?: 0.0
         val direction = feature.getNumberProperty("direction")?.toDouble() ?: 0.0
@@ -146,7 +156,7 @@ fun CurrentVectorDialog(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Default.Navigation,
-                        contentDescription = "Retning",
+                        contentDescription = "direction",
                         modifier = Modifier
                             .rotate(direction.toFloat())
                             .size(32.dp),
@@ -159,11 +169,13 @@ fun CurrentVectorDialog(
                     )
                 }
 
+                // show speed and direction text
                 Text("Fart: %.2f knop".format(speed), style = MaterialTheme.typography.bodyLarge)
                 Text("Retning: %.0f°".format(direction), style = MaterialTheme.typography.bodyLarge)
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // close button
                 TextButton(onClick = onDismiss, modifier = Modifier.align(Alignment.End)) {
                     Text("Lukk")
                 }

@@ -24,15 +24,19 @@ import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+// this component provides sliders for adjusting wind threshold and selecting timestamp for wind overlay
+
 @Composable
 fun WindOverlaySliders(
     gribViewModel: GribViewModel,
     onClose: () -> Unit
 ) {
+    // collect threshold, selected timestamp and wind data from viewmodel
     val threshold by gribViewModel.windThreshold.collectAsState()
     val selectedTimestamp by gribViewModel.selectedTimestamp.collectAsState()
     val windResult by gribViewModel.windData.collectAsState()
 
+    // derive sorted list of distinct timestamps when wind data is loaded
     val timestamps = remember(windResult) {
         if (windResult is Result.Success) {
             (windResult as Result.Success<List<WindVector>>).data
@@ -42,9 +46,10 @@ fun WindOverlaySliders(
         } else emptyList()
     }
 
+    // find index of currently selected timestamp or default to 0
     val selectedIndex = timestamps.indexOfFirst { it == selectedTimestamp }.coerceAtLeast(0)
 
-    // local expanded states
+    // local state for expanding or collapsing sections
     var showThresholdSection by remember { mutableStateOf(false) }
     var showTimestampSection by remember { mutableStateOf(false) }
 
@@ -65,7 +70,7 @@ fun WindOverlaySliders(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // header
+            // header row with title and close button
             Row(
                 Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -79,7 +84,7 @@ fun WindOverlaySliders(
                 }
             }
 
-            // section: vind terskel
+            // section header for wind threshold
             SectionHeader(
                 title = "Terskel for vind",
                 isExpanded = showThresholdSection,
@@ -92,16 +97,19 @@ fun WindOverlaySliders(
                 exit = shrinkVertically()
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // display current threshold value
                     Text(
                         text = "${threshold.toInt()} m/s",
                         style = MaterialTheme.typography.bodyMedium
                     )
+                    // slider to adjust wind threshold between 5 and 30 m/s
                     Slider(
                         value = threshold.toFloat(),
                         onValueChange = { gribViewModel.setWindThreshold(it.toDouble()) },
                         valueRange = 5f..30f,
                         steps = 25
                     )
+                    // labels for min and max values
                     Row(
                         Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -114,7 +122,7 @@ fun WindOverlaySliders(
 
             HorizontalDivider()
 
-            // section: tidspunkt
+            // section header for timestamp selection
             SectionHeader(
                 title = "Tidspunkt",
                 isExpanded = showTimestampSection,
@@ -127,6 +135,7 @@ fun WindOverlaySliders(
                 exit = shrinkVertically()
             ) {
                 if (timestamps.isEmpty()) {
+                    // show loading indicator while timestamps are not ready
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -137,10 +146,12 @@ fun WindOverlaySliders(
                     }
                 } else {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // display formatted timestamp for selected index
                         Text(
                             text = formatTimestamp(timestamps[selectedIndex]),
                             style = MaterialTheme.typography.bodyMedium
                         )
+                        // slider to pick among available timestamps
                         Slider(
                             value = selectedIndex.toFloat(),
                             onValueChange = { index ->
@@ -151,6 +162,7 @@ fun WindOverlaySliders(
                             valueRange = 0f..(timestamps.size - 1).toFloat(),
                             steps = (timestamps.size - 2).coerceAtLeast(0)
                         )
+                        // labels for earliest and latest options
                         Row(
                             Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -167,6 +179,7 @@ fun WindOverlaySliders(
 
 @Composable
 private fun SectionHeader(title: String, isExpanded: Boolean, onToggle: () -> Unit) {
+    // reusable header for collapsible sections
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -184,9 +197,9 @@ private fun SectionHeader(title: String, isExpanded: Boolean, onToggle: () -> Un
 }
 
 private fun formatTimestamp(timestamp: Long): String {
+    // format epoch millis into local date string with day name, date and time
     val formatter = DateTimeFormatter.ofPattern("EEEE d. MMMM 'kl.' HH:mm")
         .withZone(ZoneId.systemDefault())
     return formatter.format(Instant.ofEpochMilli(timestamp))
         .replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 }
-

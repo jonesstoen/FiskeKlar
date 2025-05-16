@@ -1,7 +1,5 @@
 package no.uio.ifi.in2000.team46.presentation.weather.screens
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -32,7 +30,6 @@ import no.uio.ifi.in2000.team46.presentation.map.viewmodel.SearchViewModel
 import no.uio.ifi.in2000.team46.presentation.weather.viewmodel.WeatherDetailViewModel
 import no.uio.ifi.in2000.team46.presentation.weather.viewmodel.TimeRange
 import no.uio.ifi.in2000.team46.presentation.weather.viewmodel.WeatherDetailEvent
-import no.uio.ifi.in2000.team46.presentation.home.screens.Background
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.heightIn
@@ -52,7 +49,7 @@ import no.uio.ifi.in2000.team46.presentation.weather.viewmodel.WeatherDetailView
 import no.uio.ifi.in2000.team46.utils.metalerts.WeatherIconMapper
 import kotlin.math.roundToInt
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WeatherDetailScreen(
@@ -211,7 +208,6 @@ fun WeatherDetailScreen(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun ForecastView(
     forecasts: List<DailyForecast>,
@@ -232,7 +228,6 @@ private fun ForecastView(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun DayForecast(
     forecast: DailyForecast,
@@ -350,7 +345,6 @@ private fun HourlyForecast(forecasts: List<HourlyForecast>) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun DayHeader(
     date: String,
@@ -487,7 +481,6 @@ private fun TimeRangeSelector(
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun CurrentWeather(
     temperature: Double,

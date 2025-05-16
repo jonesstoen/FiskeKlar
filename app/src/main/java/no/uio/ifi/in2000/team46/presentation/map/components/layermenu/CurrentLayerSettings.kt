@@ -4,12 +4,13 @@ package no.uio.ifi.in2000.team46.presentation.map.components.layermenu
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+//Warnings: the warnings here is beacuase of unused parameters after refactoring parts of the project
 @Composable
 fun CurrentLayerSettings(
     isChecked: Boolean,
@@ -21,7 +22,7 @@ fun CurrentLayerSettings(
 ) {
     Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         TextButton(onClick = onBack) {
-            Icon(Icons.Default.ArrowBack, contentDescription = null)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
             Spacer(Modifier.width(4.dp))
             Text("Tilbake")
         }

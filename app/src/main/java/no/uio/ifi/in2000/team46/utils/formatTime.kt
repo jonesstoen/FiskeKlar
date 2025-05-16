@@ -8,7 +8,7 @@ import java.util.*
 import java.util.concurrent.TimeUnit
 
 /*
-these helper functions formats the time and calculates remaining time to the event  */
+these helper functions formats the time and calculates remaining time to the event used in the metalerts warning sheet */
 
  fun formatTime(dateString: String): String {
     val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ROOT)

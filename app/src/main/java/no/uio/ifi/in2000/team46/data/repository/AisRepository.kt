@@ -1,17 +1,20 @@
 package no.uio.ifi.in2000.team46.data.repository
 
-
 import android.util.Log
 import no.uio.ifi.in2000.team46.data.remote.api.BarentsWatchAuthService
 import no.uio.ifi.in2000.team46.data.remote.api.BarentsWatchRetrofitInstance
 import no.uio.ifi.in2000.team46.domain.ais.AisVesselPosition
 import retrofit2.HttpException
 
+// aisrepository handles fetching vessel positions from barentswatch using authentication
+// supports optional client-side filtering by bounding box coordinates
+
 class AisRepository {
-    private val TAG = "AisRepository"
+    private val tag = "AisRepository"
     private val authService = BarentsWatchAuthService()
     private val api = BarentsWatchRetrofitInstance.aisApi
 
+    // retrieves vessel positions, optionally filters by bounding box if coordinates are provided
     suspend fun getVesselPositions(
         minLon: Double? = null,
         minLat: Double? = null,
@@ -20,24 +23,19 @@ class AisRepository {
     ): Result<List<AisVesselPosition>> {
         try {
             val token = authService.getAccessToken()
-            if (token == null) {
-                return Result.Error(Exception("Failed to get access token"))
-            }
+                ?: return Result.Error(Exception("Failed to get access token"))
 
-            // Hent siste fartøysposisjoner
+            // call barentswatch api for latest vessel positions
             val response = api.getLatestPositions(token)
 
             if (response.isSuccessful) {
                 val vessels = response.body() ?: emptyList()
 
-                // Filtrer basert på koordinater hvis de er gitt
-                // Her filtrerer vi på klientsiden siden API-et kanskje ikke støtter dette direkte
+                // optional client-side filtering using provided coordinate bounds
                 val filteredVessels = if (minLon != null && minLat != null && maxLon != null && maxLat != null) {
                     vessels.filter { vessel ->
-                        // Tilpass feltnavnene til din AisVesselPosition-modell
-                        val lon = vessel.longitude // eller hvilket felt som har longitude
-                        val lat = vessel.latitude  // eller hvilket felt som har latitude
-
+                        val lon = vessel.longitude
+                        val lat = vessel.latitude
                         lon in minLon..maxLon && lat in minLat..maxLat
                     }
                 } else {
@@ -46,11 +44,11 @@ class AisRepository {
 
                 return Result.Success(filteredVessels)
             } else {
-                Log.e(TAG, "API request failed: ${response.code()} ")
+                Log.e(tag, "API request failed: ${response.code()} ")
                 return Result.Error(HttpException(response))
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Exception getting vessel positions", e)
+            Log.e(tag, "Exception getting vessel positions", e)
             return Result.Error(e)
         }
     }

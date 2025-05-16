@@ -34,7 +34,7 @@ class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewMode
         }
     }
     //method  to filter out marine alerts, we dont need alerts for forest fires or other land related alerts
-    fun filterSeaAlerts(response: MetAlertsResponse): MetAlertsResponse {
+    private fun filterSeaAlerts(response: MetAlertsResponse): MetAlertsResponse {
         val filteredFeatures = response.features.filter {
             it.properties.geographicDomain == "marine" // only show marine related warnings
         }
@@ -51,7 +51,6 @@ class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewMode
             "Generic" to "icon-warning-generic"
         )
 
-        // Filter features og tilordne ikoner dersom warning har fargen Yellow, Orange eller Red.
         // we link the icon to the event type and the risk color
         return response.features.mapNotNull { feature ->
             val eventType = feature.properties.awarenessType.split(";").getOrNull(1)?.trim() // Ekstraherer event-type
@@ -101,7 +100,6 @@ class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewMode
                     val filteredResponse = filterSeaAlerts(result.data)
                     _metAlertsResponse.value = result.data
 
-                    // Beregn ikoner for de filtrerte features
                     // assign icons to the features
                     val featuresWithIcons = filterAndAssignIcons(filteredResponse)
 
@@ -116,12 +114,6 @@ class MetAlertsViewModel(private val repository: MetAlertsRepository) : ViewMode
                     Log.e("MetAlertsViewModel", "Error fetching alerts: ${result.exception.message}")
                 }
             }
-        }
-    }
-
-    fun activateLayer() {
-        if (!_isLayerVisible.value) {
-            _isLayerVisible.value = true
         }
     }
 

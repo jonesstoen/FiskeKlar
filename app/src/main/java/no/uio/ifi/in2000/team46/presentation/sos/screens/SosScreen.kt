@@ -70,10 +70,10 @@ fun SosScreen(
     val context = LocalContext.current
     var savedPosition by remember { mutableStateOf<Pair<Double, Double>?>(null) }
     
-    // Check for internet connectivity
+    // check for internet connectivity
     var isNetworkConnected by remember { mutableStateOf(NetworkUtils.isNetworkAvailable(context)) }
 
-    // Ikke kall activateLayer/updateVisibleRegion hvis fartøylisten ikke er tom og posisjonen ikke har endret seg
+    // dont call activateLayer/updateVisibleRegion if vessel list is not empty and position has not changed
     LaunchedEffect(userLocation) {
         if (userLocation != null) {
             val currentLoc = Pair(userLocation!!.latitude, userLocation!!.longitude)
@@ -90,7 +90,7 @@ fun SosScreen(
         }
     }
 
-    // Finn de tre nærmeste fartøyene
+    // find the three closest vessels to the user location
     val nearestVessels = remember(vesselPositions, userLocation) {
         userLocation?.let { loc ->
             vesselPositions
@@ -119,7 +119,7 @@ fun SosScreen(
                 .padding(top = 0.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Rød toppbar
+            // red toppbar
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -137,7 +137,7 @@ fun SosScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Nærmeste fartøy
+            // closest vessel positions
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -211,7 +211,7 @@ fun SosScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Nødnumre som trykkbare kort
+            // emergency numbers as clickable cards
             Text(
                 "Trykk på et nødnummer for å ringe i nødstilfelle",
                 fontWeight = FontWeight.Medium,
@@ -274,7 +274,7 @@ fun SosScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Nåværende posisjon med lagre-knapp
+            // current location with save button
             Text(
                 text = "Din nåværende posisjon",
                 fontSize = 18.sp,
@@ -323,13 +323,13 @@ fun SosScreen(
     }
 }
 
-// Haversine-formel for avstand i nautiske mil
+// this function calculates the distance between two geographical points using the haversine formula
 fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-    val R = 6371.0 // Radius i km
+    val R = 6371.0 // Radius in km
     val dLat = Math.toRadians(lat2 - lat1)
     val dLon = Math.toRadians(lon2 - lon1)
     val a = sin(dLat / 2).pow(2.0) + cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(dLon / 2).pow(2.0)
     val c = 2 * atan2(sqrt(a), sqrt(1 - a))
     val distanceKm = R * c
-    return distanceKm / 1.852 // Konverter til nautiske mil
+    return distanceKm / 1.852 // convert to nautical miles
 }

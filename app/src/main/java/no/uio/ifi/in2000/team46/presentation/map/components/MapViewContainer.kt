@@ -9,6 +9,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 
+// summary: hosts a map view in a compose layout and applies a style before notifying when map is ready
+// main function: ensure mapview is properly attached, styled, and provides map instance via onMapReady callback
+
 @Composable
 fun MapViewContainer(
     mapView: MapView,
@@ -16,22 +19,23 @@ fun MapViewContainer(
     modifier: Modifier = Modifier,
     onMapReady: (map: MapLibreMap, ctx: Context) -> Unit
 ) {
-    // Hent Compose‐Context (samme som mapView.context)
+    // retrieve compose context, same as mapView.context
     val ctx = LocalContext.current
 
     AndroidView(
         modifier = modifier,
         factory = { _ /* context */ ->
-            // Hvis mapView allerede ligger et annet sted i view‑hierarkiet, fjern det fra gamla parent:
+            // if mapView is attached elsewhere, remove it from old parent viewgroup
             (mapView.parent as? ViewGroup)?.removeView(mapView)
-            // Returner den hoistede MapView
+            // return the hoisted mapView for compose to display
             mapView
         },
         update = { mv: MapView ->
-            // Kjør kart‐ready hver gang compose oppdaterer
+            // invoke map ready callback each time compose recomposes
             mv.getMapAsync { map ->
-                // Last stilen én gang når kartet er klart
+                // apply style once when map is ready
                 map.setStyle(styleUrl) {
+                    // notify caller with map instance and context
                     onMapReady(map, ctx)
                 }
             }

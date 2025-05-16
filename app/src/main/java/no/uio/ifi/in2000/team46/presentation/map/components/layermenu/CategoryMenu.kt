@@ -27,6 +27,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+// summary: provides a menu for choosing layer categories and disabling all layers
+// main function: display category list items and handle selection or disable all action
+
 @Composable
 fun CategoryMenu(
     onCategorySelected: (LayerCategory) -> Unit,
@@ -43,16 +46,18 @@ fun CategoryMenu(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
+            // button to disable all layers
             TextButton(
                 onClick = onDisableAll,
                 contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
             ) {
-                Icon(Icons.Default.VisibilityOff, contentDescription = "Disable all", modifier = Modifier.size(18.dp))
+                Icon(Icons.Default.VisibilityOff, contentDescription = "disable all", modifier = Modifier.size(18.dp))
                 Spacer(Modifier.width(4.dp))
                 Text("Skru av alle lag", style = MaterialTheme.typography.bodySmall)
             }
         }
 
+        // list item for the different layer categories
         ListItem(
             headlineContent = { Text("Båttrafikk") },
             leadingContent = { Icon(Icons.Default.DirectionsBoat, contentDescription = null) },

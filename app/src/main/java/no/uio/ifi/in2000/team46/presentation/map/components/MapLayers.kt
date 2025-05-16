@@ -24,6 +24,7 @@ import no.uio.ifi.in2000.team46.presentation.grib.components.PrecipitationLayer
 import no.uio.ifi.in2000.team46.presentation.map.favorites.FavoritesLayerViewModel
 import no.uio.ifi.in2000.team46.presentation.map.favorites.FavoritesLayer
 
+// the purpose of this class is to modulate the map layers, to avoid repetition, when adding them to the compose map
 @Composable
 fun MapLayers(
     map: MapLibreMap,
@@ -89,8 +90,7 @@ fun MapLayers(
         vm = precipitationViewModel,
         map = map
     )
-    
-    // Legg til favorittlaget
+
     FavoritesLayer(
         mapView = mapView,
         viewModel = favoritesViewModel

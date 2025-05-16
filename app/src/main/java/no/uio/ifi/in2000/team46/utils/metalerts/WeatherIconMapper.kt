@@ -2,31 +2,29 @@ package no.uio.ifi.in2000.team46.utils.metalerts
 
 import no.uio.ifi.in2000.team46.R
 
-/**
- * Utility-klasse for å mappe værkoder til ikoner
- */
+// This object maps weather symbol codes to drawable resource IDs for displaying weather icons in the app.
 object WeatherIconMapper {
     fun getWeatherIcon(symbolCode: String): Int? {
         return when {
-            // Klarvær
+
             symbolCode.contains("clearsky_day") -> R.drawable.clearsky_day
             symbolCode.contains("clearsky_night") -> R.drawable.clearsky_night
             symbolCode.contains("clearsky_polartwilight") -> R.drawable.clearsky_polartwilight
 
-            // Lettskyet
+
             symbolCode.contains("fair_day") -> R.drawable.fair_day
             symbolCode.contains("fair_night") -> R.drawable.fair_night
             symbolCode.contains("fair_polartwilight") -> R.drawable.fair_polartwilight
 
-            // Delvis skyet
+
             symbolCode.contains("partlycloudy_day") -> R.drawable.partlycloudy_day
             symbolCode.contains("partlycloudy_night") -> R.drawable.partlycloudy_night
             symbolCode.contains("partlycloudy_polartwilight") -> R.drawable.partlycloudy_polartwilight
 
-            // Skyet
+
             symbolCode.contains("cloudy") -> R.drawable.cloudy
 
-            // Regn
+
             symbolCode.contains("lightrainshowers_day") -> R.drawable.lightrainshowers_day
             symbolCode.contains("lightrainshowers_night") -> R.drawable.lightrainshowers_night
             symbolCode.contains("lightrainshowers_polartwilight") -> R.drawable.lightrainshowers_polartwilight
@@ -40,7 +38,7 @@ object WeatherIconMapper {
             symbolCode.contains("rain") -> R.drawable.rain
             symbolCode.contains("heavyrain") -> R.drawable.heavyrain
 
-            // Snø
+
             symbolCode.contains("lightsnowshowers_day") -> R.drawable.lightsnowshowers_day
             symbolCode.contains("lightsnowshowers_night") -> R.drawable.lightsnowshowers_night
             symbolCode.contains("lightsnowshowers_polartwilight") -> R.drawable.lightsnowshowers_polartwilight
@@ -54,7 +52,7 @@ object WeatherIconMapper {
             symbolCode.contains("snow") -> R.drawable.snow
             symbolCode.contains("heavysnow") -> R.drawable.heavysnow
 
-            // Sludd
+
             symbolCode.contains("lightsleetshowers_day") -> R.drawable.lightsleetshowers_day
             symbolCode.contains("lightsleetshowers_night") -> R.drawable.lightsleetshowers_night
             symbolCode.contains("lightsleetshowers_polartwilight") -> R.drawable.lightsleetshowers_polartwilight
@@ -68,10 +66,10 @@ object WeatherIconMapper {
             symbolCode.contains("sleet") -> R.drawable.sleet
             symbolCode.contains("heavysleet") -> R.drawable.heavysleet
 
-            // Tåke
+
             symbolCode.contains("fog") -> R.drawable.fog
 
-            // Torden
+
             symbolCode.contains("lightrainshowersandthunder_day") -> R.drawable.lightrainshowersandthunder_day
             symbolCode.contains("lightrainshowersandthunder_night") -> R.drawable.lightrainshowersandthunder_night
             symbolCode.contains("lightrainshowersandthunder_polartwilight") -> R.drawable.lightrainshowersandthunder_polartwilight

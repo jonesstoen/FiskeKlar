@@ -58,7 +58,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.foundation.shape.RoundedCornerShape
 
-
+//WARNINGS: the warning is related to removed fucntionality from the app, and a deprecated modfiger parameter.
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddFishingEntryScreen(
@@ -91,7 +91,7 @@ fun AddFishingEntryScreen(
     var imageUri by remember { mutableStateOf<android.net.Uri?>(null) }
     var date by remember { mutableStateOf(LocalDate.now()) }
     var time by remember { mutableStateOf(LocalTime.now()) }
-    var fishCount by remember { mutableStateOf(1) } // 🐟 Start alltid på 1
+    var fishCount by remember { mutableIntStateOf(1) }
     var showLocationInfo by remember { mutableStateOf(false) }
     var showAreaInfo by remember { mutableStateOf(false) }
     var showFishTypeInfo by remember { mutableStateOf(false) }
@@ -108,14 +108,13 @@ fun AddFishingEntryScreen(
     var gotCatch by remember { mutableStateOf(true) }
     var tmpUri by remember { mutableStateOf<android.net.Uri?>(null) }
 
-    // Hent brukerposisjon
+    // fetch user location
     LaunchedEffect(Unit) {
         locationRepository.getCurrentLocation()?.let { location ->
             userLocation = location
         }
     }
 
-    // Håndter når brukeren returnerer med et nytt område
     LaunchedEffect(Unit) {
         navController.currentBackStackEntry?.savedStateHandle?.get<String>("newFavorite")?.let { newFavorite ->
             location = newFavorite
@@ -140,7 +139,7 @@ fun AddFishingEntryScreen(
         imageUri = uri
     }
 
-    // Gjenopprett tilstanden når vi kommer tilbake
+    // reinitalizing state when navigating back
     LaunchedEffect(Unit) {
         navController.currentBackStackEntry?.savedStateHandle?.apply {
             get<String>("savedLocation")?.let { location = it }
@@ -166,6 +165,8 @@ fun AddFishingEntryScreen(
                     }
                 },
                 actions = {
+                    val isEnabled =
+                        location.isNotEmpty() && dateText.isNotEmpty() && (!gotCatch || (gotCatch && fishType.isNotEmpty() && weightText.isNotEmpty()))
                     Button(
                         onClick = {
                             val weightValue = weightText.toDoubleOrNull() ?: 0.0
@@ -182,10 +183,7 @@ fun AddFishingEntryScreen(
                                 if (gotCatch) fishCount else 0
                             )
                         },
-                        enabled = {
-                            val isEnabled = location.isNotEmpty() && dateText.isNotEmpty() && (!gotCatch || (gotCatch && fishType.isNotEmpty() && weightText.isNotEmpty()))
-                            isEnabled
-                        }(),
+                        enabled = isEnabled,
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                         contentPadding = PaddingValues(horizontal = 24.dp, vertical = 10.dp),
                         modifier = Modifier.padding(end = 8.dp)
@@ -306,7 +304,7 @@ fun AddFishingEntryScreen(
                                     text = { Text("Nytt sted") },
                                     onClick = {
                                         showAreaDropdown = false
-                                        // Lagre tilstanden før navigering
+                                        // save state before navigating
                                         navController.currentBackStackEntry?.savedStateHandle?.apply {
                                             set("savedLocation", location)
                                             set("savedFishType", fishType)
@@ -365,7 +363,6 @@ fun AddFishingEntryScreen(
                             }
                         }
                     }
-                    // Bruk en Button som ser ut som et tekstfelt
                     OutlinedButton(
                         onClick = { showDatePicker = true },
                         modifier = Modifier.fillMaxWidth(),
@@ -399,15 +396,15 @@ fun AddFishingEntryScreen(
                     
                     // DatePicker dialog
                     if (showDatePicker) {
-                        // Dagens dato som millisekunder siden epoch
+
                         val today = LocalDate.now().toEpochDay() * 24 * 60 * 60 * 1000
                         
                         val datePickerState = rememberDatePickerState(
                             initialSelectedDateMillis = date.toEpochDay() * 24 * 60 * 60 * 1000,
-                            // Setter maksimal dato til dagens dato (ingen fremtidige datoer)
+                            // set max date to today
                             selectableDates = object : SelectableDates {
                                 override fun isSelectableDate(utcTimeMillis: Long): Boolean {
-                                    // Returnerer true hvis datoen er før eller lik dagens dato
+                                    // returns true if the date is today or earlier
                                     return utcTimeMillis <= today
                                 }
                             }
@@ -523,7 +520,7 @@ fun AddFishingEntryScreen(
                     value = weightText,
                     onValueChange = { input ->
                         if (input.all { it.isDigit() || it == '.' || it == ',' }) {
-                            weightText = input.replace(',', '.') // Bytt komma til punktum
+                            weightText = input.replace(',', '.')
                         }
                     },
                     label = { Text("Vekt (kg)") },
@@ -536,7 +533,7 @@ fun AddFishingEntryScreen(
                     enabled = gotCatch
                 )
 
-                // 🐟 Legg til antall fisk
+                // amount of fish
                 Text("Antall fisk", style = MaterialTheme.typography.titleMedium)
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

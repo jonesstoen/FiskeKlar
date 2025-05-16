@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
+//Warnings: the warnings here is beacuase of unused parameters after refactoring parts of the project
 @Composable
 fun PrecipitationLayerSettings(
     isChecked: Boolean,

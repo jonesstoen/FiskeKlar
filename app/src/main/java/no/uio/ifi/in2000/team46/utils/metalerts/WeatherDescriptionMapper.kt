@@ -1,22 +1,23 @@
 package no.uio.ifi.in2000.team46.utils.metalerts
 
-/**
- * Utility-klasse for å mappe værkoder til beskrivende tekst
- */
+
+// this file defines a utility object for translating weather symbol codes into human-readable norwegian descriptions
+// typically used to show simplified weather info from symbol codes returned by an api like yr
+
 object WeatherDescriptionMapper {
     fun getWeatherDescription(symbolCode: String?): String {
         return when {
             symbolCode == null -> "Værdata ikke tilgjengelig"
-            
-            // Klarvær og lettskyet
+
+            //clear wheather and partly cloudy
             symbolCode.contains("clearsky") -> "Klart vær med sol"
             symbolCode.contains("fair") -> "Lettskyet med gode solforhold"
             
-            // Skyet vær
+            // cloudy
             symbolCode.contains("partlycloudy") -> "Delvis skyet, perioder med sol"
             symbolCode.contains("cloudy") -> "Overskyet"
             
-            // Regn
+            // Rain
             symbolCode.contains("lightrainshowers") -> "Lette regnbyger"
             symbolCode.contains("rainshowers") -> "Regnbyger"
             symbolCode.contains("heavyrainshowers") -> "Kraftige regnbyger"
@@ -24,7 +25,7 @@ object WeatherDescriptionMapper {
             symbolCode.contains("rain") -> "Regn"
             symbolCode.contains("heavyrain") -> "Kraftig regn"
             
-            // Snø
+            // Snow
             symbolCode.contains("lightsnowshowers") -> "Lette snøbyger"
             symbolCode.contains("snowshowers") -> "Snøbyger"
             symbolCode.contains("heavysnowshowers") -> "Kraftige snøbyger"
@@ -32,7 +33,7 @@ object WeatherDescriptionMapper {
             symbolCode.contains("snow") -> "Snø"
             symbolCode.contains("heavysnow") -> "Kraftig snøfall"
             
-            // Sludd
+            // hail
             symbolCode.contains("lightsleetshowers") -> "Lette sluddbyger"
             symbolCode.contains("sleetshowers") -> "Sluddbyger"
             symbolCode.contains("heavysleetshowers") -> "Kraftige sluddbyger"
@@ -40,10 +41,10 @@ object WeatherDescriptionMapper {
             symbolCode.contains("sleet") -> "Sludd"
             symbolCode.contains("heavysleet") -> "Kraftig sludd"
             
-            // Tåke
+            // mist
             symbolCode.contains("fog") -> "Tåke, redusert sikt"
             
-            // Tordenvær
+            // thunder
             symbolCode.contains("thunder") && symbolCode.contains("rain") -> "Regnvær med torden"
             symbolCode.contains("thunder") && symbolCode.contains("snow") -> "Snøvær med torden"
             symbolCode.contains("thunder") && symbolCode.contains("sleet") -> "Sludd med torden"

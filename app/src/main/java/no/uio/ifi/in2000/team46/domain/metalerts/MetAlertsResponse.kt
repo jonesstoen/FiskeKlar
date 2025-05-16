@@ -2,7 +2,10 @@ package no.uio.ifi.in2000.team46.domain.metalerts
 
 import com.google.gson.annotations.SerializedName
 
-// Responsen over representeres som en FeatureCollection
+// this file defines the structure of the metalerts api response based on the featurecollection format from yr/met.no
+// used for decoding weather alert data including geometry, timing, severity and other metadata
+
+
 data class MetAlertsResponse(
     @SerializedName("features")
     val features: List<Feature>,
@@ -19,7 +22,6 @@ data class Feature(
     val geometry: Geometry,
     @SerializedName("properties")
     val properties: Properties,
-    // "when" er et reservert ord, så vi bruker "timeInfo" (men beholder JSON-nøkkelen via @SerializedName)
     @SerializedName("when")
     val timeInfo: WhenInfo,
     @SerializedName("type")
@@ -27,10 +29,8 @@ data class Feature(
 )
 
 data class Geometry(
-    // Avhengig av type (Polygon vs MultiPolygon) kan koordinatene ha ulik dybde.
-    // For enkelhets skyld kan du bruke en "Any"-type eller eventuelt definere en egendefinert deserializer.
     @SerializedName("coordinates")
-    val coordinates: Any,
+    val coordinates: Any, // coordinates of the shape (can be polygon or multipolygon)
     @SerializedName("type")
     val type: String
 )
@@ -99,7 +99,7 @@ data class Resource(
     val uri: String
 )
 
-// Siden "when" er et Kotlin-nøkkelord, bruker vi "WhenInfo" for å mappe JSON-feltet "when"
+// because "when" is a Kotlin keyword, we use "WhenInfo" to map the JSON field "when"
 data class WhenInfo(
     @SerializedName("interval")
     val interval: List<String>

@@ -1,5 +1,6 @@
 package no.uio.ifi.in2000.team46.presentation.onboarding.screens
 
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -35,41 +36,37 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.MapOnboardingViewModel
 
-/**
- * En enkel onboarding-skjerm som viser en serie med dialogbokser som forklarer
- * de ulike funksjonene i appen.
- */
 
-// Definerer de ulike stegene i onboarding-prosessen
+// simple onbaording screen that shows a series of dialog boxes explaining the features of the app.
+
+// Defineing the different steps in the onboarding process
 enum class OnboardingStepType {
-    WELCOME,           // Velkommen til appen
-    SEARCH,            // Viser søkefunksjonen
-    ZOOM,              // Forklarer zoom-funksjonalitet
-    LAYERS,            // Viser lag-menyen
-    LAYER_INFO,        // Forklarer informasjonsboksen for kartlag
-    WEATHER,           // Forklarer værvisningen
-    LOCATION,          // Viser lokasjonsfunksjonen
-    LONG_PRESS,        // Forklarer langt trykk på kartet
-    COMPLETE           // Avslutning av onboarding
+    WELCOME,
+    SEARCH,
+    ZOOM,
+    LAYERS,
+    LAYER_INFO,
+    WEATHER,
+    LOCATION,
+    LONG_PRESS,
+    COMPLETE
 }
 
-// Data class for å definere en funksjon som skal vises i onboarding
+// Data class to define the features of the onboarding
 data class OnboardingFeature(
     val title: String,
     val description: String,
     val icon: ImageVector,
     val color: Color,
-    val xPercent: Float = 0.5f,  // X-posisjon som prosent av skjermbredden (0.0-1.0)
-    val yPercent: Float = 0.5f,  // Y-posisjon som prosent av skjermhøyden (0.0-1.0)
-    val arrowDirection: ArrowDirection = ArrowDirection.UP  // Retning for pilen
+    val xPercent: Float = 0.5f,
+    val yPercent: Float = 0.5f,
+    val arrowDirection: ArrowDirection = ArrowDirection.UP  // directon for arrow
 )
 
-// Enum for å definere retningen til pilen
 enum class ArrowDirection {
     UP, UP_LEFT, DOWN_LEFT, DOWN_RIGHT
 }
 
-// Komponent for å vise en pil
 @Composable
 fun Arrow(
     direction: ArrowDirection,
@@ -77,10 +74,10 @@ fun Arrow(
     modifier: Modifier = Modifier
 ) {
     val rotation = when (direction) {
-        ArrowDirection.UP -> 270f          // Peker rett opp
-        ArrowDirection.UP_LEFT -> 225f    // Skrått opp til venstre (45 grader fra venstre)
-        ArrowDirection.DOWN_LEFT -> 135f  // Skrått ned til venstre (45 grader fra venstre)
-        ArrowDirection.DOWN_RIGHT -> 45f  // Skrått ned til høyre (45 grader fra høyre)
+        ArrowDirection.UP -> 270f
+        ArrowDirection.UP_LEFT -> 225f
+        ArrowDirection.DOWN_LEFT -> 135f
+        ArrowDirection.DOWN_RIGHT -> 45f
     }
     
     Icon(
@@ -88,19 +85,18 @@ fun Arrow(
         contentDescription = null,
         tint = color,
         modifier = modifier
-            .size(32.dp)  // Mindre pil for bedre plassering ved sirkelen
+            .size(32.dp)
             .rotate(rotation)
     )
 }
 
-// Komponent for å vise indikator for en funksjon
 @Composable
 fun FeatureIndicator(
     feature: OnboardingFeature,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
 ) {
-    // Animasjon for pulserende effekt
+    // animation for the pulsing effect
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
@@ -110,34 +106,30 @@ fun FeatureIndicator(
             repeatMode = RepeatMode.Reverse
         ), label = "scale"
     )
-    
-    // Bestem layout basert på pilens retning
+
     Box(
         modifier = modifier.padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        // Pulserende sirkel i midten med fyllfarge
         Box(
             modifier = Modifier
                 .size(64.dp)
                 .scale(scale)
                 .clip(CircleShape)
-                .background(feature.color)  // Fyller sirkelen med den valgte fargen
+                .background(feature.color)
                 .clickable(onClick = onClick),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = feature.icon,
                 contentDescription = feature.title,
-                tint = Color.White,  // Hvit farge på ikonet for kontrast
+                tint = Color.White,
                 modifier = Modifier.size(32.dp)
             )
         }
-        
-        // Plasser pilen i hjørnet av sirkelen basert på retningen
+
         when (feature.arrowDirection) {
             ArrowDirection.UP -> {
-                // Pil på toppen av sirkelen, peker oppover
                 Arrow(
                     direction = feature.arrowDirection,
                     color = feature.color,
@@ -147,7 +139,7 @@ fun FeatureIndicator(
                 )
             }
             ArrowDirection.UP_LEFT -> {
-                // Pil i øvre venstre hjørne, peker skrått opp mot venstre
+
                 Arrow(
                     direction = feature.arrowDirection,
                     color = feature.color,
@@ -157,7 +149,6 @@ fun FeatureIndicator(
                 )
             }
             ArrowDirection.DOWN_LEFT -> {
-                // Pil i nedre venstre hjørne, peker skrått ned mot venstre
                 Arrow(
                     direction = feature.arrowDirection,
                     color = feature.color,
@@ -167,7 +158,6 @@ fun FeatureIndicator(
                 )
             }
             ArrowDirection.DOWN_RIGHT -> {
-                // Pil i nedre høyre hjørne, peker skrått ned mot høyre
                 Arrow(
                     direction = feature.arrowDirection,
                     color = feature.color,
@@ -180,6 +170,7 @@ fun FeatureIndicator(
     }
 }
 
+@SuppressLint("ConfigurationScreenWidthHeight")
 @Composable
 fun MapOnboardingScreen(
     viewModel: MapOnboardingViewModel,
@@ -191,7 +182,7 @@ fun MapOnboardingScreen(
 ) {
     var currentStep by remember { mutableStateOf(OnboardingStepType.WELCOME) }
     
-    // Definerer alle funksjoner som skal vises i onboarding
+    // defining all the features of the onboarding
     val features = remember {
         listOf(
             OnboardingFeature(
@@ -199,9 +190,9 @@ fun MapOnboardingScreen(
                 description = "Søk etter steder for å se farevarsler og værvarsel",
                 icon = Icons.Default.Search,
                 color = Color(0xFFCE62FA),
-                xPercent = 0f,  // Plassering for søkefeltet (øverst til venstre)
+                xPercent = 0f,
                 yPercent = 0.09f,
-                arrowDirection = ArrowDirection.UP  // Peker oppover
+                arrowDirection = ArrowDirection.UP
             ),
             OnboardingFeature(
                 title = "Zoom-knapper",
@@ -210,7 +201,7 @@ fun MapOnboardingScreen(
                 color = Color(0xFF5FA8D3),
                 xPercent = 0.2f,
                 yPercent = 0.76f,
-                arrowDirection = ArrowDirection.UP_LEFT  // Peker skrått opp mot venstre
+                arrowDirection = ArrowDirection.UP_LEFT
             ),
             OnboardingFeature(
                 title = "Kartlag",
@@ -219,7 +210,7 @@ fun MapOnboardingScreen(
                 color = Color(0xFF9DC88D),
                 xPercent = 0.2f,
                 yPercent = 0.7f,
-                arrowDirection = ArrowDirection.DOWN_LEFT  // Peker skrått opp mot venstre
+                arrowDirection = ArrowDirection.DOWN_LEFT
             ),
             OnboardingFeature(
                 title = "Værvisning",
@@ -228,7 +219,7 @@ fun MapOnboardingScreen(
                 color = Color(0xFFFCB927),
                 xPercent = 0.5f,
                 yPercent = 0.62f,
-                arrowDirection = ArrowDirection.DOWN_RIGHT  // Peker skrått ned mot venstre
+                arrowDirection = ArrowDirection.DOWN_RIGHT
             ),
             OnboardingFeature(
                 title = "Min posisjon",
@@ -237,12 +228,12 @@ fun MapOnboardingScreen(
                 color = Color(0xFFD32F2F),
                 xPercent = 0.5f,
                 yPercent = 0.7f,
-                arrowDirection = ArrowDirection.DOWN_RIGHT  // Peker skrått ned mot høyre
+                arrowDirection = ArrowDirection.DOWN_RIGHT
             )
         )
     }
     
-    // Funksjon for å gå til neste steg
+    // to go to the next step
     val goToNextStep = {
         currentStep = when (currentStep) {
             OnboardingStepType.WELCOME -> OnboardingStepType.SEARCH
@@ -261,10 +252,10 @@ fun MapOnboardingScreen(
         }
     }
     
-    // Funksjon for å gå til forrige steg
+    // to go to the previous step
     val goToPreviousStep = {
         currentStep = when (currentStep) {
-            OnboardingStepType.WELCOME -> OnboardingStepType.WELCOME // Bli på første steg
+            OnboardingStepType.WELCOME -> OnboardingStepType.WELCOME
             OnboardingStepType.SEARCH -> OnboardingStepType.WELCOME
             OnboardingStepType.ZOOM -> OnboardingStepType.SEARCH
             OnboardingStepType.LAYERS -> OnboardingStepType.ZOOM
@@ -276,39 +267,36 @@ fun MapOnboardingScreen(
         }
     }
     
-    // Funksjon for å hoppe over onboarding
+    // to skip the onboarding process
     val skipOnboarding = {
         viewModel.hideMapOnboarding()
         onFinish()
     }
 
-    // Funksjon for å markere at brukeren har interagert med en funksjon
     val handleFeatureInteraction = { step: OnboardingStepType ->
         if (currentStep == step) {
             goToNextStep()
         }
     }
-    
-    // Vis onboarding bare hvis showMapOnboarding er true
+
     val showMapOnboarding by viewModel.showMapOnboarding.collectAsState()
 
     if (showMapOnboarding) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Semi-transparent tint over hele skjermen (som bakgrunn)
+            // layer to thint the map behind the indicator
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Black.copy(alpha = 0.35f))
                     .clickable(enabled = false) {}
             )
-            
-            // Overlay med indikatorer for hver funksjon (oppå tinten)
+
             Box(modifier = Modifier.fillMaxSize().clickable(enabled = false) {}) {
-                // Hent skjermstørrelse en gang for alle indikatorer
+                // fetching the screen dimensions
                 val screenWidth = LocalConfiguration.current.screenWidthDp.dp
                 val screenHeight = LocalConfiguration.current.screenHeightDp.dp
                 
-                // Vis indikator basert på gjeldende steg
+                // show the indicator based on step
                 when (currentStep) {
                     OnboardingStepType.SEARCH -> {
                         FeatureIndicator(
@@ -358,11 +346,11 @@ fun MapOnboardingScreen(
                             onClick = { onShowLocation(); handleFeatureInteraction(OnboardingStepType.LOCATION) }
                         )
                     }
-                    else -> { /* Ikke vis noen indikator for WELCOME og COMPLETE */ }
+                    else -> { /* else show nothing*/ }
                 }
             }
         }
-        // Vis popup med instruksjoner
+        // popup with instructions
         Popup(
             alignment = Alignment.Center,
             properties = PopupProperties(
@@ -389,15 +377,15 @@ fun MapOnboardingScreen(
                         .padding(24.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    // Fremdriftsindikator
+                    // progress indicators for each step
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 16.dp),
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        // Vis indikatorer for hvert steg (unntatt COMPLETE)
-                        OnboardingStepType.values().filter { it != OnboardingStepType.COMPLETE }.forEachIndexed { index, step ->
+                        // showing the indicator
+                        OnboardingStepType.entries.filter { it != OnboardingStepType.COMPLETE }.forEachIndexed { index, step ->
                             val isCurrentStep = step == currentStep
                             Box(
                                 modifier = Modifier
@@ -423,7 +411,7 @@ fun MapOnboardingScreen(
                         }
                     }
 
-                    // Innhold basert på gjeldende steg
+                    // content based on current step
                     AnimatedContent(
                         targetState = currentStep,
                         transitionSpec = {
@@ -433,7 +421,6 @@ fun MapOnboardingScreen(
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // Ikon
                             Icon(
                                 imageVector = when (step) {
                                     OnboardingStepType.WELCOME -> Icons.Default.Explore
@@ -463,7 +450,7 @@ fun MapOnboardingScreen(
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            // Tittel
+                            // title
                             Text(
                                 text = when (step) {
                                     OnboardingStepType.WELCOME -> "Velkommen til kartet!"
@@ -494,7 +481,7 @@ fun MapOnboardingScreen(
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // Beskrivelse
+                            // description
                             Text(
                                 text = when (step) {
                                     OnboardingStepType.WELCOME -> "La oss ta en rask gjennomgang av funksjonene til kartet."
@@ -516,22 +503,21 @@ fun MapOnboardingScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
-                    // Knapper
+                    // buttons
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        // Venstre side: Tilbake-knapp eller Hopp over-knapp
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterStart) {
                             if (currentStep == OnboardingStepType.WELCOME) {
-                                // Hopp over-knapp (vises bare på første steg)
+
                                 TextButton(
                                     onClick = skipOnboarding
                                 ) {
                                     Text("Hopp over")
                                 }
                             } else {
-                                // Tilbake-knapp (vises ikke på første steg)
+
                                 OutlinedButton(
                                     onClick = goToPreviousStep,
                                     colors = ButtonDefaults.outlinedButtonColors(
@@ -552,8 +538,7 @@ fun MapOnboardingScreen(
                                 }
                             }
                         }
-                        
-                        // Høyre side: Neste/Ferdig-knapp
+
                         Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.CenterEnd) {
                             Button(
                                 onClick = goToNextStep,
@@ -569,6 +554,7 @@ fun MapOnboardingScreen(
                                         OnboardingStepType.LONG_PRESS -> Color(0xFFEF8632)
                                         OnboardingStepType.COMPLETE -> Color(0xFF4CAF50)
                                     }
+
                                 )
                             ) {
                                 Text(

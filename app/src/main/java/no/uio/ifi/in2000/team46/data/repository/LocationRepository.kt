@@ -11,14 +11,18 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import kotlinx.coroutines.tasks.await
 
+// locationrepository provides methods to retrieve the user's current or last known location
+// uses fusedlocationprovider and handles runtime permission checks internally
+
 class LocationRepository(private val context: Context) {
     private val fusedLocationClient: FusedLocationProviderClient =
         LocationServices.getFusedLocationProviderClient(context)
-    // method for getting the last known location fast if already available
+
+    // attempts to quickly retrieve the last known location if permissions are granted
     @SuppressLint("MissingPermission")
     suspend fun getFastLocation(): Location? {
 
-        //check permissions
+        // check if location permissions are granted
         if (ContextCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED &&
@@ -29,17 +33,17 @@ class LocationRepository(private val context: Context) {
             return null
         }
 
-        // try to get the last known location
+        // get last known location if available
         val last = fusedLocationClient.lastLocation.await()
         if (last != null) return last
 
-        // if no last known location, get the current location
+        // fallback: request current high accuracy location
         return fusedLocationClient
             .getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, null)
             .await()
     }
 
-
+    // public method that wraps fast location retrieval with try-catch
     @SuppressLint("MissingPermission")
     suspend fun getCurrentLocation(): Location? {
         return try {

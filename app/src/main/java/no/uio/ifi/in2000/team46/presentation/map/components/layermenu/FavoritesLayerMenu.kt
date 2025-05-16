@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,9 +22,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-/**
- * Meny for favorittlaget som viser favorittområder og -punkter på kartet.
- */
+// summary: displays controls for the favorites layer with toggle, refresh and navigation
+// main function: allow user to show or hide favorite locations on map, refresh data, and navigate back
+
 @Composable
 fun FavoritesLayerMenu(
     isChecked: Boolean,
@@ -34,24 +33,24 @@ fun FavoritesLayerMenu(
     onBack: () -> Unit
 ) {
     Column(Modifier.padding(16.dp)) {
-        // Tittel og tilbakeknapp
+        // header row with back button and title
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Tilbake")
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
             }
             Text(
-                "Favoritter",
+                "Tilbake",
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
-        
+
         Spacer(Modifier.height(16.dp))
-        
-        // Hovedbryter for å vise/skjule favorittlaget
+
+        // main switch for showing or hiding favorites layer
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
@@ -63,7 +62,7 @@ fun FavoritesLayerMenu(
             )
             Spacer(Modifier.width(16.dp))
             Text(
-                "Vis favoritter på kartet",
+                "Vis Favoritter På Kartet",
                 style = MaterialTheme.typography.bodyLarge,
                 modifier = Modifier.weight(1f)
             )
@@ -72,25 +71,25 @@ fun FavoritesLayerMenu(
                 onCheckedChange = onToggle
             )
         }
-        
+
         Spacer(Modifier.height(8.dp))
         HorizontalDivider()
         Spacer(Modifier.height(8.dp))
-        
-        // Oppdateringsknapp
+
+        // button to refresh favorites data
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
             IconButton(onClick = onRefresh) {
-                Icon(Icons.Default.Refresh, contentDescription = "Oppdater favoritter")
+                Icon(Icons.Default.Refresh, contentDescription = "refresh favorites")
             }
             Text(
-                "Oppdater favoritter",
+                "Oppdater Favoritter",
                 style = MaterialTheme.typography.bodyMedium
             )
         }
-        
+
         Spacer(Modifier.height(16.dp))
 
     }

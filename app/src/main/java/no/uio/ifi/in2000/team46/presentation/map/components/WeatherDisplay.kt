@@ -22,6 +22,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import kotlin.math.roundToInt
 
+// This function displays the weather information on the map
 @Composable
 fun WeatherDisplay(
     temperature: Double?,

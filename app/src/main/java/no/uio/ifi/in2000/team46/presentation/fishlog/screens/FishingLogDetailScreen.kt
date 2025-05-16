@@ -1,7 +1,5 @@
 package no.uio.ifi.in2000.team46.presentation.fishlog.screens
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Scale
 import androidx.compose.material3.Card
@@ -40,6 +37,7 @@ import coil.compose.AsyncImage
 import no.uio.ifi.in2000.team46.R
 import no.uio.ifi.in2000.team46.presentation.fishlog.viewmodel.FishingLogViewModel
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import no.uio.ifi.in2000.team46.data.local.database.entities.FishingLog
 
 import java.time.LocalDate
@@ -49,7 +47,6 @@ import java.util.Locale
 
 
 @OptIn(ExperimentalMaterial3Api::class)
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun FishingLogDetailScreen(
     entryId: Int,
@@ -66,7 +63,7 @@ fun FishingLogDetailScreen(
                 title = { Text("Fangst detaljer") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Tilbake")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Tilbake")
                     }
                 }
             )

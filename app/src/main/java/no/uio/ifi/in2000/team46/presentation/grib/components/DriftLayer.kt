@@ -17,6 +17,7 @@ import org.maplibre.geojson.Feature
 import org.maplibre.geojson.FeatureCollection
 import org.maplibre.geojson.Point
 
+// this class is not part of the final app and is not used in the final app, because we did not have time to implement the drift layer properly
 
 @Composable
 fun DriftLayer(

@@ -21,6 +21,8 @@ import no.uio.ifi.in2000.team46.data.local.database.entities.ProcessedSuggestion
 import no.uio.ifi.in2000.team46.data.local.database.entities.SavedSuggestionEntity
 import no.uio.ifi.in2000.team46.data.local.database.entities.User
 
+// appdatabase defines the main room database configuration and provides access to all dao interfaces
+// it includes a pre-population callback to insert common fish types when the database is first opened
 
 @Database(
     entities = [FishingLog::class, User::class, FishType::class, FavoriteLocation::class, ProcessedSuggestion::class, SavedSuggestionEntity::class],
@@ -29,6 +31,7 @@ import no.uio.ifi.in2000.team46.data.local.database.entities.User
 )
 abstract class AppDatabase : RoomDatabase() {
 
+    // dao accessors
     abstract fun fishingLogDao(): FishingLogDao
     abstract fun userDao(): UserDao
     abstract fun fishTypeDao(): FishTypeDao
@@ -40,6 +43,7 @@ abstract class AppDatabase : RoomDatabase() {
         @Volatile
         private var INSTANCE: AppDatabase? = null
 
+        // retrieves the singleton instance of the database
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val inst = Room.databaseBuilder(
@@ -47,12 +51,11 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "app_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .fallbackToDestructiveMigration() // clears data on schema mismatch (dev only)
                     .addCallback(object : Callback() {
                         override fun onOpen(db: SupportSQLiteDatabase) {
                             super.onOpen(db)
-                            // This is a workaround for the fact that Room does not support pre-populating the database
-                            // always pre-populate the database when opened in order to be sure that the required data is there
+                            // populates fish_type table if empty, every time db is opened
                             INSTANCE?.let { database ->
                                 CoroutineScope(Dispatchers.IO).launch {
                                     val dao = database.fishTypeDao()

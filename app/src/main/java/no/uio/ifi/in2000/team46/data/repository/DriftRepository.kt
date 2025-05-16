@@ -3,6 +3,7 @@ package no.uio.ifi.in2000.team46.data.repository
 import no.uio.ifi.in2000.team46.domain.grib.DriftVector
 import no.uio.ifi.in2000.team46.domain.usecase.drift.calculateDriftVectors
 
+//WARNINGS: this code we decided to not use in the app , but it is here for reference
 class DriftRepository(
     private val gribRepository: GribRepository,
     private val currentRepository: CurrentRepository

@@ -23,13 +23,14 @@ import no.uio.ifi.in2000.team46.domain.metalerts.Feature
 import no.uio.ifi.in2000.team46.utils.BulletText
 import no.uio.ifi.in2000.team46.utils.formatTime
 import no.uio.ifi.in2000.team46.utils.timeUntilStart
-
+// this file contains the UI for the bottom sheet that displays details about a selected weather alert
+// warnings in this file is related to some claryfing parenthesis etc, which we did not find necessary to remove, because we couldnt fin other way to make it work
 @Composable
 fun MetAlertsBottomSheetContent(
     feature: Feature,
     onClose: () -> Unit
 ) {
-    val props = feature.properties ?: return
+    val props = feature.properties
     val interval = if (feature.timeInfo?.interval?.size ?: 0 >= 2) {
         "${formatTime(feature.timeInfo.interval[0])} – ${formatTime(feature.timeInfo.interval[1])}"
     } else {
@@ -39,9 +40,9 @@ fun MetAlertsBottomSheetContent(
         "yellow" -> R.drawable.icon_warning_generic_yellow
         "orange" -> R.drawable.icon_warning_generic_orange
         "red" -> R.drawable.icon_warning_generic_red
-        else -> R.drawable.icon_warning_generic_yellow // Default to yellow
+        else -> R.drawable.icon_warning_generic_yellow // default to yellow if color is unknown
     }
-    val startsIn = feature.timeInfo?.interval?.let { interval ->
+    val startsIn = feature.timeInfo.interval.let { interval ->
         if (interval.size >= 2) {
             timeUntilStart(interval[0], interval[1])
         } else null
@@ -51,19 +52,19 @@ fun MetAlertsBottomSheetContent(
             .fillMaxWidth()
             .padding(24.dp)
     ) {
-        // Topptekst med ikon
+        // title and icon
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 painter = painterResource(id = warningIcon),
                 contentDescription = "Warning level: ${props.riskMatrixColor}",
-                //removing tint to avoid color overlay
+
                 tint = androidx.compose.ui.graphics.Color.Unspecified
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = props.eventAwarenessName ?: "Ukjent",
+                text = props.eventAwarenessName,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -82,7 +83,7 @@ fun MetAlertsBottomSheetContent(
 
         // area and interval
         Text(
-            text = "Område: ${props.area ?: "Ukjent område"}",
+            text = "Område: ${props.area}",
             style = MaterialTheme.typography.bodyMedium
         )
         Text(
@@ -94,12 +95,10 @@ fun MetAlertsBottomSheetContent(
 
         // description of the alert
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            props.consequences?.let {
-                BulletText("Mulige konsekvenser: $it")
-            }
-            props.instruction?.let {
+            BulletText("Mulige konsekvenser: ${props.consequences}")
+            props.instruction.let {
                 BulletText("Instruksjoner: $it")
-                BulletText("Kontakt: ${props.contact ?: "Ukjent kontakt"}")
+                BulletText("Kontakt: ${props.contact}")
             }
         }
 

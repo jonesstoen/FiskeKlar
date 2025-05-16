@@ -1,6 +1,8 @@
 package no.uio.ifi.in2000.team46.domain.ais
 
 
+// WARNINGS: the warning here is because of a function that is not used, but can be used for tracking historical data
+// represents a single AIS position report for a vessel
 data class AisVesselPosition(
     val courseOverGround: Double?,
     val latitude: Double,
@@ -14,12 +16,13 @@ data class AisVesselPosition(
     val mmsi: Long,
     val msgtime: String
 )
-
+// represents a historical track for a vessel based on its MMSI
 data class AisVesselTrack(
     val mmsi: Long,
     val positions: List<AisPosition>
 )
 
+// represents a single position point with timestamp
 data class AisPosition(
     val lat: Double,
     val lon: Double,

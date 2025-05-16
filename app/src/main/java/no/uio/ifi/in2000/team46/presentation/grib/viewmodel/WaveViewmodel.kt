@@ -1,4 +1,5 @@
 package no.uio.ifi.in2000.team46.presentation.grib.viewmodel
+
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -6,23 +7,31 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import no.uio.ifi.in2000.team46.domain.grib.WaveVector
-
 import no.uio.ifi.in2000.team46.data.repository.Result
 import no.uio.ifi.in2000.team46.data.repository.WaveRepository
 
+// this viewmodel manages wave layer visibility, loading, threshold filtering, time selection,
+// and slider controls for adjusting display of GRIB-based wave data
+
 class WaveViewModel(private val repo: WaveRepository) : ViewModel() {
+
+    // stores the result from wave data fetch (success, loading, or error)
     private val _waves = MutableStateFlow<Result<List<WaveVector>>?>(null)
     val waveData: StateFlow<Result<List<WaveVector>>?> = _waves
 
+    // controls visibility of the wave layer on the map
     private val _visible = MutableStateFlow(false)
     val isLayerVisible: StateFlow<Boolean> = _visible
 
+    // indicates if raster loading is active (e.g. background image tiles)
     private val _isRasterLoading = MutableStateFlow(false)
     val isRasterLoading: StateFlow<Boolean> = _isRasterLoading
-    //treshold
+
+    // threshold value for wave height (e.g. for color or icon filtering)
     private val _waveThreshold = MutableStateFlow(4.0)
     val waveThreshold: StateFlow<Double> = _waveThreshold
-    //show sliders
+
+    // determines if sliders should be shown in the UI
     private val _showWaveSliders = MutableStateFlow(false)
     val showWaveSliders: StateFlow<Boolean> = _showWaveSliders
 
@@ -30,9 +39,11 @@ class WaveViewModel(private val repo: WaveRepository) : ViewModel() {
         _showWaveSliders.value = show
     }
 
+    // selected timestamp used to filter wave vectors
     private val _selectedTimestamp = MutableStateFlow<Long?>(null)
     val selectedTimestamp: StateFlow<Long?> = _selectedTimestamp
 
+    // filters the list of wave vectors to match the selected timestamp
     val filteredWaveVectors: StateFlow<List<WaveVector>> = combine(
         waveData,
         selectedTimestamp
@@ -46,37 +57,46 @@ class WaveViewModel(private val repo: WaveRepository) : ViewModel() {
         _selectedTimestamp.value = timestamp
     }
 
+    // toggles visibility of the wave layer and loads data if activating
     fun toggleLayer() {
         _visible.value = !_visible.value
         if (_visible.value) fetchWaves()
     }
+
+    // deactivates the wave layer and clears data
     fun deactivateLayer() {
         _visible.value = false
         _waves.value = null
     }
-    fun setRasterLoading(loading: Boolean) {
-        _isRasterLoading.value = loading
-    }
+
+
+    // sets new threshold value for wave height
     fun setWaveThreshold(value: Double) {
         _waveThreshold.value = value
     }
 
+    // fetches wave vector data from the repository
     private fun fetchWaves() = viewModelScope.launch {
         val result = repo.getWaveData()
-        Log.d("WaveViewModel", "Raw waveResult = $result")
-        if (result is Result.Success) {
-            Log.d("WaveViewModel", "Antall bølgevektorer: ${result.data.size}")
-            Log.d("WaveViewModel", "Første 5: ${result.data.take(5)}")
 
+        Log.d("WaveViewModel", "Raw waveResult = $result")
+
+        if (result is Result.Success) {
+            Log.d("WaveViewModel", "wave vector count: ${result.data.size}")
+            Log.d("WaveViewModel", "first 5: ${result.data.take(5)}")
+
+            // selects default timestamp if available
             val firstTimestamp = result.data.firstOrNull()?.timestamp
             if (firstTimestamp != null) {
                 _selectedTimestamp.value = firstTimestamp
             }
         }
+
         _waves.value = result
     }
-
 }
+
+// factory for creating waveviewmodel with injected repository
 class WaveViewModelFactory(
     private val repository: WaveRepository
 ) : ViewModelProvider.Factory {

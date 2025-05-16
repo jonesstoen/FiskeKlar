@@ -20,6 +20,11 @@ import no.uio.ifi.in2000.team46.presentation.map.forbud.ForbudViewModel
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
 import no.uio.ifi.in2000.team46.presentation.map.favorites.FavoritesLayerViewModel
 
+// summary: floating button that opens a panel for filtering map layers by category and settings
+// main function: display expandable panel with category menu or specific layer controls based on selection
+
+//Warnings: the warnings here is beacuase of unused parameters after refactoring parts of the project
+
 enum class LayerCategory { NONE, TRAFFIC, WARNINGS, GRIB, FAVORITES }
 
 @Composable

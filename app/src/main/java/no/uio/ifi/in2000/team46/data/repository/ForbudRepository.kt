@@ -3,6 +3,7 @@ package no.uio.ifi.in2000.team46.data.repository
 import no.uio.ifi.in2000.team46.data.remote.api.BarentsWatchRetrofitInstance
 import no.uio.ifi.in2000.team46.data.remote.api.BarentsWatchForbudService
 
+// Warnings : we decided to not use this code in the app, but it is here for reference
 class FishHealthRepository {
 
     suspend fun fetchFishHealthData(localityNo: Int, year: Int) {

@@ -39,6 +39,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -58,15 +59,19 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 
 /**
- * Skjerm for å legge til et nytt favorittsted.
+ * screen for adding a new favorite location
  *
- * viewModel ViewModel for håndtering av favoritter.
- * navController Navigasjonskontroller for navigering mellom skjermer.
- * onCancel Funksjon som kalles når brukeren avbryter handlingen.
- * onSave Funksjon som kalles når brukeren lagrer favorittstedet.
- * defaultName Standardnavn for stedet, hvis tilgjengelig.
- * suggestions Liste over foreslåtte navn for autocompleting.
+ * viewModel view model for managing favorites
+ * navController navigation controller for navigating between screens
+ * onCancel function called when the user cancels the action
+ * onSave function called when the user saves the favorite location
+ * defaultName default name for the location, if available
+ * suggestions list of suggested names for autocompletion
  */
+
+// WARNINGS:
+// in addtion for finding the right icon we have an direct approach whic can be a source of bug when the app dont find the right icon,
+// but we considered this is a minor issue bevause of the small number of icons
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +86,7 @@ fun AddFavoriteScreen(
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    // ----------- State og data -----------
+    // state and data handling
     val coroutineScope = rememberCoroutineScope()
     val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
     val clearFields = navController.currentBackStackEntry?.arguments?.getString("clearFields") == "true"
@@ -96,15 +101,15 @@ fun AddFavoriteScreen(
     var locationType by remember { mutableStateOf("POINT") }
     var notes by remember { mutableStateOf("") }
     var selectedFishTypes by remember { mutableStateOf(setOf<String>()) }
-    var latitude by remember { mutableStateOf(59.91) }
-    var longitude by remember { mutableStateOf(10.75) }
+    var latitude by remember { mutableDoubleStateOf(59.91) }
+    var longitude by remember { mutableDoubleStateOf(10.75) }
     var areaPoints by remember { mutableStateOf(emptyList<Pair<Double, Double>>()) }
     var showDuplicateDialog by remember { mutableStateOf(false) }
     var showNameInfo by remember { mutableStateOf(false) }
     var showPositionInfo by remember { mutableStateOf(false) }
     var showNotesInfo by remember { mutableStateOf(false) }
 
-    // ----------- Håndtering av kartvalg og lagring av tilstand -----------
+    // handlign of map selection
     val pickedPoint = navController.currentBackStackEntry
         ?.savedStateHandle
         ?.getLiveData<Pair<Double, Double>>("pickedPoint")
@@ -118,7 +123,7 @@ fun AddFavoriteScreen(
         ?.getLiveData<String>("savedLocationType")
         ?.observeAsState()
 
-    // Oppdater state når bruker velger punkt/område på kartet
+    //update state when user selects point/area on map
     LaunchedEffect(pickedPoint?.value, pickedArea?.value, savedLocationType?.value) {
         savedLocationType?.value?.let { type -> locationType = type }
         pickedPoint?.value?.let { (lat, lon) ->
@@ -138,14 +143,12 @@ fun AddFavoriteScreen(
         }
     }
 
-    // Sett automatisk notat hvis defaultName brukes
     LaunchedEffect(defaultName) {
         if (defaultName.isNotBlank() && notes.isBlank()) {
             notes = "Automatisk lagt til via forslag"
         }
     }
 
-    // Lagrer midlertidig state hvis bruker går til kartvelger
     fun saveCurrentState() {
         navController.currentBackStackEntry?.savedStateHandle?.set("savedName", name)
         navController.currentBackStackEntry?.savedStateHandle?.set("savedLocationType", locationType)
@@ -153,12 +156,12 @@ fun AddFavoriteScreen(
         navController.currentBackStackEntry?.savedStateHandle?.set("savedFishTypes", selectedFishTypes.toList())
     }
 
-    // ----------- Kalkuler areal hvis område -----------
+
     val areaKm2 = if (locationType == "AREA" && areaPoints.size >= 3) {
         viewModel.calculateAreaInSquareKm(areaPoints)
     } else 0.0
 
-    // ----------- Håndtering av duplikatnavn -----------
+
     if (showDuplicateDialog) {
         AlertDialog(
             onDismissRequest = { showDuplicateDialog = false },
@@ -191,7 +194,6 @@ fun AddFavoriteScreen(
         )
     }
 
-    // ----------- UI: Scaffold, TopAppBar, hovedinnhold -----------
     Scaffold(
         topBar = {
             TopAppBar(
@@ -217,7 +219,6 @@ fun AddFavoriteScreen(
                     }
                 }
         ) {
-            // ----------- Typevalg (punkt/område) -----------
             Text(
                 "Type favoritt",
                 style = MaterialTheme.typography.titleMedium,
@@ -253,7 +254,6 @@ fun AddFavoriteScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ----------- Navn og forslag/autocomplete -----------
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -304,7 +304,7 @@ fun AddFavoriteScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ----------- Kartvelger -----------
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -394,7 +394,7 @@ fun AddFavoriteScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // ----------- Notater -----------
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -446,14 +446,14 @@ fun AddFavoriteScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // ----------- Knapper (Avbryt/Lagre) -----------
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Button(
                     onClick = {
-                        // Nullstill all state i savedStateHandle
+                        // reset all state in savedStateHandle
                         savedStateHandle?.remove<String>("savedName")
                         savedStateHandle?.remove<String>("savedLocationType")
                         savedStateHandle?.remove<String>("savedNotes")

@@ -2,7 +2,6 @@ package no.uio.ifi.in2000.team46.presentation.map.components
 
 
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import no.uio.ifi.in2000.team46.presentation.grib.components.*
@@ -16,7 +15,7 @@ import no.uio.ifi.in2000.team46.presentation.map.components.controls.LegendToggl
 import no.uio.ifi.in2000.team46.presentation.map.metalerts.MetAlertsViewModel
 import androidx.compose.ui.Alignment
 
-
+// the purpose of this class is to modulate the legend panel, to avoird repetition
 @Composable
 fun LegendPanel(
     modifier: Modifier = Modifier,
@@ -35,7 +34,7 @@ fun LegendPanel(
     val isMetAlertsVisible by metAlertsViewModel.isLayerVisible.collectAsState()
     val waveResult by waveViewModel.waveData.collectAsState()
 
-    // ID-er: 0=Vind, 1=Bølger, 2=Regn, 3=Strøm, 4=MetAlerts
+    // IDs: 0=wind, 1=waves, 2=Rain, 3=current, 4=MetAlerts
 
     LegendToggle(
         isLayerVisible = isWindLayerVisible,
@@ -70,7 +69,7 @@ fun LegendPanel(
         isOpen = legendController.isOpen(3),
         onToggle = { legendController.toggle(3) }
     ) {
-        // Hvis du lager en egen CurrentLegend senere
+
         CurrentLegend(modifier = Modifier.wrapContentWidth(Alignment.End))
     }
 

@@ -1,37 +1,37 @@
 package no.uio.ifi.in2000.team46.domain.ais
 
-
+// vesseltypes defines static AIS ship type codes used for mapping vessel categories
 
 object VesselTypes {
-    val AMBULANSEBÅT = 58
-    val ANTIFOURENSNING = 59
-    val BØYE_MED_AIS = 31
-    val DYKKERFARTØY = 33
-    val FISKEFARTØY = 30
-    val FRAKTEFARTØY = 70
-    val HØYHASTIGHETSFARTØY = 40
-    val MILITÆRT_FARTØY = 35
-    val PASSASJERFARTØY = 60
-    val POLITI = 55
-    val SAR = 51
-    val TANKSKIP = 80
-    val TAUBÅT = 52
-    val ANDRE_FARTØY = 90
+    const val AMBULANSEBAT = 58
+    const val ANTIFOURENSNING = 59
+    const val BOYE_MED_AIS = 31
+    const val DYKKERFARTOY = 33
+    const val FISKEFARTOY = 30
+    const val FRAKTEFARTOY = 70
+    const val HØYHASTIGHETSFARTOY = 40
+    const val MILITERT_FARTOY = 35
+    const val PASSASJERFARTOY = 60
+    const val POLITI = 55
+    const val SAR = 51
+    const val TANKSKIP = 80
+    const val TAUBAT = 52
+    const val ANDRE_FARTOY = 90
 
     val ALL_TYPES = mapOf(
-        "Ambulansebåt" to AMBULANSEBÅT,
+        "Ambulansebåt" to AMBULANSEBAT,
         "Antiforurensning" to ANTIFOURENSNING,
-        "Bøye med AIS-signal" to BØYE_MED_AIS,
-        "Dykkerfartøy" to DYKKERFARTØY,
-        "Fiskefartøy" to FISKEFARTØY,
-        "Fraktefartøy" to FRAKTEFARTØY,
-        "Høyhastighetsfartøy" to HØYHASTIGHETSFARTØY,
-        "Militært fartøy" to MILITÆRT_FARTØY,
-        "Passasjerfartøy" to PASSASJERFARTØY,
+        "Bøye med AIS-signal" to BOYE_MED_AIS,
+        "Dykkerfartøy" to DYKKERFARTOY,
+        "Fiskefartøy" to FISKEFARTOY,
+        "Fraktefartøy" to FRAKTEFARTOY,
+        "Høyhastighetsfartøy" to HØYHASTIGHETSFARTOY,
+        "Militært fartøy" to MILITERT_FARTOY,
+        "Passasjerfartøy" to PASSASJERFARTOY,
         "Politi" to POLITI,
         "SAR" to SAR,
         "Tankskip" to TANKSKIP,
-        "Taubåt" to TAUBÅT,
-        "Andre fartøy" to ANDRE_FARTØY
+        "Taubåt" to TAUBAT,
+        "Andre fartøy" to ANDRE_FARTOY
     )
 }

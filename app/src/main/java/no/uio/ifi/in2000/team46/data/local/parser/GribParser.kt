@@ -9,7 +9,6 @@ import no.uio.ifi.in2000.team46.domain.grib.WaveVector
 import no.uio.ifi.in2000.team46.domain.grib.WindVector
 import ucar.ma2.ArrayFloat
 import ucar.ma2.Index4D
-import ucar.nc2.NetcdfFile
 import ucar.nc2.NetcdfFiles
 import ucar.nc2.time.CalendarDateUnit
 import kotlin.math.atan2
@@ -17,11 +16,15 @@ import kotlin.math.sqrt
 import java.io.File
 import ucar.nc2.time.Calendar
 
+// gribparser parses grib-based netcdf files and extracts vector data for wind, current, wave and precipitation
+// it handles coordinate iteration, time resolution, and unit conversion for each data type
+
 class GribParser {
     companion object {
         private const val TAG = "GribParser"
     }
 
+    // parses wind or current vector data from a grib file given u and v component variable names
     fun parseVectorFile(
         file: File,
         uComponentName: String,
@@ -48,6 +51,7 @@ class GribParser {
         val index = uData.index as Index4D
         val heightIndex = 0
 
+        // converts time values to epoch millis
         val timeSteps = when (timeArray) {
             is FloatArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it.toDouble()).millis }
             is DoubleArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it).millis }
@@ -67,7 +71,6 @@ class GribParser {
                         val vector = when (vectorType) {
                             VectorType.WIND -> WindVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction, timestamp)
                             VectorType.CURRENT -> CurrentVector(lons[iLon].toDouble(), lats[iLat].toDouble(), speed, direction, timestamp)
-
                         }
                         vectors += vector
                     }
@@ -79,6 +82,7 @@ class GribParser {
         return vectors
     }
 
+    // parses wave vector data (height and direction) from a grib file
     fun parseWaveFile(file: File): List<WaveVector> {
         val ncfile = NetcdfFiles.open(file.absolutePath)
 
@@ -100,9 +104,8 @@ class GribParser {
 
         val timeUnits = timeVar.unitsString
         val calendarDateUnit = CalendarDateUnit.of(Calendar.gregorian.toString(), timeUnits)
-        val timeArray = timeVar.read().reduce().storage
-
-        val timeSteps = when (timeArray) {
+        // converts time values to epoch millis
+        val timeSteps = when (val timeArray = timeVar.read().reduce().storage) {
             is FloatArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it.toDouble()).millis }
             is DoubleArray -> timeArray.map { calendarDateUnit.makeCalendarDate(it).millis }
             else -> throw IllegalArgumentException("Ukjent time-array-type: ${timeArray::class.java}")
@@ -137,9 +140,7 @@ class GribParser {
         return waves
     }
 
-
-
-
+    // parses cumulative precipitation and converts it to delta between timesteps
     fun parsePrecipitationFile(
         file: File,
         levelIndex: Int = 0
@@ -206,10 +207,7 @@ class GribParser {
         return points
     }
 
-
-
-
-    // Debug: lists the variables in the file
+    // utility method for debugging grib files by listing all available variables and time info
     fun listVariablesInGrib(file: File) {
         val ncfile = NetcdfFiles.open(file.absolutePath)
         Log.d("GribParser", "=== Variabler i GRIB-filen ===")

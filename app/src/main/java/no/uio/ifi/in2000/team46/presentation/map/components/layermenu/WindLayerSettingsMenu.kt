@@ -1,7 +1,5 @@
 package no.uio.ifi.in2000.team46.presentation.map.components.layermenu
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -13,6 +11,7 @@ import no.uio.ifi.in2000.team46.domain.grib.WindVector
 import no.uio.ifi.in2000.team46.presentation.grib.viewmodel.GribViewModel
 import no.uio.ifi.in2000.team46.data.repository.Result
 
+//Warnings: the warnings here is beacuase of unused parameters after refactoring parts of the project
 @Composable
 fun WindLayerSettingsMenu(
     isChecked: Boolean,

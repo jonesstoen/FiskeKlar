@@ -20,7 +20,7 @@
 
 ## Introduction
 
-This document outlines the architecture and development approach of our mobile application, designed to assist saltwater hobby fishers by visualizing maritime weather conditions, fishing logs, and safety zones. The app is built with Kotlin, Jetpack Compose, and MapLibre, and integrates weather and marine data from public APIs and GRIB forecast files.
+This document outlines the architecture and development approach of our mobile application, designed to assist saltwater hobby fishers by visualizing maritime weather conditions, fishing logs, and safety measures . The app is built with Kotlin, Jetpack Compose, and MapLibre, and integrates weather and marine data from public APIs , metrologisk institutt and GRIB forecast files.
 
 ---
 
@@ -28,7 +28,7 @@ This document outlines the architecture and development approach of our mobile a
 
 - **Programming language**: Kotlin  
 - **Build system**: Gradle  
-- **IDE**: Android Studio Giraffe or newer  
+- **IDE**: Android Studio LadyBug or newer 
 - **Architecture patterns**: MVVM, Unidirectional Data Flow (UDF)  
 - **Version control**: Git and GitHub  
 
@@ -38,12 +38,13 @@ This document outlines the architecture and development approach of our mobile a
 
 - **Minimum SDK**: 26  
 - **Target SDK**: 34  
-- **Minimum Android version**: 9.0 (Pie)  
-- **Required permissions**: Location access, Internet
+- **Minimum Android version**: 8.0 (Oreo)  
+- **Required permissions**: Location access, Internet (The app functions without permissions, but they are recommended for full functionality.)
 
 ### Rationale for SDK Version
 
-We selected **minSdk 26** (Android 9.0) to maintain compatibility with the majority of devices in use today, while enabling access to key platform features such as scoped storage and better background location handling. **Target SDK 34** ensures the app adheres to the latest Android behavior changes and security updates.
+We selected **minSdk 26** (Android 8.0) to maintain compatibility with the majority of devices in use today, while enabling access to key platform features such as scoped storage and better background location handling. **Target SDK 34** ensures the app adheres to the latest Android behavior changes and security updates.
+
 
 ---
 
@@ -131,6 +132,14 @@ Our app adheres to **Unidirectional Data Flow**, where:
 
 This ensures a predictable and testable flow of data.
 
+## Object-Oriented Principles
+
+The app maintains **low coupling** by isolating logic in ViewModels and using interfaces in repositories. For example, the `FishLogRepository` interface allows the ViewModel to remain unaware of database implementation details.
+
+**High cohesion** is achieved by organizing code into feature-based packages ( `fishlog`, `map`, `profile`) where each module contains closely related responsibilities (UI + ViewModel + logic).
+
+This modular structure makes features easier to develop, test, and maintain.
+
 ---
 
 ## Layer Filtering and Weather Overlays
@@ -166,7 +175,7 @@ The map screen uses a **layer filtering system**:
 
 ---
 
-## Data Structures and Algorithms
+## Data Structures 
 
 Key models include:
 
@@ -184,11 +193,10 @@ Key models include:
 - **Room** – Local DB (fishing logs, favorites)  
 - **DataStore** – Theme persistence  
 - **OkHttp** – Auth/headers and debugging  
-- **CameraX** – Take fishing log images  
+-  **Activity Result API** – Used to launch camera for catch log entries 
 - **Coil** – Load profile/fishing photos  
 - **Jetpack Compose** – UI  
 - **Material 3** – Styling  
-- **StateFlow** – ViewModel → UI state  
 
 ---
 
@@ -223,6 +231,14 @@ We use a layered testing strategy with a mix of unit tests and manual testing:
 
 
 ---
+### Development Practices and Conventions
+
+- All features are developed in dedicated branches (feature/xyz) and merged into main via Pull Requests, either through GitHub, IDE, or terminal.
+- We aim to expose only immutable StateFlow from our ViewModels to enforce unidirectional data flow and maintain separation of concerns.
+- Code is organized by feature ( map, fishlog, profile), rather than by layer (view, model), which improves navigation and maintainability. MVVM is followed consistently within each feature.
+- Comments are added throughout the codebase, especially in more complex components such as GRIB parsing, ViewModel logic, and map overlays.
+
+---
 
 ## Version Control Workflow
 
@@ -231,12 +247,21 @@ We use GitHub Flow:
 - `main` is always deployable  
 - Feature branches: `feature/`, `fix/`, `refactor/`  
 - All changes go via Pull Requests  
-- GitHub Issues track work  
 - Commits follow conventional format when possible
 
 ---
+## Extensibility and Maintainability
 
-## Known Issues and Limitations
+The app is structured for long-term maintainability and scalability:
+
+- Feature-based folder structure simplifies navigation and onboarding
+- ViewModels decouple UI and business logic, supporting testability
+- GRIB parsing architecture is modular and extendable ( to support new weather types)
+- Layer overlays and sliders are designed for reuse across vector types (wind, current, wave, rain)
+- Repository pattern allows switching between local and remote data sources without major refactors
+---
+
+## Known Issues and Limitations (Warnings in the IDE)
 
 ### Bugs
 
@@ -244,11 +269,41 @@ We use GitHub Flow:
 - Wind arrows crowd the map at lower zoom levels  
 - Heatmap rendering flickers during slider updates  
 
+- **Deprecated methods in MapLibre**  
+  Some methods used for polygon and layer styling are marked as deprecated in recent versions of MapLibre. These include APIs for adding polygon actions and related properties.  
+   We opted to use them anyway because the newer alternatives are either experimental or lack sufficient documentation. The deprecated methods still function as expected.
+
+- **Bottom Navigation Redundancy**  
+  Tapping the bottom navigation item for a screen youre already on (especially **"Map"**) could cause unnecessary recompositions or failed navigation.  
+
+
+- **Unused Variables and Parameters**  
+  During development, we used a modular and flexible architecture (MVVM and composable UIs), which resulted in some parameters and variables being passed *"just in case"* — especially in shared components like `MapScreen`, `MapPickerScreen`, and view models.  
+   Because of this, the compiler raises warnings about unused variables or parameters. These are mostly intentional to allow for future extensibility or reuse in other composables/screens. We prioritized functionality and stability over suppressing all warnings during the MVP phase.
+
+- **Performance degradation with multiple layers active**  
+  When all map layers (AIS, MetAlerts, GRIB data, favorites, etc.) are turned on at the same time, rendering performance may drop — especially on lower-end devices.
+
+- **"Show more" alert functionality has degraded**  
+  The feature that displays a snackbar alert when the user enters a hazard zone (MetAlerts polygon) , with a "Show more" button to reveal details, was implemented early in the project.  
+   As the app logic and layer handling became more complex, this feature no longer behaves as originally intended. Specifically, the snackbar still appears, but the "Show more" action does not reliably open the alert details panel. We were unable to resolve this within the deadline.
+
+ - **Android Studio Version Update During Development**  
+  A new version of Android Studio was released during the development period. Although we did not need to make any changes to our project configuration, we switched to using the latest version in the final weeks. Everything continued to work as expected, and no breaking issues were observed.
+
+- **UI on Very Small Screens**  
+  The user interface is not fully optimized for very small screen sizes. While the app works on most devices, some components such as bottom sheets, sliders, or overlapping elements (e.g., weather overlays and layer controls) may appear cramped or clipped on smaller displays. This was not prioritized during development but could be improved in future iterations with more responsive layout handling.
+
 ### Missing Features
 
-- No actual cloud sync for GRIB yet  
-- Map onboarding not yet personalized  
-- Fishing log stats/filters are not implemented  
+- No actual cloud sync for GRIB yet   
+- Fishing log stats/filters are not implemented
+- GRIB data area is currently hardcoded to the Norwegian west coast, but the system is designed to allow selectable regions in future versions.
+
+
+
+---
+
 
 ### Security Concerns
 

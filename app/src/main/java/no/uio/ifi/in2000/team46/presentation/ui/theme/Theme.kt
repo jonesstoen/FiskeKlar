@@ -14,6 +14,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
 
+// this file defines the color schemes and theming logic used in the app
+// includes support for light, dark, medium/high contrast, and dynamic color schemes
+// the theme palettes were generated using material 3 theme builder (https://m3.material.io/theme-builder)
 
 val lightScheme = lightColorScheme(
     primary = primaryLight,

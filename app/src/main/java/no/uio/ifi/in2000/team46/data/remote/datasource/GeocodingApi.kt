@@ -4,6 +4,9 @@ import no.uio.ifi.in2000.team46.data.remote.api.GeocodingResponse
 import retrofit2.http.GET
 import retrofit2.http.Query
 
+// geocodingapi defines the stadia maps geocoding endpoint for location search
+// supports optional filters for focus, size, country, and more
+
 interface GeocodingApi {
     @GET("geocoding/v1/search")
     suspend fun search(
