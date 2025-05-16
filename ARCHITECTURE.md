@@ -20,6 +20,7 @@
 
 ## Introduction
 
+This document is intended for developers who wish to understand, maintain, or extend the application.
 This document outlines the architecture and development approach of our mobile application, designed to assist saltwater hobby fishers by visualizing maritime weather conditions, fishing logs, and safety measures . The app is built with Kotlin, Jetpack Compose, and MapLibre, and integrates weather and marine data from public APIs , metrologisk institutt and GRIB forecast files.
 
 ---
@@ -39,7 +40,7 @@ This document outlines the architecture and development approach of our mobile a
 - **Minimum SDK**: 26  
 - **Target SDK**: 34  
 - **Minimum Android version**: 8.0 (Oreo)  
-- **Required permissions**: Location access, Internet (The app functions without permissions, but they are recommended for full functionality.)
+- **Required permissions**: Location access, Internet (The app works without permissions, but full functionality requires them)
 
 ### Rationale for SDK Version
 
@@ -274,7 +275,9 @@ The app is structured for long-term maintainability and scalability:
    We opted to use them anyway because the newer alternatives are either experimental or lack sufficient documentation. The deprecated methods still function as expected.
 
 - **Bottom Navigation Redundancy**  
-  Tapping the bottom navigation item for a screen youre already on (especially **"Map"**) could cause unnecessary recompositions or failed navigation.  
+  Tapping the bottom navigation item for a screen youre already on (especially **"Map"**) could cause unnecessary recompositions or failed navigation, in some cases the app can crash.
+  we are aware of this but did not have the time to fix it.
+  
 
 
 - **Unused Variables and Parameters**  
