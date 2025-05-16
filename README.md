@@ -148,58 +148,52 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md#known-issues-and-limitations) for known 
 Open source alternative to Google Maps. Used to display maps, vessels (AIS), wind, currents,rain, and alerts with full control over style and layers.
 We combine MapLibre with MapTiler tiles and styles for custom map backgrounds and terrain rendering.
 
-[MapLibre Docs](https://maplibre.org/maplibre-native/android/api/)
-[MapTiler Docs](https://docs.maptiler.com)
-
-
-### Coil
-Lightweight image loading library for Jetpack Compose, used for catch and profile images.
-
-[Coil Docs](https://coil-kt.github.io/coil/getting_started/)
+- [MapLibre Docs](https://maplibre.org/maplibre-native/android/api/)
+- [MapTiler Docs](https://docs.maptiler.com)
 
 ### NetCDF-Java / CDM
 Library by Unidata to read/write scientific datasets (GRIB1/GRIB2). Used to extract and parse wind,current,wave and rain data from GRIB files. Kotlins Java integration made integration seamless.
 
-[NetCDF Docs](https://docs.unidata.ucar.edu/netcdf-java/current/userguide/)  
-[CDM Docs](https://docs.unidata.ucar.edu/netcdf-java/current/userguide/common_data_model_overview.html)
+- [NetCDF Docs](https://docs.unidata.ucar.edu/netcdf-java/current/userguide/)  
+- [CDM Docs](https://docs.unidata.ucar.edu/netcdf-java/current/userguide/common_data_model_overview.html)
 
 ### KSP (Kotlin Symbol Processing)
 Used by Room and Hilt to generate binding and injection code at compile time, reducing boilerplate.
 
-[KSP Docs](https://kotlinlang.org/docs/ksp-overview.html)
+- [KSP Docs](https://kotlinlang.org/docs/ksp-overview.html)
 
 ### Stadia Maps
 Used for location search and geocoding. We used their REST API to support searching and selecting geographic places from a search bar, which helps users navigate or set a fishing location.
 
-[Stadia Maps Docs](https://docs.stadiamaps.com)
+- [Stadia Maps Docs](https://docs.stadiamaps.com)
 
 
 ### Datastore (Preferences)
 Jetpack library for storing small amounts of data asynchronously, such as user settings or theme preferences. Used to persist theme mode across app restarts.
 
-[Datastore Docs](https://developer.android.com/topic/libraries/architecture/datastore)     
+- [Datastore Docs](https://developer.android.com/topic/libraries/architecture/datastore)     
 
 ### Media3 Common
 Part of Android’s new media playback framework. Used for playing alert sounds when the user is inside a alert area.
 
-[Media3 Docs](https://developer.android.com/reference/androidx/media3/common/package-summary)
+- [Media3 Docs](https://developer.android.com/reference/androidx/media3/common/package-summary)
 
 ### MockK
 Kotlin-specific mocking library used for unit testing. Enables mocking of repository methods, Log.d, and other Android classes used for debugging and testing
 
-[MockK Docs](https://mockk.io)
+- [MockK Docs](https://mockk.io)
 
 ### JUnit  (Jupiter)
 Modern version of the JUnit testing framework offering parameterized tests, dynamic tests, and better lifecycle management. Used for testing.
 
-[JUnit Doc](https://junit.org/junit5/docs/current/user-guide/)
+- [JUnit Doc](https://junit.org/junit5/docs/current/user-guide/)
 
 ---
 ## Testing
 
 We wrote unit tests for key components such as view models, GRIB parsing, and SOS calculations. Tests were written using JUnit, MockK, and kotlinx.coroutines.test.
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md#testing) for details on test coverage.
+- See [ARCHITECTURE.md](./ARCHITECTURE.md#testing) for details on test coverage. There is also comments on warnings in the project files themselves.
 
 
 
