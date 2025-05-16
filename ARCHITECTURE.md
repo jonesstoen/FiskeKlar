@@ -175,7 +175,7 @@ The map screen uses a **layer filtering system**:
 
 ---
 
-## Data Structures and Algorithms
+## Data Structures 
 
 Key models include:
 
@@ -259,9 +259,9 @@ The app is structured for long-term maintainability and scalability:
 - GRIB parsing architecture is modular and extendable ( to support new weather types)
 - Layer overlays and sliders are designed for reuse across vector types (wind, current, wave, rain)
 - Repository pattern allows switching between local and remote data sources without major refactors
+---
 
-
-## Known Issues and Limitations
+## Known Issues and Limitations (Warnings in the IDE)
 
 ### Bugs
 
@@ -269,11 +269,40 @@ The app is structured for long-term maintainability and scalability:
 - Wind arrows crowd the map at lower zoom levels  
 - Heatmap rendering flickers during slider updates  
 
+- **Deprecated methods in MapLibre**  
+  Some methods used for polygon and layer styling are marked as deprecated in recent versions of MapLibre. These include APIs for adding polygon actions and related properties.  
+   We opted to use them anyway because the newer alternatives are either experimental or lack sufficient documentation. The deprecated methods still function as expected.
+
+- **Bottom Navigation Redundancy**  
+  Tapping the bottom navigation item for a screen youre already on (especially **"Map"**) could cause unnecessary recompositions or failed navigation.  
+
+
+- **Unused Variables and Parameters**  
+  During development, we used a modular and flexible architecture (MVVM and composable UIs), which resulted in some parameters and variables being passed *"just in case"* — especially in shared components like `MapScreen`, `MapPickerScreen`, and view models.  
+   Because of this, the compiler raises warnings about unused variables or parameters. These are mostly intentional to allow for future extensibility or reuse in other composables/screens. We prioritized functionality and stability over suppressing all warnings during the MVP phase.
+
+- **Performance degradation with multiple layers active**  
+  When all map layers (AIS, MetAlerts, GRIB data, favorites, etc.) are turned on at the same time, rendering performance may drop — especially on lower-end devices.
+
+- **"Show more" alert functionality has degraded**  
+  The feature that displays a snackbar alert when the user enters a hazard zone (MetAlerts polygon) , with a "Show more" button to reveal details, was implemented early in the project.  
+   As the app logic and layer handling became more complex, this feature no longer behaves as originally intended. Specifically, the snackbar still appears, but the "Show more" action does not reliably open the alert details panel. We were unable to resolve this within the deadline.
+
+ - **Android Studio Version Update During Development**  
+  A new version of Android Studio was released during the development period. Although we did not need to make any changes to our project configuration, we switched to using the latest version in the final weeks. Everything continued to work as expected, and no breaking issues were observed.
+
+- **UI on Very Small Screens**  
+  The user interface is not fully optimized for very small screen sizes. While the app works on most devices, some components such as bottom sheets, sliders, or overlapping elements (e.g., weather overlays and layer controls) may appear cramped or clipped on smaller displays. This was not prioritized during development but could be improved in future iterations with more responsive layout handling.
+
 ### Missing Features
 
 - No actual cloud sync for GRIB yet   
 - Fishing log stats/filters are not implemented
 - GRIB data area is currently hardcoded to the Norwegian west coast, but the system is designed to allow selectable regions in future versions.
+
+
+
+---
 
 
 ### Security Concerns
