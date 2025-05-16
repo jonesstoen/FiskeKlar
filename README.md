@@ -53,6 +53,7 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 2. **Open the project in Android Studio**  
 - Choose "Open an existing project"
 - Navigate to the extracted/cloned folder and open it
+-  If you downloaded the ZIP file, make sure to open the **inner folder** (team-46, not TEAM46) 
 
 3. **Wait for Gradle sync to complete**  
 - Android Studio will automatically download dependencies
