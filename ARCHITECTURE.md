@@ -21,7 +21,7 @@
 ## Introduction
 
 This document is intended for developers who wish to understand, maintain, or extend the application.
-This document outlines the architecture and development approach of our mobile application, designed to assist saltwater hobby fishers by visualizing maritime weather conditions, fishing logs, and safety measures . The app is built with Kotlin, Jetpack Compose, and MapLibre, and integrates weather and marine data from public APIs , metrologisk institutt and GRIB forecast files.
+This document outlines the architecture and development approach of our mobile application, designed to assist saltwater hobby fishers by visualizing maritime weather conditions, fishing logs, and some safety measures . The app is built with Kotlin, Jetpack Compose, and MapLibre, and integrates weather and marine data from public APIs, the Norwegian Meteorological Institute (MET), and GRIB forecast files.
 
 ---
 
@@ -189,7 +189,8 @@ Key models include:
 
 ## External Libraries
 
-- **MapLibre GL** – Map rendering  
+- **MapLibre GL** – Map rendering
+- **MapTiler** – Provides custom map tiles and styles, used together with MapLibre for displaying the base map.
 - **Retrofit + Gson** – API access  
 - **Room** – Local DB (fishing logs, favorites)  
 - **DataStore** – Theme persistence  
@@ -276,7 +277,7 @@ The app is structured for long-term maintainability and scalability:
 
 - **Bottom Navigation Redundancy**  
   Tapping the bottom navigation item for a screen youre already on (especially **"Map"**) could cause unnecessary recompositions or failed navigation, in some cases the app can crash.
-  we are aware of this but did not have the time to fix it.
+  We are aware of this but did not have the time to fix it.
   
 
 
@@ -289,10 +290,10 @@ The app is structured for long-term maintainability and scalability:
 
 - **"Show more" alert functionality has degraded**  
   The feature that displays a snackbar alert when the user enters a hazard zone (MetAlerts polygon) , with a "Show more" button to reveal details, was implemented early in the project.  
-   As the app logic and layer handling became more complex, this feature no longer behaves as originally intended. Specifically, the snackbar still appears, but the "Show more" action does not reliably open the alert details panel. We were unable to resolve this within the deadline.
+   As the app logic and layer handling became more complex, this feature no longer behaves as originally intended. Specifically, the snackbar still appears, but the "Show more" action does not reliably open the alert details panel. We were unable to fully resolve this within the project timeline.
 
  - **Android Studio Version Update During Development**  
-  A new version of Android Studio was released during the development period. Although we did not need to make any changes to our project configuration, we switched to using the latest version in the final weeks. Everything continued to work as expected, and no breaking issues were observed.
+  A new version of Android Studio was released during the development period. Although we did not need to make any changes to our project configuration, we switched to using the latest version (Meercat) in the final weeks. Everything continued to work as expected, and no breaking issues were observed.
 
 - **UI on Very Small Screens**  
   The user interface is not fully optimized for very small screen sizes. While the app works on most devices, some components such as bottom sheets, sliders, or overlapping elements (e.g., weather overlays and layer controls) may appear cramped or clipped on smaller displays. This was not prioritized during development but could be improved in future iterations with more responsive layout handling.
