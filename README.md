@@ -10,19 +10,19 @@
 
 ## Table of Contents
 
-1. [About the App – FiskeKlar](#FiskeKlar)  
+1. [About the App – FiskeKlar](#fiskeklar)  
 2. [How to Run the App](#how-to-run-the-app)  
    1. [Requirements](#requirements)  
    2. [Build and Run](#build-and-run)  
    3. [Features](#features)  
 3. [Screenshots](#screenshots)  
-4. [Dependencies and Libraries](#dependencies-and-libraries)  
-5. [Libraries Outside the Curriculum](#libraries-outside-the-curriculum)  
-   1. [MapLibre](#maplibre)  
-   2. [Coil](#coil)  
-   3. [NetCDF-Java / CDM](#netcdf-java--cdm)  
-   4. [KSP](#ksp-kotlin-symbol-processing)  
-6. [App Permissions](#app-permissions)
+4. [Known Issues and Limitations](#known-issues-and-limitations-warnings-in-the-ide)  
+5. [Dependencies and Libraries](#dependencies-and-libraries)  
+6. [Libraries Outside the Curriculum](#libraries-outside-the-curriculum)  
+7. [Testing](#testing)  
+8. [App Permissions](#app-permissions)  
+9. [Further Documentation](#further-documentation)  
+10. [References for Non-Native Drawables](#references-for-non-native-drawables)
 
 ---
 
@@ -50,8 +50,8 @@
 
 Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 
-2. **Open the project in Android Studio **  
-- Choose *"Open an existing project"*
+2. **Open the project in Android Studio**  
+- Choose "Open an existing project"
 - Navigate to the extracted/cloned folder and open it
 
 3. **Wait for Gradle sync to complete**  
@@ -73,7 +73,7 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 - Shows MetAlerts (weather alerts) on the map
 - SOS Screen for emergency situations
 - Lets users log catches with image and location, and create favorite fishing spots.
-- Includes a profile screen with user info , and statistics.
+- Includes a profile screen with user info and statistics.
 
 ---
 
@@ -128,10 +128,10 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md#known-issues-and-limitations) for known 
 | **Media3 Common**                | Media Framework      | Enables audio/video playback (e.g., SOS sounds) *(optional)*                       |
 | **Kotlinx.coroutines**           | Async Processing     | Fetches data without blocking the UI                                               |
 | **kotlinx.coroutines.test**      | Coroutine Testing    | Supports testing of suspend functions and flows                                    |
-| **Retrofit + Gson**              | API + JSON Parsing   | Communicates with BarentsWatch and MetAlerts APIs *(outside curriculum)*           |
+| **Retrofit + Gson**              | API + JSON Parsing   | Communicates with BarentsWatch and MetAlerts APIs           |
 | **OkHttp + Logging Interceptor** | Network Debugging    | Logs HTTP calls for troubleshooting                                                |
 | **CDM / GRIB**                   | GRIB Parsing         | Reads meteorological GRIB files                            |
-| **KSP**                          | Code Generation      | Used by Room and Hilt to generate boilerplate automatically *(outside curriculum)* |
+| **KSP**                          | Code Generation      | Used by Room to generate boilerplate automatically  |
 | **ViewModel + LiveData**         | State Management     | Supports reactive and lifecycle-aware UI updates                                   |
 | **JUnit, MockK**                 | Testing Framework    | Used to verify logic in ViewModels, data parsing and utilities                     |
 
@@ -142,8 +142,11 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md#known-issues-and-limitations) for known 
 
 ### MapLibre
 Open source alternative to Google Maps. Used to display maps, vessels (AIS), wind, currents,rain, and alerts with full control over style and layers.
+We combine MapLibre with MapTiler tiles and styles for custom map backgrounds and terrain rendering.
 
 [MapLibre Docs](https://maplibre.org/maplibre-native/android/api/)
+[MapTiler Docs](https://docs.maptiler.com)
+
 
 ### Coil
 Lightweight image loading library for Jetpack Compose, used for catch and profile images.
@@ -192,7 +195,7 @@ Modern version of the JUnit testing framework offering parameterized tests, dyna
 
 We wrote unit tests for key components such as view models, GRIB parsing, and SOS calculations. Tests were written using JUnit, MockK, and kotlinx.coroutines.test.
 
-See [ARCHITECTURE.md](./ARCHITECTURE.md#testing) for details on test coverage and methodology.
+See [ARCHITECTURE.md](./ARCHITECTURE.md#testing) for details on test coverage.
 
 
 
@@ -217,7 +220,6 @@ For architectural details, file structure, design patterns and modeling diagrams
 
 **Source of vessel icons**:  
 The icons used for vessel types (e.g., Ambulance Boat, Fishing Vessel, Cargo Vessel) are based on the visual design of AIS vessel markers in the maritime map services provided by [BarentsWatch](https://www.barentswatch.no/).  
-The icons were reconstructed manually and integrated into the application as inline `data:image/svg+xml` resources.
 
 
 | Other drawables         | link |
