@@ -86,7 +86,6 @@ import no.uio.ifi.in2000.team46.presentation.map.favorites.FavoritesLayerViewMod
 import no.uio.ifi.in2000.team46.data.repository.FavoriteRepository
 import no.uio.ifi.in2000.team46.presentation.map.utils.SetupSnackbar
 import no.uio.ifi.in2000.team46.presentation.map.utils.SetupBottomSheetReset
-import no.uio.ifi.in2000.team46.presentation.map.utils.SetupInitialMapView
 import androidx.compose.ui.geometry.Rect
 import org.maplibre.android.annotations.PolygonOptions
 
