@@ -78,7 +78,7 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 ---
 
 ## Screenshots
-
+---
 ### Home Screen
 ![Weather Alert](./screenshots/homscreen_img.png)
 
@@ -87,6 +87,10 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 |                       |                       |                       |
 |-----------------------|-----------------------|-----------------------|
 | ![](./screenshots/fiskelogg2.png) | ![](./screenshots/fiskelogg1.png) | ![](./screenshots/fiskelogg3.png) |
+---
+###  Weather Data Screen
+
+![Weather Data Screen](./screenshots/grib_screen.png)
 
 ---
 
@@ -94,10 +98,10 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 
 ![Weather Alert](./screenshots/warning_screen.png)
 
----
+
 
 ###  SOS Screen
-
+---
 ![SOS Screen](./screenshots/Sosscreen.png)
 
 ### Weather Screen
@@ -185,10 +189,10 @@ Kotlin-specific mocking library used for unit testing. Enables mocking of reposi
 
 [MockK Docs](https://mockk.io)
 
-### JUnit 5 (Jupiter)
+### JUnit  (Jupiter)
 Modern version of the JUnit testing framework offering parameterized tests, dynamic tests, and better lifecycle management. Used for testing.
 
-[JUnit 5 Doc](https://junit.org/junit5/docs/current/user-guide/)
+[JUnit Doc](https://junit.org/junit5/docs/current/user-guide/)
 
 ---
 ## Testing
