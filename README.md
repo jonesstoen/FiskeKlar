@@ -70,17 +70,16 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 
 ### Features
 - Displays AIS data from BarentsWatch with real-time vessel updates
-- Fetches and visualizes wind and current data from GRIB files
+- Fetches and visualizes wind,wave,rain and current data from GRIB files, with a time slider, and cutomisable treshold.
 - Shows MetAlerts (weather alerts) on the map
-- Provides audio and visual alerts when in active alert zones
-- Lets users log catches with image and location
-- Includes a profile screen with user info and photo
+- SOS Screen for emergency situations
+- Lets users log catches with image and location, and create favorite fishing spots.
+- Includes a profile screen with user info , and statistics.
 
 ---
 
 ## Screenshots
 
-## 📷 Screenshots
 ### Home Screen
 ![Weather Alert](./screenshots/homscreen_img.png)
 
@@ -94,7 +93,7 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 
 ###  Weather Alert Screen
 
-![Weather Alert](./screenshots/warning_screen)
+![Weather Alert](./screenshots/warning_screen.png)
 
 ---
 
@@ -102,35 +101,73 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
 
 ![SOS Screen](./screenshots/Sosscreen.png)
 
-### Wheater Screen
-![warning Screen](./screenshots/wheaterscreen.png)
+### Weather Screen
+![Weather Screen](./screenshots/wheaterscreen.png)
+
+
+---
+## Known Issues and Limitations (Warnings in the IDE)
+
+- **Deprecated methods in MapLibre**  
+  Some methods used for polygon and layer styling are marked as deprecated in recent versions of MapLibre. These include APIs for adding polygon actions and related properties.  
+   We opted to use them anyway because the newer alternatives are either experimental or lack sufficient documentation. The deprecated methods still function as expected.
+
+- **Bottom Navigation Redundancy**  
+  Tapping the bottom navigation item for a screen youre already on (especially **"Map"**) could cause unnecessary recompositions or failed navigation.  
+
+
+- **Unused Variables and Parameters**  
+  During development, we used a modular and flexible architecture (MVVM and composable UIs), which resulted in some parameters and variables being passed *"just in case"* — especially in shared components like `MapScreen`, `MapPickerScreen`, and view models.  
+   Because of this, the compiler raises warnings about unused variables or parameters. These are mostly intentional to allow for future extensibility or reuse in other composables/screens. We prioritized functionality and stability over suppressing all warnings during the MVP phase.
+
+- **Performance degradation with multiple layers active**  
+  When all map layers (AIS, MetAlerts, GRIB data, favorites, etc.) are turned on at the same time, rendering performance may drop — especially on lower-end devices.
+
+- **"Show more" alert functionality has degraded**  
+  The feature that displays a snackbar alert when the user enters a hazard zone (MetAlerts polygon) , with a "Show more" button to reveal details, was implemented early in the project.  
+   As the app logic and layer handling became more complex, this feature no longer behaves as originally intended. Specifically, the snackbar still appears, but the "Show more" action does not reliably open the alert details panel. We were unable to resolve this within the deadline.
+
+ - **Android Studio Version Update During Development**  
+  A new version of Android Studio was released during the development period. Although we did not need to make any changes to our project configuration, we switched to using the latest version in the final weeks. Everything continued to work as expected, and no breaking issues were observed.
+
+- **UI on Very Small Screens**  
+  The user interface is not fully optimized for very small screen sizes. While the app works on most devices, some components such as bottom sheets, sliders, or overlapping elements (e.g., weather overlays and layer controls) may appear cramped or clipped on smaller displays. This was not prioritized during development but could be improved in future iterations with more responsive layout handling.
+
 
 
 ---
 
 ## Dependencies and Libraries
 
-| Library                        | Purpose                | Description                                                                 |
-|-------------------------------|------------------------|-----------------------------------------------------------------------------|
-| **Jetpack Compose**           | UI                     | Declarative UI framework for building screens                              |
-| **Material 3**                | Design Components      | Modern design elements for Compose                                         |
-| **MapLibre GL**               | Map Display            | Open-source map library for showing maps, vessels, and weather data        |
-| **Room**                      | Local Database         | Stores catch logs and user data                                            |
-| **Kotlinx.coroutines**        | Async Processing       | Fetches data without blocking the UI                                       |
-| **Retrofit + Gson**           | API + JSON Parsing     | Communicates with BarentsWatch and MetAlerts APIs *(outside curriculum)*   |
-| **OkHttp + Logging Interceptor** | Network Debugging   | Logs HTTP calls for troubleshooting                                        |
-| **CDM / GRIB**                | GRIB Parsing           | Reads meteorological GRIB files *(outside curriculum)*                     |
-| **AndroidX Location**         | Location Handling      | Tracks user location and handles alerts                                    |
-| **Coil**                      | Image Handling         | Loads and displays images for catches and profile                          |
-| **KSP**                       | Code Generation        | Used by Room/Hilt to generate boilerplate automatically                    |
-| **ViewModel + LiveData**      | State Management       | Reactive UI updates                                                         |
+| Library                          | Purpose              | Description                                                                        |
+| -------------------------------- | -------------------- | ---------------------------------------------------------------------------------- |
+| **Jetpack Compose**              | UI                   | Declarative UI framework for building screens                                      |
+| **Material 3**                   | Design Components    | Modern design elements for Compose                                                 |
+| **Compose Icons Extended**       | UI Icons             | Extended set of Material icons for Compose                                         |
+| **Google Fonts (Compose)**       | Typography           | Custom font support in Jetpack Compose                                             |
+| **MapLibre GL**                  | Map Display          | Open-source map library for showing maps, vessels, and weather data                |
+| **AndroidX Location**            | Location Handling    | Tracks user location and handles alerts                                            |
+| **Play Services Location**       | Location Provider    | Provides fused location tracking on Android devices                                |
+| **Room**                         | Local Database       | Stores catch logs and user data                                                    |
+| **Datastore**                    | Preferences Storage  | Saves theme and UI settings persistently                                           |
+| **Coil**                         | Image Handling       | Loads and displays images for catches and profiles                                 |
+| **Media3 Common**                | Media Framework      | Enables audio/video playback (e.g., SOS sounds) *(optional)*                       |
+| **Kotlinx.coroutines**           | Async Processing     | Fetches data without blocking the UI                                               |
+| **kotlinx.coroutines.test**      | Coroutine Testing    | Supports testing of suspend functions and flows                                    |
+| **Retrofit + Gson**              | API + JSON Parsing   | Communicates with BarentsWatch and MetAlerts APIs *(outside curriculum)*           |
+| **OkHttp + Logging Interceptor** | Network Debugging    | Logs HTTP calls for troubleshooting                                                |
+| **CDM / GRIB**                   | GRIB Parsing         | Reads meteorological GRIB files                            |
+| **KSP**                          | Code Generation      | Used by Room and Hilt to generate boilerplate automatically *(outside curriculum)* |
+| **ViewModel + LiveData**         | State Management     | Supports reactive and lifecycle-aware UI updates                                   |
+| **JUnit, MockK**                 | Testing Framework    | Used to verify logic in ViewModels, data parsing and utilities                     |
+
 
 ---
 
 ## Libraries Outside the Curriculum
 
 ### MapLibre
-Open-source alternative to Google Maps. Used to display maps, vessels (AIS), wind, currents, and alerts with full control over style and layers.
+Open source alternative to Google Maps. Used to display maps, vessels (AIS), wind, currents,rain, and alerts with full control over style and layers.
 
 [MapLibre Docs](https://maplibre.org/maplibre-native/android/api/)
 
@@ -140,7 +177,7 @@ Lightweight image loading library for Jetpack Compose, used for catch and profil
 [Coil Docs](https://coil-kt.github.io/coil/getting_started/)
 
 ### NetCDF-Java / CDM
-Library by Unidata to read/write scientific datasets (GRIB1/GRIB2). Used to extract wind/current data from GRIB files. Kotlin’s Java interop made integration seamless.
+Library by Unidata to read/write scientific datasets (GRIB1/GRIB2). Used to extract and parse wind,current,wave and rain data from GRIB files. Kotlins Java integration made integration seamless.
 
 [NetCDF Docs](https://docs.unidata.ucar.edu/netcdf-java/current/userguide/)  
 [CDM Docs](https://docs.unidata.ucar.edu/netcdf-java/current/userguide/common_data_model_overview.html)
@@ -150,7 +187,34 @@ Used by Room and Hilt to generate binding and injection code at compile time, re
 
 [KSP Docs](https://kotlinlang.org/docs/ksp-overview.html)
 
+### Datastore (Preferences)
+Jetpack library for storing small amounts of data asynchronously, such as user settings or theme preferences. Used to persist theme mode across app restarts.
+
+[Datastore Docs](https://developer.android.com/topic/libraries/architecture/datastore)     
+
+### Media3 Common
+Part of Android’s new media playback framework. Used for playing alert sounds when the user is inside a alert area.
+
+[Media3 Docs](https://developer.android.com/reference/androidx/media3/common/package-summary)
+
+### MockK
+Kotlin-specific mocking library used for unit testing. Enables mocking of repository methods, Log.d, and other Android classes used for debugging and testing
+
+[MockK Docs](https://mockk.io)
+
+### JUnit 5 (Jupiter)
+Modern version of the JUnit testing framework offering parameterized tests, dynamic tests, and better lifecycle management. Used for testing.
+
+[JUnit 5 Doc](https://junit.org/junit5/docs/current/user-guide/)
+
 ---
+## Testing
+
+We wrote unit tests for key components such as view models, GRIB parsing, and SOS calculations. Tests were written using JUnit, MockK, and kotlinx.coroutines.test.
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md#testing) for details on test coverage and methodology.
+
+
 
 ## App Permissions
 
@@ -166,4 +230,25 @@ For architectural details, file structure, design patterns and modeling diagrams
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md): Detailed overview of the app's structure, MVVM implementation, and rationale behind chosen patterns and technologies.
 - [MODELING.md](./MODELING.md): UML diagrams and system design illustrations supporting key use cases and flows.
+
+
+## References for non native drawaables
+
+
+**Source of vessel icons**:  
+The icons used for vessel types (e.g., Ambulance Boat, Fishing Vessel, Cargo Vessel) are based on the visual design of AIS vessel markers in the maritime map services provided by [BarentsWatch](https://www.barentswatch.no/).  
+The icons were reconstructed manually and integrated into the application as inline `data:image/svg+xml` resources.
+
+
+| Other drawables         | link |
+|-------------------------|-----------|
+|**Weather icons from NRKNO github** | [Weather icons](https://github.com/metno/weathericons/tree/89e3173756248b4696b9b10677b66c4ef435db53/weather/png ) |
+|**Warningsymbol from NRKNO github** | [warning symbols](https://github.com/nrkno/yr-warning-icons/tree/6cc4920ead55e5cc6a40fd601d01d024a0abf7be/design/svg) |
+|**YR Beaufort scale** | [Beaufort scale](https://hjelp.yr.no/hc/no/articles/360002022134-Vindpiler-og-Beaufortskalaen)|
+|**Fish icon in fishinglog** |[Fish icon](https://www.flaticon.com/free-icon/fish_811643)|
+|**Redningsskøyta logo in SOS screen** |[RS logo](https://rs.no/nullvisjon-mot-drukning/logo-nettside/)|
+|**App logo ChatGPT** |[App logo](https://chatgpt.com/s/m_68264b7761b481919f3c7fcfe21f70de)|
+| **Map Marker**                   | [Map Marker](https://www.margaretrivermountainbiketours.com.au/contact/map-marker-hi/map-marker.png) |
+| **Favorite Location Pin**        | [Favorite Pin](https://cdn3.iconfinder.com/data/icons/map-location-5/48/1362643-map-marker-heart-512.png) |
+| **Arrow Icon (Weather Screen)**  | [Arrow Up](https://icons.iconarchive.com/icons/custom-icon-design/flat-cute-arrows/512/Arrow-Up-icon.png) |
 
