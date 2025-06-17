@@ -29,7 +29,7 @@
 ## FiskeKlar
 
 <p align="center">
-  <img src="https://github.uio.no/IN2000-V25/team-46/raw/fda1b4150d3e8b074ebcb3d61234382fb63a5f04/app/src/main/res/drawable/app_logo.png" alt="FiskeKlar Logo" width="200"/>
+  <img src="https://github.com/jonesstoen/FiskeKlar/blob/main/app/src/main/res/drawable/app_logo.png" alt="FiskeKlar Logo" width="200"/>
 </p>
 
 **FiskeKlar** is an Android app developed in Kotlin with Jetpack Compose, designed for hobby fishers and ocean enthusiasts. It displays vessel data, weather alerts, wind and current conditions in real-time on an interactive map, and allows users to log their own catches.
