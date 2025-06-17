@@ -1,4 +1,7 @@
 # Welcome to Group 46 in IN2000 – Spring 2025
+This project was developed as part of the IN2000 course at UIO.  
+The course is a collaboration between UIO and Meterologisk Institutt (MET) , where Met provided cases and use of their APIS.  
+Our Team went on to be nominated for most creative use of the MET API's  
 
 ## Group Members
 - **Bendik Mendes Dahl** (bendikmd@uio.no)  
@@ -76,10 +79,10 @@ To keep credentials safe, API keys and secrets are **not included in version con
 ### Step 1: Create `local.properties`
 In the root of the project (same level as `build.gradle.kts`), create a file named `local.properties` with the following content:
 
-MAPTILER_API_KEY=your_maptiler_key_here
-MET_USER_AGENT_NAME= your_user_agent_name_here
-MET_USER_AGENT_EMAIL=your_email_here@example.com
-BW_CLIENT_ID=your_client_id_here
+MAPTILER_API_KEY=your_maptiler_key_here  
+MET_USER_AGENT_NAME= your_user_agent_name_here  
+MET_USER_AGENT_EMAIL=your_email_here@example.com  
+BW_CLIENT_ID=your_client_id_here  
 BW_CLIENT_SECRET=your_client_secret_here
 
 
@@ -100,8 +103,10 @@ A template file `local.properties.template` is provided to help you get started.
 
 ```bash
 cp local.properties.template local.properties
+```
 
-### contact jonesstoen@gmail.com if you have any issues with the API keys or need help setting them up.
+### Contact for issues with API setup  
+Please send me an email at jonesstoen@gmail.com if you have any issues with the API keys or need help setting them up.
 
 
 ### Features
