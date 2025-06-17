@@ -11,6 +11,8 @@ import okhttp3.Request
 import org.json.JSONObject
 import java.util.Date
 import java.util.concurrent.TimeUnit
+import no.uio.ifi.in2000.team46.BuildConfig
+
 
 // barentswatchauthservice handles fetching and caching an access token for the barentswatch api
 // it uses a mutex to ensure thread-safe access and caches the token until it is near expiry
@@ -40,12 +42,12 @@ class BarentsWatchAuthService {
         }
 
         try {
-            val clientSecret = "Gruppe46in2000"  // your client secret
+            val clientSecret = BuildConfig.BW_CLIENT_SECRET // your client secret
 
             // performs the request on the IO dispatcher
             return withContext(Dispatchers.IO) {
                 val formBody = FormBody.Builder()
-                    .add("client_id", "artina@uio.no:Prosjektoppgave")
+                    .add("client_id", BuildConfig.BW_CLIENT_ID)
                     .add("client_secret", clientSecret)
                     .add("scope", "ais")
                     .add("grant_type", "client_credentials")

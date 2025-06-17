@@ -1,27 +1,29 @@
 package no.uio.ifi.in2000.team46.data.remote.api
 
+import no.uio.ifi.in2000.team46.BuildConfig
 import no.uio.ifi.in2000.team46.data.remote.datasource.MetAlertsDatasource
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-// metalertsretrofitinstance sets up a retrofit client to access met norway's metalerts api
-// it includes a user-agent header required by the api and provides the metalertsdatasource interface
+// MetAlertsRetrofitInstance sets up a Retrofit client for MET Norway's MetAlerts API,
+// including a required User-Agent header defined in local.properties via BuildConfig.
 
 object MetAlertsRetrofitInstance {
     private const val BASE_URL = "https://in2000.api.met.no/"
 
-    // http client with required user-agent header
+    // OkHttpClient with dynamic User-Agent header
     private val client = OkHttpClient.Builder()
         .addInterceptor { chain ->
+            val userAgent = "${BuildConfig.MET_USER_AGENT_NAME} (${BuildConfig.MET_USER_AGENT_EMAIL})"
             val request = chain.request().newBuilder()
-                .addHeader("User-Agent", "IN2000test/1.0 (johastoe@uio.no)")
+                .addHeader("User-Agent", userAgent)
                 .build()
             chain.proceed(request)
         }
         .build()
 
-    // lazily initialized retrofit service for metalerts
+    // Lazily initialized Retrofit instance for MetAlerts API
     val metAlertsApi: MetAlertsDatasource by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)

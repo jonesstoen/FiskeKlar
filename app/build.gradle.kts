@@ -1,3 +1,11 @@
+import java.util.Properties
+import java.io.FileInputStream
+
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -21,6 +29,14 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        buildConfigField("String", "MAPTILER_API_KEY", "\"${localProperties["MAPTILER_API_KEY"]}\"")
+        buildConfigField("String", "MET_USER_AGENT_EMAIL", "\"${localProperties["MET_USER_AGENT_EMAIL"]}\"")
+        buildConfigField("String", "MET_USER_AGENT_NAME", "\"${localProperties["MET_USER_AGENT_NAME"]}\"")
+        buildConfigField("String", "BW_CLIENT_ID", "\"${localProperties["BW_CLIENT_ID"]}\"")
+        buildConfigField("String", "BW_CLIENT_SECRET", "\"${localProperties["BW_CLIENT_SECRET"]}\"")
+
+
+
     }
 
     buildTypes {
@@ -41,6 +57,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"

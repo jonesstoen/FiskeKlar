@@ -68,6 +68,42 @@ Alternatively, use the "Download ZIP" button on GitHub and extract the project.
   - Location (optional but recommended)
   - Camera (for profile/catch photos)
 
+##  API Keys & Local Configuration
+
+This project uses external APIs that require authentication or identification.  
+To keep credentials safe, API keys and secrets are **not included in version control**.
+
+### Step 1: Create `local.properties`
+In the root of the project (same level as `build.gradle.kts`), create a file named `local.properties` with the following content:
+
+MAPTILER_API_KEY=your_maptiler_key_here
+MET_USER_AGENT_NAME= your_user_agent_name_here
+MET_USER_AGENT_EMAIL=your_email_here@example.com
+BW_CLIENT_ID=your_client_id_here
+BW_CLIENT_SECRET=your_client_secret_here
+
+
+> ️ This file is ignored by Git and must be created manually by each developer.
+
+### Step 2: Obtain credentials
+
+| API            | Where to get credentials      |
+|----------------|-------------------------------|
+| MapTiler       | https://cloud.maptiler.com/account/keys/ |
+| MET Norway     | No API key required, but User-Agent is mandatory |
+| BarentsWatch   | https://id.barentswatch.no/   |
+
+---
+
+### Tip
+A template file `local.properties.template` is provided to help you get started. Copy it and rename to `local.properties`:
+
+```bash
+cp local.properties.template local.properties
+
+### contact jonesstoen@gmail.com if you have any issues with the API keys or need help setting them up.
+
+
 ### Features
 - Displays AIS data from BarentsWatch with real-time vessel updates
 - Fetches and visualizes wind,wave,rain and current data from GRIB files, with a time slider, and cutomisable treshold.

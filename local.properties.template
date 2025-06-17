@@ -1,0 +1,12 @@
+#  Local API credentials (DO NOT CHECK IN THIS FILE AFTER RENAMING TO local.properties)
+
+# === MapTiler ===
+MAPTILER_API_KEY=your_maptiler_key_here
+
+# === MET Norway (Required User-Agent) ===
+MET_USER_AGENT_NAME= your user agent name here
+MET_USER_AGENT_EMAIL=your_email_here@example.com
+
+# === BarentsWatch (Client credentials) ===
+BW_CLIENT_ID=your_client_id_here
+BW_CLIENT_SECRET=your_client_secret_here

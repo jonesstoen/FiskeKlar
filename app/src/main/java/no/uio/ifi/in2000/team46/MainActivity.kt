@@ -33,6 +33,8 @@ import no.uio.ifi.in2000.team46.presentation.profile.viewmodel.ProfileViewModelF
 import no.uio.ifi.in2000.team46.data.remote.api.WeatherService
 import no.uio.ifi.in2000.team46.presentation.onboarding.viewmodel.OnboardingViewModel
 import no.uio.ifi.in2000.team46.data.local.datastore.dataStore
+import no.uio.ifi.in2000.team46.BuildConfig
+
 
 class MainActivity : ComponentActivity() {
     // hoisting all  ViewModels here so they survive navigation
@@ -76,7 +78,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // initialize MapLibre
-        MapLibre.getInstance(this, "kPH7fJZHXa4Pj6d1oIuw", WellKnownTileServer.MapTiler)
+        val mapTilerApiKey = BuildConfig.MAPTILER_API_KEY
+        MapLibre.getInstance(this, mapTilerApiKey, WellKnownTileServer.MapTiler)
         enableEdgeToEdge()
 
         // check if this is first launch
